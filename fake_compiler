@@ -1,0 +1,17 @@
+#!/usr/bin/python
+
+import os
+import sys
+
+outputName = os.getenv ("CLANG_TAGS")
+if not outputName:
+    cmd = "clang++ " + " ".join(sys.argv[1:])
+    os.system (cmd)
+    sys.exit(0)
+
+# sys.stdout.close()
+# sys.stderr.close()
+# sys.stdout = open (outputName, "a")
+# sys.stderr = sys.stdout
+
+os.system ("clang-tags " + sys.argv[-1] + " junk " + " ".join(sys.argv[1:]) + ">>" + outputName + " 2>&1")
