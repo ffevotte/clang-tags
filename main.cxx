@@ -1,158 +1,147 @@
 #include <clang-c/Index.h>
-#include <string.h>
 #include <stdlib.h>
 #include <string>
+#include <iostream>
 
-CXChildVisitResult listSymbols (CXCursor cursor, CXCursor parent, CXClientData client_data) {
-  std::string & targetFile = *((std::string*)client_data);
+#include "clang/translationUnit.hxx"
+#include "clang/cursor.hxx"
+#include "clang/sourceLocation.hxx"
 
-  // CXCursorKind kind = clang_getCursorKind (cursor);
-  // CXString kindSpelling = clang_getCursorKindSpelling(kind);
-  // CXString identifier = clang_getCursorSpelling(cursor);
-  CXSourceLocation location = clang_getCursorLocation (cursor);
-  CXFile file;
-  unsigned int line, column, offset;
-  clang_getExpansionLocation (location, &file, &line, &column, &offset);
+#include "getopt/getopt.hxx"
 
-  const char *filename = clang_getCString(clang_getFileName(file));
-  if (not filename)
-    return CXChildVisit_Continue;
+void displayCursor (Clang::Cursor cursor)
+{
+  const Clang::SourceLocation location (cursor.location());
+  const Clang::Cursor cursorDef = cursor.referenced();
 
-  std::string fileStr (filename);
-  if (fileStr != targetFile)
-    return CXChildVisit_Continue;
-
-  CXSourceRange extent = clang_getCursorExtent (cursor);
-  CXSourceLocation end = clang_getRangeEnd (extent);
-  unsigned int line2, column2;
-  clang_getExpansionLocation (end, NULL, &line2, &column2, NULL);
-
-  // fprintf (stderr, "%s:%d:%d-%d: %s %s\n",
-  //          clang_getCString(clang_getFileName (file)),
-  //          line, column, column2-1,
-  //          clang_getCString(kindSpelling),
-  //          clang_getCString(identifier));
-
-  CXCursor cursorDef = clang_getCursorReferenced(cursor);
-  const char * usr = clang_getCString(clang_getCursorUSR(cursorDef));
-  if (strcmp(usr, ""))
-    fprintf (stderr, "%s\t%s:%d-%d:%d-%d\n",
-             usr,
-             clang_getCString(clang_getFileName (file)),
-             line, line2, column, column2-1);
-
-
-  if (0) {
-    CXCursor cursorDef = clang_getCursorReferenced (cursor);
-    CXCursorKind kind = clang_getCursorKind (cursorDef);
-    CXString kindSpelling = clang_getCursorKindSpelling(kind);
-    CXString identifier = clang_getCursorSpelling(cursorDef);
-    CXSourceLocation locationDef = clang_getCursorLocation (cursorDef);
-    CXFile file;
-    unsigned int line, column, offset;
-    clang_getExpansionLocation (locationDef, &file, &line, &column, &offset);
-
-    CXSourceRange extent = clang_getCursorExtent (cursorDef);
-    CXSourceLocation end = clang_getRangeEnd (extent);
-    unsigned int column2;
-    clang_getExpansionLocation (end, NULL, NULL, &column2, NULL);
-
-    const char * filename = clang_getCString(clang_getFileName (file));
-    if (filename)
-      fprintf (stderr, "%s:%d:%d-%d:\n\t%s %s\n\n",
-               filename,
-               line, column, column2-1,
-               clang_getCString(kindSpelling),
-               clang_getCString(identifier));
+  if (cursorDef.isNull()) {
+    return;
   }
 
-  return CXChildVisit_Recurse;
+  // Display cursor
+  {
+    const Clang::SourceLocation::Position begin = location.expansionLocation();
+    const Clang::SourceLocation::Position end = cursor.end().expansionLocation();
+
+    std::cout << "-- " << begin.file << ":"
+              << begin.line << "-" << end.line << ":"
+              << begin.column << "-" << end.column-1 << ":" << std::endl
+              << cursor.kindStr() << " " << cursor.spelling()
+              << std::endl;
+  }
+
+  // Display referenced cursor
+  {
+    const Clang::SourceLocation::Position begin = cursorDef.location().expansionLocation();
+    const Clang::SourceLocation::Position end = cursorDef.end().expansionLocation();
+
+    std::cout << "   "
+              << begin.file << ":"
+              << begin.line << "-" << end.line << ":"
+              << begin.column << "-" << end.column-1 << ": "
+      // << "(" << cursorDef.USR() << ")" << std::endl << "\t"
+              << cursorDef.kindStr() << " " << cursorDef.spelling()
+              << std::endl << std::endl;
+  }
 }
 
+CXChildVisitResult findDefinition (CXCursor rawCursor,
+                                   CXCursor rawParent, //unused
+                                   CXClientData client_data)
+{
+  Clang::Cursor cursor (rawCursor);
+  const Clang::SourceLocation & targetLocation = *((Clang::SourceLocation*)client_data);
+  const Clang::SourceLocation location (cursor.location());
 
-CXChildVisitResult findDefinition (CXCursor cursor, CXCursor parent,
-                                   CXClientData client_data) {
-  CXSourceLocation * targetLocation = (CXSourceLocation*)client_data;
-  CXSourceLocation location = clang_getCursorLocation (cursor);
+  // Skip unexposed cursor kinds
+  if (cursor.isUnexposed()) {
+    return CXChildVisit_Recurse;
+  }
 
-  if (clang_equalLocations (location, *targetLocation)) {
-    if (clang_isUnexposed(clang_getCursorKind(cursor)))
-      return CXChildVisit_Recurse;
-    // {
-    //   CXCursorKind kind = clang_getCursorKind (cursor);
-    //   CXString kindSpelling = clang_getCursorKindSpelling(kind);
-    //   CXString identifier = clang_getCursorSpelling(cursor);
-    //   CXSourceLocation location = clang_getCursorLocation (cursor);
-    //   CXFile file;
-    //   unsigned int line, column, offset;
-    //   clang_getExpansionLocation (location, &file, &line, &column, &offset);
-
-    //   CXSourceRange extent = clang_getCursorExtent (cursor);
-    //   CXSourceLocation end = clang_getRangeEnd (extent);
-    //   unsigned int column2;
-    //   clang_getExpansionLocation (end, NULL, NULL, &column2, NULL);
-
-    //   const char * filename = clang_getCString(clang_getFileName (file));
-    //   if (filename)
-    //     fprintf (stderr, "%s:%d:%d-%d: %s %s\n",
-    //              filename,
-    //              line, column, column2-1,
-    //              clang_getCString(kindSpelling),
-    //              clang_getCString(identifier));
-    // }
-
-    CXCursor cursorDef = clang_getCursorReferenced (cursor);
-    CXCursorKind kind = clang_getCursorKind (cursorDef);
-    CXString kindSpelling = clang_getCursorKindSpelling(kind);
-    CXString identifier = clang_getCursorSpelling(cursorDef);
-    CXSourceLocation locationDef = clang_getCursorLocation (cursorDef);
-    CXFile file;
-    unsigned int line, column, offset;
-    clang_getExpansionLocation (locationDef, &file, &line, &column, &offset);
-
-    CXSourceRange extent = clang_getCursorExtent (cursorDef);
-    CXSourceLocation end = clang_getRangeEnd (extent);
-    unsigned int line2, column2;
-    clang_getExpansionLocation (end, NULL, &line2, &column2, NULL);
-
-    const char * filename = clang_getCString(clang_getFileName (file));
-    if (filename)
-      fprintf (stderr, "%s:%d-%d:%d-%d: (%s)\n\t%s %s\n\n",
-               filename,
-               line, line2, column, column2-1,
-               clang_getCString(clang_getCursorUSR(cursorDef)),
-               clang_getCString(kindSpelling),
-               clang_getCString(identifier));
+  if (location == targetLocation) {
+    displayCursor (cursor);
   }
 
   return CXChildVisit_Recurse;
 }
 
 int main(int argc, char *argv[]) {
-  char * fileName = argv[1];
-  int offset = atol (argv[2]);
 
-  CXIndex Index = clang_createIndex(0, 0);
-  CXTranslationUnit TU = clang_parseTranslationUnit(Index, 0,
-                                                    argv+2, argc-2,
-                                                    0, 0, CXTranslationUnit_None);
+  // Command-line arguments handling
+  Getopt opt (argc, argv,
+              "FILE OFFSET -- CLANG ARGUMENTS\n\n"
+              "Find the place of definition of an identifier in a C++ source file.\n\n"
+              "Required arguments:\n"
+              "  FILE      \t Source file to examine\n"
+              "  OFFSET    \t Cursor position (in bytes)\n"
+              "  CLANG ARGS\t Clang command-line arguments\n"
+              "            \t   (e.g. '-I . -std=c++11 main.cxx')");
+  opt.add ("help",          'h', 0, "Show this help");
+  opt.add ("most-specific", 's', 0, "Show only the most specific reference");
+  opt.add ("debug",         'D', 0, "Print debug information");
 
-  CXCursor cursor = clang_getTranslationUnitCursor (TU);
-
-  const int operation = 2;
-
-  if (operation == 1) {
-    std::string target (fileName);
-    clang_visitChildren (cursor, listSymbols, &target);
+  // Get optional arguments
+  try {
+    opt.get ();
+  }
+  catch (...) {
+    std::cerr << std::endl << opt.usage();
+    return (EXIT_FAILURE);
   }
 
-  if (operation == 2) {
-    CXFile topFile = clang_getFile (TU, fileName);
-    CXSourceLocation target = clang_getLocationForOffset (TU, topFile, offset);
-    clang_visitChildren (cursor, findDefinition, &target);
+  if (opt["help"] == "true") {
+    std::cerr << opt.usage();
+    return (EXIT_SUCCESS);
   }
 
-  clang_disposeTranslationUnit(TU);
-  clang_disposeIndex(Index);
+  // Get required arguments
+  char * fileName = argv[optind];
+  int offset;
+  if (! fromString (offset, argv[optind+1])) {
+    std::cerr << "Invalid offset: " << argv[optind+1]
+              << std::endl << std::endl
+              << opt.usage();
+    return (EXIT_FAILURE);
+  }
+
+  optind += 2;
+  argc -= optind;
+  argv += optind;
+
+  // Print debug info on CL arguments if requested
+  if (opt["debug"] == "true") {
+    std::cerr << "file:\t" << fileName << std::endl;
+    std::cerr << "offset:\t" << offset << std::endl;
+    std::cerr << "most-specific:\t" << opt["most-specific"] << std::endl;
+    std::cerr << "debug:\t" << opt["debug"] << std::endl;
+    std::cerr << "clang CL:";
+
+    for (int i=0 ; i < argc ; ++i) {
+      std::cerr << " " << argv[i];
+    }
+    std::cerr << std::endl << std::endl;
+  }
+
+
+  Clang::TranslationUnit tu (argc, argv);
+
+
+  // Print clang diagnostics
+  for (unsigned int N = tu.numDiagnostics(),
+         i = 0 ; i < N ; ++i) {
+    std::cerr << tu.diagnostic (i) << std::endl << std::endl;
+  }
+
+  // Print cursor definition
+  if (opt["most-specific"] == "true") {
+    Clang::Cursor cursor (tu, fileName, offset);
+    displayCursor (cursor);
+  }
+  else {
+    Clang::Cursor cursor (tu);
+    Clang::SourceLocation target = tu.getLocation (fileName, offset);
+    clang_visitChildren (cursor.raw(), findDefinition, &target);
+  }
+
   return 0;
 }
