@@ -2,15 +2,20 @@
 
 #include <iomanip>
 
-Getopt::Getopt (int argc, char **argv, const char *arguments)
+Getopt::Getopt (int argc, char **argv, const char *documentation)
   : argc_ (argc),
     argv_ (argv)
 {
-  usage_ << "Usage: " << argv_[0] << " [options] ";
-  if (arguments[0])
-      usage_ << arguments;
-  usage_ << "\n\n";
-  usage_ << "Options:\n";
+  std::string doc = documentation;
+  size_t pos = 0;
+  do {
+    pos = doc.find ("%c", pos);
+    if (pos != std::string::npos)
+      doc.replace (pos, 2, argv_[0]);
+  } while (pos != std::string::npos);
+
+  usage_ << doc << "\n\n"
+         << "Options:\n";
 }
 
 void Getopt::add (const char *longOpt, char shortOpt, int argument, const char *description, const char *argDescription)
@@ -92,7 +97,7 @@ void Getopt::get ()
             {
               index = shortIndex_[c];
             }
-          
+
           if (options_[index].has_arg == 0)
             {
               cl_[std::string (options_[index].name)] = std::string ("true");

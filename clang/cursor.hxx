@@ -16,11 +16,11 @@ namespace Clang {
     { }
 
     Cursor (const TranslationUnit & tu,
-            char const * const fileName, const unsigned int offset)
+            const std::string & fileName, const unsigned int offset)
       : cursor_ (clang_getCursor
                  (tu.raw(),
                   clang_getLocationForOffset (tu.raw(),
-                                              clang_getFile (tu.raw(), fileName),
+                                              clang_getFile (tu.raw(), fileName.c_str()),
                                               offset)))
     { }
 
@@ -59,7 +59,6 @@ namespace Clang {
       clang_disposeString (cursorUSR);
       return res;
     }
-
 
     SourceLocation location () const {
       return clang_getCursorLocation (raw());

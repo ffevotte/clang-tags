@@ -25,7 +25,7 @@ public:
    *    @param argv       command-line arguments
    *    @param arguments  description of non-switch command-line arguments
    */
-  Getopt (int argc, char **argv, const char *arguments = "");
+  Getopt (int argc, char **argv, const char *documentation = "Usage: %c [options]");
 
 
   /** @brief Define an option
@@ -57,6 +57,23 @@ public:
   inline std::string operator[] (std::string opt);
 
 
+  /** @brief Shift remaining positional arguments
+   *  @return the first remaining positional argument, "" if there are no more positional args
+   */
+  inline std::string shift ();
+
+  /** @brief Get number of remaining positional arguments
+   */
+  inline int argc () const;
+
+  /** @brief Get remaining positional arguments
+   */
+  inline char **argv () const;
+
+  /** @brief Get remaining positional arguments
+   */
+  inline std::string argv (int i) const;
+
 private:
   void addOpt   (const char *longOpt, char shortOpt, int argument,
                  const char *description, const char *argDescription);
@@ -83,6 +100,32 @@ inline std::string Getopt::usage ()
 inline std::string Getopt::operator[] (std::string opt)
 {
   return cl_[opt];
+}
+
+inline std::string Getopt::shift ()
+{
+  if (optind == argc_) {
+    return "";
+  }
+
+  std::string res = argv_[optind];
+  optind++;
+  return res;
+}
+
+inline int Getopt::argc () const
+{
+  return argc_-optind;
+}
+
+inline char** Getopt::argv () const
+{
+  return argv_+optind;
+}
+
+inline std::string Getopt::argv (int i) const
+{
+  return argv_[optind+i];
 }
 
 template <class T>

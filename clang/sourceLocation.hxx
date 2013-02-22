@@ -1,6 +1,7 @@
 #pragma once
 #include <clang-c/Index.h>
 #include <string>
+#include <stdlib.h>
 
 namespace Clang {
   class SourceLocation {
@@ -30,7 +31,11 @@ namespace Clang {
       CXFile file;
       clang_getExpansionLocation (raw(), &file, &res.line, &res.column, &res.offset);
       CXString fileName = clang_getFileName (file);
-      res.file = clang_getCString (fileName);
+      if (clang_getCString (fileName)) {
+        char * canonicalPath = realpath (clang_getCString (fileName), NULL);
+        res.file = canonicalPath;
+        free(canonicalPath);
+      }
       clang_disposeString (fileName);
       return res;
     }
