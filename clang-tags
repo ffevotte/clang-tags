@@ -12,135 +12,241 @@ import shlex, subprocess
 import time
 import pickle
 
-tagsFileName = ".ct.tags"
-dbFileName   = ".ct.db"
-rcFileName   = ".ct.rc"
-
 class CompilationCommand:
     """A clang compilation command, including directory and clang command-line
     arguments"""
 
-    def __init__ (self, directory, command):
+    def __init__ (self, directory, clangArgs):
         self.directory = directory
-        self.clangArgs = shlex.split(command)[1:]
+        self.clangArgs = clangArgs
 
-class CompilationDatabase:
-    """A database listing all necessary compilation commands to index a source
-    code base"""
 
-    def __init__ (self, jsonDb = None):
-        if jsonDb is not None:
-            f = open (jsonDb, "r")
-            db = json.load (f)
-            f.close()
+class ClangTagsDatabase:
+    def __init__ (self, load = False):
+        pass
 
-            self.compilationCommands = {}
+    def updateCompilationCommands (self):
+        self._clearCompilationCommands ()
 
-            for compilationCommand in db:
-                sourceFile = compilationCommand["file"]
-                directory  = compilationCommand["directory"]
-                command    = compilationCommand["command"]
-                self.compilationCommands[sourceFile] = \
-                    CompilationCommand (directory, command)
+        if self._getSourceType() == "json":
+            self._readJsonDb ()
+        elif self._getSourceType() == "find":
+            self._findSourceFiles ()
         else:
             raise RuntimeError ("No source were given to populate the "
                                 "compilation database.")
 
-    def __str__ (self):
-        res = ""
-        for sourceFile in self.compilationCommands:
-            compilationCommand = self.compilationCommands[sourceFile]
-            res += "%s\n" % sourceFile
-            res += "  %s\n" % compilationCommand.directory
-            res += "  %s\n\n" % str(compilationCommand.clangArgs)
-        return res
+    def updateIndex (self, debug = False):
+        "Create and populate a tags database"
+        self.updateCompilationCommands ()
 
-    def __getitem__ (self, sourceFile):
-        return self.compilationCommands[sourceFile]
+        self._pre_updateIndex()
 
-    def sourceFiles (self):
-        "List of all source files in the compilation database"
-        return self.compilationCommands.keys()
+        sourceFiles = {}
 
-    def addHeader (self, headerFileName, sourceFileName):
-        """Add a header file to the database by copying the compilation command
-        of a source file which includes it"""
-        self.compilationCommands[headerFileName] = \
-            self.compilationCommands[sourceFileName]
+        for sourceFile in self._sourceFiles():
+            compilationCommand = self._compilationCommand(sourceFile)
+            command = ["clang-tags-index", "--"]
+            command += compilationCommand.clangArgs
 
+            sys.stderr.write ("%-70s\t" % (sourceFile + "..."))
+            if debug is True:
+                sys.stderr.write ("\n  " + " ".join (command) + "\n")
 
-def saveCompilationDatabase (cdb):
-    "Persistently save a compilation database to the `dbFileName' file"
+            begin = time.time()
+            process = subprocess.Popen (command,
+                                        cwd = compilationCommand.directory,
+                                        stdout = subprocess.PIPE)
 
-    f = open (dbFileName, "w")
-    pickle.dump (cdb, f)
-    f.close()
+            for line in process.stdout:
+                (usr, _, line) = line.partition (" ")
+                (fileName, _, line) = line.partition (":")
+                (lineNo, _, line) = line.partition (":")
 
-def loadCompilationDatabase ():
-    "Load a compilation database from the `dbFileName' file"
+                self._addTag (usr, fileName, lineNo, line)
 
-    f = open (dbFileName, "r")
-    cdb = pickle.load (f)
-    f.close()
-    return cdb
+                if fileName not in sourceFiles:
+                    sourceFiles[fileName] = sourceFile
 
-def saveArguments (args):
-    "Persistently save a `parseargs' arguments list to the `rcFileName' file"
+            process.wait ()
+            sys.stderr.write ("%.2fs.\n" % (time.time() - begin))
+            if debug is True:
+                sys.stderr.write ("\n")
 
-    f = open (rcFileName, "w")
-    pickle.dump (args, f)
-    f.close()
+        self._post_updateIndex()
 
-def loadArguments ():
-    "Load an arguments list from the `rcFileName' file"
+        for fileName in sourceFiles:
+            if fileName not in self._sourceFiles():
+                self._addHeader (fileName, sourceFiles[fileName])
 
-    f = open (rcFileName, "r")
-    args = pickle.load (f)
-    f.close()
-    return args
+        self._save ()
 
-def populateTags (args):
-    "Create and populate a tags database"
-    cdb = CompilationDatabase (jsonDb = args.json)
+    def findDefinition (self, fileName, offset):
+        compilationCommand = self._compilationCommand(fileName)
 
-    tagsFile = open (tagsFileName, "w")
-
-    sourceFiles = {}
-
-    for sourceFile in cdb.sourceFiles():
-        compilationCommand = cdb[sourceFile]
-        command = ["clang-tags-index", "--"]
+        command = ["clang-tags-def", fileName, offset, "--"]
         command += compilationCommand.clangArgs
 
-        begin = time.time()
-        sys.stderr.write ("%-70s" % (sourceFile + "..."))
         process = subprocess.Popen (command,
-                                    cwd = compilationCommand.directory,
-                                    stdout = subprocess.PIPE)
+                                    cwd = compilationCommand.directory)
+        process.wait()
 
-        for line in process.stdout:
-            tagsFile.write (line)
-            line = line.partition (" ")[2]
-            fileName = line.partition (":")[0]
-            if fileName not in sourceFiles:
-                sourceFiles[fileName] = sourceFile
 
-        process.wait ()
-        sys.stderr.write ("\t%.2fs.\n" % (time.time() - begin))
+    def setOptions (self, args):
+        if args.sourceType == "json":
+            self._setSource ("json", (args.json,))
+        if args.sourceType == "find":
+            self._setSource ("find", [args.srcdir] + args.clangArgs)
 
-    tagsFile.close()
 
-    for fileName in sourceFiles:
-        if fileName not in cdb.sourceFiles():
-            cdb.addHeader (fileName, sourceFiles[fileName])
+    def _readJsonDb (self):
+        f = open (self._getSourceArgs()[0], "r")
+        db = json.load (f)
+        f.close()
 
-    saveCompilationDatabase (cdb)
+        for compilationCommand in db:
+            sourceFile = compilationCommand["file"]
+            directory  = compilationCommand["directory"]
+            command    = shlex.split(compilationCommand["command"])[1:]
+            self._addCompilationCommand(sourceFile, directory, command)
 
+    def _findSourceFiles (self):
+        srcdir = self._getSourceArgs()[0]
+        clangArgs = self._getSourceArgs()[1:]
+
+        for (root, dirs, files) in os.walk (srcdir):
+            for fileName in files:
+                if fileName.endswith (".cxx"):
+                    sourceFile = os.path.realpath (os.path.join (root, fileName))
+                    self._addCompilationCommand (sourceFile, ".", clangArgs + [sourceFile])
+
+    # Interface for derived datatypes
+
+    # Compilation commands
+    def _sourceFiles (self):
+        raise NotImplementedError
+    def _clearCompilationCommands (self):
+        raise NotImplementedError
+    def _addCompilationCommand (self, sourceFile, directory, command):
+        raise NotImplementedError
+    def _compilationCommand (self, sourceFileName):
+        raise NotImplementedError
+    def _addHeader (self, includedFileName, sourceFileName):
+        raise NotImplementedError
+
+    # Indexing
+    def _pre_updateIndex (self):
+        raise NotImplementedError
+    def _post_updateIndex (self):
+        raise NotImplementedError
+    def _addTag (self, usr, sourceFileName, lineNo, line):
+        raise NotImplementedError
+    def grep (self, usr):
+        raise NotImplementedError
+
+    # Options
+    def _setSource (self, sourceType, sourceArgs):
+        raise NotImplementedError
+    def _getSourceType (self):
+        raise NotImplementedError
+    def _getSourceName (self):
+        raise NotImplementedError
+
+    # Data persistence
+    def _save (self):
+        raise NotImplementedError
+
+
+class Store:
+    def __init__ (self):
+        self.sourceType = None
+        self.sourceName = None
+        self.compilationCommands = {}
+
+class CTDB_File (ClangTagsDatabase):
+    def __init__ (self, load = False):
+        self.tagsFileName = ".ct.tags"
+        self.dbFileName   = ".ct.db"
+
+        ClangTagsDatabase.__init__ (self)
+        if load:
+            f = open (self.dbFileName, "r")
+            self._store = pickle.load (f)
+            f.close()
+        else:
+            self._store = Store()
+
+        self._tagsFile = None
+
+    def _sourceFiles (self):
+        "List of all source files in the compilation database"
+        return self._store.compilationCommands.keys()
+
+    def _clearCompilationCommands (self):
+        self._store.compilationCommands = {}
+
+    def _addCompilationCommand (self, fileName, directory, command):
+        self._store.compilationCommands[fileName] = \
+            CompilationCommand (directory, command)
+
+    def _compilationCommand (self, sourceFile):
+        return self._store.compilationCommands[sourceFile]
+
+    def _addHeader (self, headerFileName, sourceFileName):
+        """Add a header file to the database by copying the compilation command
+        of a source file which includes it"""
+        self._store.compilationCommands[headerFileName] = \
+            self._store.compilationCommands[sourceFileName]
+
+    def _pre_updateIndex (self):
+        self._tagsFile = open (self.tagsFileName, "w")
+
+    def _post_updateIndex (self):
+        self._tagsFile.close()
+
+    def _addTag (self, usr, fileName, lineNo, line):
+        self._tagsFile.write ("%s %s:%s:%s" % (usr, fileName, lineNo, line))
+
+    def grep (self, usr):
+        usr += " "
+        tags = open (self.tagsFileName, "r")
+        for line in tags:
+            if line.startswith (usr):
+                line = line.partition (" ")[2]
+                print line
+        tags.close()
+
+    def _setSource (self, sourceType, sourceArgs):
+        self._store.sourceType = sourceType
+        self._store.sourceArgs = sourceArgs
+
+    def _getSourceType (self):
+        return self._store.sourceType
+
+    def _getSourceArgs (self):
+        return self._store.sourceArgs
+
+    def _save (self):
+        f = open (self.dbFileName, "w")
+        pickle.dump (self._store, f)
+        f.close()
+
+
+
+
+
+def ctdbCreate (args):
+    ctdb = CTDB_File ()
+    ctdb.setOptions (args)
+    return ctdb
+
+def ctdbLoad ():
+    return CTDB_File (load = True)
 
 def index (args):
     "Entry point for indexing the source code base"
-    saveArguments (args)
-    populateTags (args)
+    ctdb = ctdbCreate (args)
+    ctdb.updateIndex (debug = args.debug)
 
     if args.emacsConf is not None:
         f = open (os.path.join (args.emacsConf, ".dir-locals.el"), "w")
@@ -156,35 +262,22 @@ def index (args):
 def update (args):
     "Entry point for updating the source code base index"
 
-    args = loadArguments()
-    populateTags (args)
+    ctdb = ctdbLoad()
+    ctdb.updateIndex(debug = args.debug)
 
 
 def findDefinition (args):
     "Entry point for finding the definition of an identifier"
-    cdb = loadCompilationDatabase()
-
     fileName = args.fileName
-    offset = args.offset
-    compilationCommand = cdb[fileName]
+    offset   = args.offset
 
-    command = ["clang-tags-def", fileName, offset, "--"]
-    command += compilationCommand.clangArgs
-
-    process = subprocess.Popen (command,
-                                cwd = compilationCommand.directory)
-    process.wait()
+    ctdb = ctdbLoad()
+    ctdb.findDefinition (fileName, offset)
 
 
 def grep (args):
-    "Entry point for finding the uses of a definition"
-    usr = args.usr + " "
-    tags = open (tagsFileName, "r")
-    for line in tags:
-        if line.startswith (usr):
-            line = line.partition (" ")[2]
-            print line
-    tags.close()
+    ctdb = ctdbLoad()
+    ctdb.grep (args.usr)
 
 
 def main ():
@@ -192,24 +285,46 @@ def main ():
 
     parser = argparse.ArgumentParser (
         description = "Index a source code base using libclang.")
-    subparsers = parser.add_subparsers (title = "subcommands")
+
+    parser.add_argument ("--debug", action = 'store_true',
+                         help = "print debugging information")
+
+    subparsers = parser.add_subparsers (metavar = "SUBCOMMAND")
 
     parserIndex = subparsers.add_parser (
         "index", help = "index source code base",
         description =
-        "Create an index of all tags in the source code base. "
-        "Source files and compilation commands are taken from a clang "
-        "\"compilation database\" in JSON format.")
-    parserIndex.add_argument (
-        "--json",
-        metavar = "COMPILE_DB",
-        help = "clang compilation database in JSON format")
+        "Create an index of all tags in the source code base.")
     parserIndex.add_argument (
         "--emacs-conf", metavar = "SRCDIR",
         dest = "emacsConf",
         help = "create an emacs configuration file in the top source files "
             "directory")
     parserIndex.set_defaults (fun = index)
+
+    sp = parserIndex.add_subparsers (metavar = "SOURCE_TYPE",
+                                     help = "keyword identifying the type of source:")
+    parserIndexJson = sp.add_parser (
+        "json",
+        help = "clang \"compilation database\" in JSON format",
+        description = "Create an index of all tags in the source code base. "
+        "Source files and compilation commands are taken from a clang "
+        "\"compilation database\" in JSON format.")
+    parserIndexJson.add_argument ("json", metavar = "COMPILE_DB")
+    parserIndexJson.set_defaults (sourceType = "json")
+
+    parserIndexFind = sp.add_parser (
+        "find",
+        help = "all `*.cxx` files under a top sources directory",
+        description = "Create an index of all tags in the source code base. "
+        "All `*.cxx` files found under the top sources directory are taken as "
+        "source files. Additional clang arguments can optionally be provided.")
+    parserIndexFind.add_argument ("srcdir", metavar = "TOP_SRCDIR",
+                                  help = "top sources directory")
+    parserIndexFind.add_argument ("clangArgs", metavar = "CLANG_ARGS",
+                                  nargs = argparse.REMAINDER,
+                                  help = "additional clang command-line arguments")
+    parserIndexFind.set_defaults (sourceType = "find")
 
 
     parserUpdate = subparsers.add_parser (
@@ -242,6 +357,7 @@ def main ():
     parserGrep.add_argument ("usr", metavar = "USR",
                              help = "USR for the definition")
     parserGrep.set_defaults (fun = grep)
+
 
     args = parser.parse_args ()
     args.fun (args)
