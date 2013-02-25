@@ -3,6 +3,8 @@
 #include <string>
 #include <stdlib.h>
 
+#include "config.h"
+
 namespace Clang {
   class SourceLocation {
   public:
@@ -29,7 +31,15 @@ namespace Clang {
     const Position expansionLocation () const {
       Position res;
       CXFile file;
+
+#ifdef HAVE_CLANG_GETEXPANSIONLOCATION
+      // This is the newer libclang API
       clang_getExpansionLocation (raw(), &file, &res.line, &res.column, &res.offset);
+#else
+      // Has been deprecated
+      clang_getInstantiationLocation (raw(), &file, &res.line, &res.column, &res.offset);
+#endif
+
       CXString fileName = clang_getFileName (file);
       if (clang_getCString (fileName)) {
         char * canonicalPath = realpath (clang_getCString (fileName), NULL);

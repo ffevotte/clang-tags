@@ -24,7 +24,7 @@ public:
   std::string line (const unsigned int lineno) {
     seekg (0);
     std::string line;
-    for (int i=0 ; i<lineno ; ++i) {
+    for (unsigned int i=0 ; i<lineno ; ++i) {
       std::getline (*this, line);
     }
 
