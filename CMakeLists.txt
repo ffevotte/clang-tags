@@ -39,3 +39,15 @@ target_link_libraries(clang-tags-def clang getopt++)
 add_executable(clang-tags-index
   index.cxx)
 target_link_libraries(clang-tags-index clang getopt++)
+
+
+install (
+  TARGETS      clang-tags-def clang-tags-index
+  DESTINATION  bin
+)
+
+install (
+  PROGRAMS     clang-tags
+  DESTINATION  bin
+)
+  
