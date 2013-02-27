@@ -41,6 +41,13 @@ add_executable(clang-tags-index
 target_link_libraries(clang-tags-index clang getopt++)
 
 
+configure_file (
+  "${PROJECT_SOURCE_DIR}/env.sh.in"
+  "${PROJECT_BINARY_DIR}/env.sh")
+configure_file (
+  "${PROJECT_SOURCE_DIR}/env.el.in"
+  "${PROJECT_BINARY_DIR}/env.el")
+
 install (
   TARGETS      clang-tags-def clang-tags-index
   DESTINATION  bin
@@ -50,4 +57,3 @@ install (
   PROGRAMS     clang-tags
   DESTINATION  bin
 )
-  

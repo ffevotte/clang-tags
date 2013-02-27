@@ -57,25 +57,3 @@
 
 
 (global-set-key (kbd "M-.") 'ct/find-decl)
-
-(with-temp-buffer
-  (shell-command (concat
-                  "DIR=/home/francois/projets/git/clang-tags/build/\n"
-                  "if echo \"$PATH\" | grep -q \":$DIR:\"; then\n"
-                  "  echo -n $PATH\n"
-                  "else\n"
-                  "  echo -n \"$PATH:$DIR:\"\n"
-                  "fi")
-                 t)
-  (setenv "PATH" (buffer-substring (point-min) (point-max))))
-
-(with-temp-buffer
-  (shell-command (concat
-                  "DIR=/home/francois/projets/git/clang-tags/src/\n"
-                  "if echo \"$PATH\" | grep -q \":$DIR:\"; then\n"
-                  "  echo -n $PATH\n"
-                  "else\n"
-                  "  echo -n \"$PATH:$DIR:\"\n"
-                  "fi")
-                 t)
-  (setenv "PATH" (buffer-substring (point-min) (point-max))))
