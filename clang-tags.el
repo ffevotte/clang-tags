@@ -10,50 +10,102 @@
 (defvar ct/default-directory "."
   "Directory in which `clang-tags' shoud be run")
 
-(defun ct/find-decl ()
+
+
+;;; Specific compilation mode for `clang-tags find-def'
+
+;; Go to the last message after compilation is done
+(defvar ct/find-def-finish-functions
+  `(,(lambda (buffer message)
+       (select-window (get-buffer-window buffer))
+       (goto-char (point-max))
+       (compilation-previous-error 1)))
+  "Functions to call when a clang-tags process finishes.
+Each function is called with two arguments: the compilation buffer,
+and a string describing how the process finished.")
+
+;; Error regexp
+(defvar ct/find-def-error-regexp-alist
+  `((,(concat "^   \\(" ct/source-location-re "\\)")
+     2 (3 . 4) (5 . 6) 1 1)
+    ("^\\(.+\\):\\([[:digit:]]+\\):\\([[:digit:]]+\\): "
+     1 2 3 1 1))
+  "Regular expressions used to match source code locations in clang-tags' output.
+See `compilation-error-regexp-alist'.")
+
+(define-compilation-mode ct/find-def-mode "clang-tags/find-def"
+  "clang-tags - find definition mode
+
+This mode is a custom compilation mode to display the results of
+a `clang-tags find-def' command. Here are the most useful
+bindings in this mode: \\<ct/find-def-mode-map>
+
+\\[compile-goto-error] 	 go to the location of the definition at point
+\\[ct/grep-tag] 	 find in the project all uses of the definition at point
+
+
+Below is the complete keymap, including standard bindings
+inherited from `compilation-mode':
+
+\\{ct/find-def-mode-map}")
+
+;; Keymap
+(define-key ct/find-def-mode-map (kbd "M-,") 'ct/grep-tag)
+
+;; Syntax highlighting
+(font-lock-add-keywords
+   'ct/find-def-mode
+   '(("^-- \\(.*\\) -- " 1 font-lock-keyword-face)))
+
+
+
+;;; Front-end for `clang-tags find-def'
+
+(defun ct/find-def ()
+  "Find the definition of the symbol under point
+
+This function uses `clang-tags' to find the location of the
+definition(s) of the symbol under point. Results are presented in a
+buffer which allows quickly navigating to those locations."
   (interactive)
   (let* ((offset (- (position-bytes (point)) 1))
          (default-directory ct/default-directory)
-         (command (format "time clang-tags find-def %s %d %s"
-                          buffer-file-name offset ct/options))
-         (compilation-error-regexp-alist
-          `((,(concat "^   \\(" ct/source-location-re "\\)")
-             2 (3 . 4) (5 . 6) 1 1)
-            ("^\\(.+\\):\\([[:digit:]]+\\):\\([[:digit:]]+\\): "
-             1 2 3 1 1)))
+         (command (format "cd %s;\ntime clang-tags find-def %s %d %s\n"
+                          ct/default-directory
+                          buffer-file-name offset ct/options)))
 
-         (output-buffer "*clang-tags find-def*"))
-
-    (switch-to-buffer (get-buffer-create output-buffer))
+    (switch-to-buffer (get-buffer-create "*ct/find-def*"))
     (compilation-start command
-                       nil
-                       (lambda (mode) "" output-buffer))
+                       'ct/find-def-mode)))
 
-    (with-current-buffer output-buffer
 
-      ;; Go to the last message after compilation is done
-      (set (make-local-variable 'compilation-finish-functions)
-           `(,(lambda (buffer message)
-                (select-window (get-buffer-window buffer))
-                (goto-char (point-max))
-                (compilation-previous-error 1))))
-
-      ;; Font-locking
-      (font-lock-add-keywords
-       nil
-       '(("^-- \\(.*\\) -- " 1 font-lock-keyword-face)))
-      (font-lock-fontify-buffer))))
+
+;;; Front-end for `clang-tags grep'
 
 (defun ct/grep-tag (usr)
+  "Find in the code base all uses of the definition at point.
+
+This function uses `clang-tags' to find all uses of the current
+definition, as identified by its clang USR (Unified Symbol
+Resolution). Results are presented in a `grep-mode' buffer, which
+allows benefiting from the full power of Emacs. In particular,
+`wgrep-change-to-wgrep-mode' might be useful for refactoring
+operations."
   (interactive `(,(save-excursion
                     (search-forward "USR: ")
                     (buffer-substring (point) (line-end-position)))))
   (message "%s" usr)
+  (switch-to-buffer (get-buffer-create "*ct/grep*"))
   (compilation-start (format "clang-tags grep '%s' | sort -u" usr)
                        'grep-mode
-                       (lambda (mode) "" "*clang-tags grep-tag*")))
+                       (lambda (mode) "" "*ct/grep*")))
 
 
-
-
-(global-set-key (kbd "M-.") 'ct/find-decl)
+
+;;; Clang-tags minor mode
+(define-minor-mode clang-tags-mode
+  "\\{clang-tags-mode-map}"
+  :lighter " ct"
+  :keymap (let ((map (make-sparse-keymap)))
+            (define-key map (kbd "M-.") 'ct/find-def)
+            map))
