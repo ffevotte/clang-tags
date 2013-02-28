@@ -33,7 +33,7 @@ and a string describing how the process finished.")
   "Regular expressions used to match source code locations in clang-tags' output.
 See `compilation-error-regexp-alist'.")
 
-(define-compilation-mode ct/find-def-mode "clang-tags/find-def"
+(define-compilation-mode ct/find-def-mode "Clang-Tags/find-def"
   "clang-tags - find definition mode
 
 This mode is a custom compilation mode to display the results of
