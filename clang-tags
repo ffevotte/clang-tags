@@ -27,9 +27,10 @@ class ClangTagsDatabase:
     def updateCompilationCommands (self):
         self._clearCompilationCommands ()
 
-        if self._getSourceType() == "json":
+        opts = self._opts ()
+        if opts.sourceType == "json":
             self._readJsonDb ()
-        elif self._getSourceType() == "scan":
+        elif opts.sourceType == "scan":
             self._scanSourceFiles ()
         else:
             raise RuntimeError ("No source were given to populate the "
@@ -92,14 +93,11 @@ class ClangTagsDatabase:
 
 
     def setOptions (self, args):
-        if args.sourceType == "json":
-            self._setSource ("json", (args.json,))
-        if args.sourceType == "scan":
-            self._setSource ("scan", [args.srcdir] + args.clangArgs)
-
+        self._opts (args)
 
     def _readJsonDb (self):
-        f = open (self._getSourceArgs()[0], "r")
+        opts = self._opts()
+        f = open (opts.json, "r")
         db = json.load (f)
         f.close()
 
@@ -110,10 +108,11 @@ class ClangTagsDatabase:
             self._addCompilationCommand(sourceFile, directory, command)
 
     def _scanSourceFiles (self):
-        srcdir = self._getSourceArgs()[0]
-        clangArgs = self._getSourceArgs()[1:]
+        opts = self._opts()
+        srcdir = opts.srcdir
+        clangArgs = opts.clangArgs
 
-        for (root, dirs, files) in os.walk (srcdir):
+        for (root, _, files) in os.walk (srcdir):
             for fileName in files:
                 if fileName.endswith (".cxx"):
                     sourceFile = os.path.realpath (os.path.join (root, fileName))
@@ -144,11 +143,7 @@ class ClangTagsDatabase:
         raise NotImplementedError
 
     # Options
-    def _setSource (self, sourceType, sourceArgs):
-        raise NotImplementedError
-    def _getSourceType (self):
-        raise NotImplementedError
-    def _getSourceName (self):
+    def _opts (self, args = None):
         raise NotImplementedError
 
     # Data persistence
@@ -158,8 +153,7 @@ class ClangTagsDatabase:
 
 class Store:
     def __init__ (self):
-        self.sourceType = None
-        self.sourceName = None
+        self.args = None
         self.compilationCommands = {}
 
 class CTDB_File (ClangTagsDatabase):
@@ -212,35 +206,62 @@ class CTDB_File (ClangTagsDatabase):
         for line in tags:
             if line.startswith (usr):
                 line = line.partition (" ")[2]
-                print line
+                print line,
         tags.close()
 
-    def _setSource (self, sourceType, sourceArgs):
-        self._store.sourceType = sourceType
-        self._store.sourceArgs = sourceArgs
-
-    def _getSourceType (self):
-        return self._store.sourceType
-
-    def _getSourceArgs (self):
-        return self._store.sourceArgs
+    def _opts (self, args = None):
+        if args is None:
+            return self._store.args
+        else:
+            self._store.args = args
 
     def _save (self):
         f = open (self.dbFileName, "w")
         pickle.dump (self._store, f)
         f.close()
 
+class CTDB_Mem (CTDB_File):
+    def _pre_updateIndex (self):
+        self._store.tags = {}
+
+    def _post_updateIndex (self):
+        pass
+
+    def _addTag (self, usr, fileName, lineNo, line):
+        if fileName not in self._store.tags:
+            self._store.tags[fileName] = {}
+
+        fileTags = self._store.tags[fileName]
+        if usr not in fileTags:
+            fileTags[usr] = []
+
+        tags = fileTags[usr]
+        line = "%s:%s:%s" % (fileName, lineNo, line)
+        if line not in tags:
+            fileTags[usr].append (line)
+
+    def grep (self, usr):
+        for fileName in self._store.tags:
+            fileTags = self._store.tags[fileName]
+            for line in fileTags.get(usr, []):
+                print line,
 
 
+# def ctdbCreate (args):
+#     ctdb = CTDB_File ()
+#     ctdb.setOptions (args)
+#     return ctdb
 
+# def ctdbLoad ():
+#     return CTDB_File (load = True)
 
 def ctdbCreate (args):
-    ctdb = CTDB_File ()
+    ctdb = CTDB_Mem ()
     ctdb.setOptions (args)
     return ctdb
 
 def ctdbLoad ():
-    return CTDB_File (load = True)
+    return CTDB_Mem (load = True)
 
 def index (args):
     "Entry point for indexing the source code base"
