@@ -7,10 +7,13 @@ the libclang interface) to analyse and index the source code base.
 
 ## How to install
 
+
 ### Requirements
 
 - `libclang` (>= 3.0)
-- `python` (>= 2.7)
+- `python` (>= 2.3)
+  - a version newer than 2.7 is recommended to benefit from the more recent `argparse` module.
+
 
 ### Build
 

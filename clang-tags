@@ -6,7 +6,6 @@ C and C++ source code base indexer using libclang.
 
 import os
 import sys
-import argparse
 import json
 import shlex, subprocess
 import time
@@ -268,7 +267,7 @@ def update (args):
 
 def findDefinition (args):
     "Entry point for finding the definition of an identifier"
-    fileName = args.fileName
+    fileName = os.path.realpath (args.fileName)
     offset   = args.offset
 
     ctdb = ctdbLoad()
@@ -280,7 +279,7 @@ def grep (args):
     ctdb.grep (args.usr)
 
 
-def main ():
+def main_argparse ():
     "Entry point for the application"
 
     parser = argparse.ArgumentParser (
@@ -362,5 +361,57 @@ def main ():
     args = parser.parse_args ()
     args.fun (args)
 
+
+def main_optparse ():
+    parser = optparse.OptionParser(
+        usage = "usage: %prog SUBCOMMAND [options]",
+        description = "Index a source code base using libclang. "
+        "Please consult the full help on: https://github.com/ffevotte/clang-tags.")
+    parser.add_option ("--debug", dest="debug", action = 'store_true',
+                       help = "print debugging information")
+
+    subcommand = sys.argv[1]
+    if subcommand == "index":
+        parser.add_option ("--emacs-conf", dest="emacsConf")
+        sourceType = sys.argv[2]
+        if sourceType == "json":
+            (options, args) = parser.parse_args (sys.argv[3:])
+            options.sourceType = "json"
+            options.json = args[0]
+            index(options)
+        elif sourceType == "scan":
+            (options, args) = parser.parse_args (sys.argv[3:])
+            options.sourceType = "scan"
+            options.srcdir = args[0]
+            options.clangArgs = args[1:]
+            index(options)
+        else:
+            sys.stderr.write ("unknown compilation commands source: %s\n" % sourceType)
+            parser.print_help ()
+
+    elif subcommand == "update":
+        (options, args) = parser.parse_args (sys.argv[2:])
+        update (options)
+
+    elif subcommand == "find-def":
+        (options, args) = parser.parse_args (sys.argv[2:])
+        options.fileName = args[0]
+        options.offset = args[1]
+        findDefinition (options)
+
+    elif subcommand == "grep":
+        (options, args) = parser.parse_args (sys.argv[2:])
+        options.usr = args[0]
+        grep (options)
+
+    else:
+        sys.stderr.write ("unknown subcommand: %s\n" % subcommand)
+        parser.print_help()
+
 if __name__ == "__main__":
-    main ()
+    try:
+        import argparse
+        main_argparse ()
+    except ImportError:
+        import optparse
+        main_optparse ()
