@@ -30,8 +30,8 @@ class ClangTagsDatabase:
 
         if self._getSourceType() == "json":
             self._readJsonDb ()
-        elif self._getSourceType() == "find":
-            self._findSourceFiles ()
+        elif self._getSourceType() == "scan":
+            self._scanSourceFiles ()
         else:
             raise RuntimeError ("No source were given to populate the "
                                 "compilation database.")
@@ -95,8 +95,8 @@ class ClangTagsDatabase:
     def setOptions (self, args):
         if args.sourceType == "json":
             self._setSource ("json", (args.json,))
-        if args.sourceType == "find":
-            self._setSource ("find", [args.srcdir] + args.clangArgs)
+        if args.sourceType == "scan":
+            self._setSource ("scan", [args.srcdir] + args.clangArgs)
 
 
     def _readJsonDb (self):
@@ -110,7 +110,7 @@ class ClangTagsDatabase:
             command    = shlex.split(compilationCommand["command"])[1:]
             self._addCompilationCommand(sourceFile, directory, command)
 
-    def _findSourceFiles (self):
+    def _scanSourceFiles (self):
         srcdir = self._getSourceArgs()[0]
         clangArgs = self._getSourceArgs()[1:]
 
@@ -313,18 +313,18 @@ def main ():
     parserIndexJson.add_argument ("json", metavar = "COMPILE_DB")
     parserIndexJson.set_defaults (sourceType = "json")
 
-    parserIndexFind = sp.add_parser (
-        "find",
+    parserIndexScan = sp.add_parser (
+        "scan",
         help = "all `*.cxx` files under a top sources directory",
         description = "Create an index of all tags in the source code base. "
         "All `*.cxx` files found under the top sources directory are taken as "
         "source files. Additional clang arguments can optionally be provided.")
-    parserIndexFind.add_argument ("srcdir", metavar = "TOP_SRCDIR",
+    parserIndexScan.add_argument ("srcdir", metavar = "TOP_SRCDIR",
                                   help = "top sources directory")
-    parserIndexFind.add_argument ("clangArgs", metavar = "CLANG_ARGS",
+    parserIndexScan.add_argument ("clangArgs", metavar = "CLANG_ARGS",
                                   nargs = argparse.REMAINDER,
                                   help = "additional clang command-line arguments")
-    parserIndexFind.set_defaults (sourceType = "find")
+    parserIndexScan.set_defaults (sourceType = "scan")
 
 
     parserUpdate = subparsers.add_parser (
