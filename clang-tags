@@ -11,227 +11,62 @@ import shlex, subprocess
 import time
 import pickle
 
-class CompilationCommand:
-    """A clang compilation command, including directory and clang command-line
-    arguments"""
-
-    def __init__ (self, directory, clangArgs):
-        self.directory = directory
-        self.clangArgs = clangArgs
+class SourceFile:
+    def __init__ (self, compileDirectory, compileArgs):
+        self.compileDirectory = compileDirectory
+        self.compileArgs = compileArgs
+        self.lastIndexed = 0
 
 
-class ClangTagsDatabase:
-    def __init__ (self, load = False):
-        pass
-
-    def updateCompilationCommands (self):
-        self._clearCompilationCommands ()
-
-        opts = self._opts ()
-        if opts.sourceType == "json":
-            self._readJsonDb ()
-        elif opts.sourceType == "scan":
-            self._scanSourceFiles ()
-        else:
-            raise RuntimeError ("No source were given to populate the "
-                                "compilation database.")
-
-    def updateIndex (self, debug = False):
-        "Create and populate a tags database"
-        self.updateCompilationCommands ()
-
-        self._pre_updateIndex()
-
-        sourceFiles = {}
-
-        for sourceFile in self._sourceFiles():
-            compilationCommand = self._compilationCommand(sourceFile)
-            command = ["clang-tags-index", "--"]
-            command += compilationCommand.clangArgs
-
-            sys.stderr.write ("%-70s\t" % (sourceFile + "..."))
-            if debug is True:
-                sys.stderr.write ("\n  " + " ".join (command) + "\n")
-
-            begin = time.time()
-            process = subprocess.Popen (command,
-                                        cwd = compilationCommand.directory,
-                                        stdout = subprocess.PIPE)
-
-            for line in process.stdout:
-                (usr, _, line) = line.partition (" ")
-                (fileName, _, line) = line.partition (":")
-                (lineNo, _, line) = line.partition (":")
-
-                self._addTag (usr, fileName, lineNo, line)
-
-                if fileName not in sourceFiles:
-                    sourceFiles[fileName] = sourceFile
-
-            process.wait ()
-            sys.stderr.write ("%.2fs.\n" % (time.time() - begin))
-            if debug is True:
-                sys.stderr.write ("\n")
-
-        self._post_updateIndex()
-
-        for fileName in sourceFiles:
-            if fileName not in self._sourceFiles():
-                self._addHeader (fileName, sourceFiles[fileName])
-
-        self._save ()
-
-    def findDefinition (self, fileName, offset):
-        compilationCommand = self._compilationCommand(fileName)
-
-        command = ["clang-tags-def", fileName, offset, "--"]
-        command += compilationCommand.clangArgs
-
-        process = subprocess.Popen (command,
-                                    cwd = compilationCommand.directory)
-        process.wait()
-
-
-    def setOptions (self, args):
-        self._opts (args)
-
-    def _readJsonDb (self):
-        opts = self._opts()
-        f = open (opts.json, "r")
-        db = json.load (f)
-        f.close()
-
-        for compilationCommand in db:
-            sourceFile = compilationCommand["file"]
-            directory  = compilationCommand["directory"]
-            command    = shlex.split(compilationCommand["command"])[1:]
-            self._addCompilationCommand(sourceFile, directory, command)
-
-    def _scanSourceFiles (self):
-        opts = self._opts()
-        srcdir = opts.srcdir
-        clangArgs = opts.clangArgs
-
-        for (root, _, files) in os.walk (srcdir):
-            for fileName in files:
-                if fileName.endswith (".cxx"):
-                    sourceFile = os.path.realpath (os.path.join (root, fileName))
-                    self._addCompilationCommand (sourceFile, ".", clangArgs + [sourceFile])
-
-    # Interface for derived datatypes
-
-    # Compilation commands
-    def _sourceFiles (self):
-        raise NotImplementedError
-    def _clearCompilationCommands (self):
-        raise NotImplementedError
-    def _addCompilationCommand (self, sourceFile, directory, command):
-        raise NotImplementedError
-    def _compilationCommand (self, sourceFileName):
-        raise NotImplementedError
-    def _addHeader (self, includedFileName, sourceFileName):
-        raise NotImplementedError
-
-    # Indexing
-    def _pre_updateIndex (self):
-        raise NotImplementedError
-    def _post_updateIndex (self):
-        raise NotImplementedError
-    def _addTag (self, usr, sourceFileName, lineNo, line):
-        raise NotImplementedError
-    def grep (self, usr):
-        raise NotImplementedError
-
-    # Options
-    def _opts (self, args = None):
-        raise NotImplementedError
-
-    # Data persistence
-    def _save (self):
-        raise NotImplementedError
-
-
-class Store:
+class Project:
     def __init__ (self):
-        self.args = None
-        self.compilationCommands = {}
+        self._options = None
+        self._sourceFiles = {}
+        self._includedFiles = {}
 
-class CTDB_File (ClangTagsDatabase):
-    def __init__ (self, load = False):
-        self.tagsFileName = ".ct.tags"
-        self.dbFileName   = ".ct.db"
-
-        ClangTagsDatabase.__init__ (self)
-        if load:
-            f = open (self.dbFileName, "r")
-            self._store = pickle.load (f)
-            f.close()
-        else:
-            self._store = Store()
-
-        self._tagsFile = None
-
-    def _sourceFiles (self):
-        "List of all source files in the compilation database"
-        return self._store.compilationCommands.keys()
-
-    def _clearCompilationCommands (self):
-        self._store.compilationCommands = {}
-
-    def _addCompilationCommand (self, fileName, directory, command):
-        self._store.compilationCommands[fileName] = \
-            CompilationCommand (directory, command)
-
-    def _compilationCommand (self, sourceFile):
-        return self._store.compilationCommands[sourceFile]
-
-    def _addHeader (self, headerFileName, sourceFileName):
-        """Add a header file to the database by copying the compilation command
-        of a source file which includes it"""
-        self._store.compilationCommands[headerFileName] = \
-            self._store.compilationCommands[sourceFileName]
-
-    def _pre_updateIndex (self):
-        self._tagsFile = open (self.tagsFileName, "w")
-
-    def _post_updateIndex (self):
-        self._tagsFile.close()
-
-    def _addTag (self, usr, fileName, lineNo, line):
-        self._tagsFile.write ("%s %s:%s:%s" % (usr, fileName, lineNo, line))
-
-    def grep (self, usr):
-        usr += " "
-        tags = open (self.tagsFileName, "r")
-        for line in tags:
-            if line.startswith (usr):
-                line = line.partition (" ")[2]
-                print line,
-        tags.close()
-
-    def _opts (self, args = None):
+    def options (self, args = None):
         if args is None:
-            return self._store.args
+            return self._options
         else:
-            self._store.args = args
+            self._options = args
 
-    def _save (self):
-        f = open (self.dbFileName, "w")
-        pickle.dump (self._store, f)
-        f.close()
+    def addSourceFile (self, fileName, directory, command):
+        if fileName not in self._sourceFiles:
+            self._sourceFiles[fileName] = SourceFile (directory, command)
+        else:
+            sourceFile = self._sourceFiles[fileName]
+            sourceFile.compileDirectory = directory
+            sourceFile.compileArgs = command
 
-class CTDB_Mem (CTDB_File):
-    def _pre_updateIndex (self):
-        self._store.tags = {}
+    def sourceFiles (self):
+        return self._sourceFiles.keys()
 
-    def _post_updateIndex (self):
-        pass
+    def compilationCommand (self, fileName):
+        if fileName in self._sourceFiles:
+            return self._sourceFiles[fileName]
+        else:
+            for sourceFileName in self._sourceFiles:
+                if fileName in self._includedFiles[sourceFileName]:
+                    return self._sourceFiles[sourceFileName]
+        raise RuntimeError ("Could not find file \"%s\" in the project" % fileName)
 
-    def _addTag (self, usr, fileName, lineNo, line):
-        if fileName not in self._store.tags:
-            self._store.tags[fileName] = {}
+    def beginIndexing (self, fileName):
+        self._sourceFiles[fileName].lastIndexed = time.time()
+        self._includedFiles[fileName] = {}
 
-        fileTags = self._store.tags[fileName]
+    def addInclude (self, includedFileName, sourceFileName):
+        self._includedFiles[sourceFileName][includedFileName] = True
+
+
+class Index:
+    def __init__ (self):
+        self._tags = {}
+
+    def addTag (self, usr, fileName, lineNo, line):
+        if fileName not in self._tags:
+            self._tags[fileName] = {}
+
+        fileTags = self._tags[fileName]
         if usr not in fileTags:
             fileTags[usr] = []
 
@@ -241,32 +76,133 @@ class CTDB_Mem (CTDB_File):
             fileTags[usr].append (line)
 
     def grep (self, usr):
-        for fileName in self._store.tags:
-            fileTags = self._store.tags[fileName]
+        for fileName in self._tags:
+            fileTags = self._tags[fileName]
             for line in fileTags.get(usr, []):
                 print line,
 
 
-# def ctdbCreate (args):
-#     ctdb = CTDB_File ()
-#     ctdb.setOptions (args)
-#     return ctdb
+class ClangTags:
+    def __init__ (self):
+        self._project = None
+        self._index   = None
 
-# def ctdbLoad ():
-#     return CTDB_File (load = True)
+    def setProject (self, project):
+        self._project = project
 
-def ctdbCreate (args):
-    ctdb = CTDB_Mem ()
-    ctdb.setOptions (args)
-    return ctdb
+    def setIndex (self, index):
+        self._index = index
 
-def ctdbLoad ():
-    return CTDB_Mem (load = True)
+
+
+    def updateProject (self):
+        opts = self._project.options ()
+        if opts.sourceType == "json":
+            self._readJsonDb ()
+        elif opts.sourceType == "scan":
+            self._scanSourceFiles ()
+        else:
+            raise RuntimeError ("No source were given to populate the "
+                                "compilation database.")
+
+    def _readJsonDb (self):
+        opts = self._project.options()
+        f = open (opts.json, "r")
+        db = json.load (f)
+        f.close()
+
+        for compilationCommand in db:
+            sourceFile = compilationCommand["file"]
+            directory  = compilationCommand["directory"]
+            command    = shlex.split(compilationCommand["command"])[1:]
+            self._project.addSourceFile (sourceFile, directory, command)
+
+    def _scanSourceFiles (self):
+        opts = self._project.options()
+        srcdir = opts.srcdir
+        clangArgs = opts.clangArgs
+
+        for (root, _, files) in os.walk (srcdir):
+            for fileName in files:
+                if fileName.endswith (".cxx"):
+                    sourceFile = os.path.realpath (os.path.join (root, fileName))
+                    self._project.addSourceFile (sourceFile, ".", clangArgs + [sourceFile])
+
+
+
+
+
+    def updateIndex (self, debug = False):
+        "Create and populate a tags database"
+
+        for sourceFileName in self._project.sourceFiles():
+            compilationCommand = self._project.compilationCommand (sourceFileName)
+
+            command = ["clang-tags-index", "--"]
+            command += compilationCommand.compileArgs
+
+            sys.stderr.write ("%-70s\t" % (sourceFileName + "..."))
+            if debug is True:
+                sys.stderr.write ("\n  " + " ".join (command) + "\n")
+
+            begin = time.time()
+            self._project.beginIndexing (sourceFileName)
+
+            process = subprocess.Popen (command,
+                                        cwd = compilationCommand.compileDirectory,
+                                        stdout = subprocess.PIPE)
+
+            for line in process.stdout:
+                (usr, _, line) = line.partition (" ")
+                (fileName, _, line) = line.partition (":")
+                (lineNo, _, line) = line.partition (":")
+
+                self._index.addTag (usr, fileName, lineNo, line)
+                self._project.addInclude (fileName, sourceFileName)
+
+            process.wait ()
+            sys.stderr.write ("%.2fs.\n" % (time.time() - begin))
+            if debug is True:
+                sys.stderr.write ("\n")
+
+    def findDefinition (self, fileName, offset):
+        compilationCommand = self._project.compilationCommand(fileName)
+
+        command = ["clang-tags-def", fileName, offset, "--"]
+        command += compilationCommand.compileArgs
+
+        process = subprocess.Popen (command,
+                                    cwd = compilationCommand.compileDirectory)
+        process.wait()
+
+    def grep (self, usr):
+        self._index.grep (usr)
+
+def save (obj, fileName):
+    f = open (fileName, "w")
+    pickle.dump (obj, f)
+    f.close ()
+
+def load (fileName):
+    f = open (fileName, "r")
+    res = pickle.load (f)
+    f.close()
+    return res
 
 def index (args):
     "Entry point for indexing the source code base"
-    ctdb = ctdbCreate (args)
-    ctdb.updateIndex (debug = args.debug)
+    p = Project()
+    p.options(args)
+
+    ct = ClangTags()
+    ct.setProject (p)
+    ct.updateProject()
+
+    ct.setIndex (Index())
+    ct.updateIndex(debug = args.debug)
+
+    save (ct._project, ".ct.db")
+    save (ct._index, ".ct.tags")
 
     if args.emacsConf is not None:
         f = open (os.path.join (args.emacsConf, ".dir-locals.el"), "w")
@@ -282,8 +218,10 @@ def index (args):
 def update (args):
     "Entry point for updating the source code base index"
 
-    ctdb = ctdbLoad()
-    ctdb.updateIndex(debug = args.debug)
+    ct = ClangTags()
+    ct.setProject (load (".ct.db"))
+    ct.setIndex (load (".ct.tags"))
+    ct.updateIndex(debug = args.debug)
 
 
 def findDefinition (args):
@@ -291,13 +229,17 @@ def findDefinition (args):
     fileName = os.path.realpath (args.fileName)
     offset   = args.offset
 
-    ctdb = ctdbLoad()
-    ctdb.findDefinition (fileName, offset)
+    ct = ClangTags()
+    ct.setProject (load (".ct.db"))
+    ct.findDefinition (fileName, offset)
 
 
 def grep (args):
-    ctdb = ctdbLoad()
-    ctdb.grep (args.usr)
+    "Entry point fir finding the uses of a definition"
+    ct = ClangTags()
+    ct.setProject (load (".ct.db"))
+    ct.setIndex (load (".ct.tags"))
+    ct.grep (args.usr)
 
 
 def main_argparse ():
