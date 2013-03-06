@@ -306,7 +306,7 @@ def main_argparse ():
     parserIndexScan.set_defaults (sourceType = "scan")
 
     parserIndexFake = sp.add_parser("fake")
-    parserIndexFake .add_argument ("input")
+    parserIndexFake.add_argument ("input")
     parserIndexFake.set_defaults (sourceType = "fake")
 
 
@@ -362,13 +362,18 @@ def main_optparse ():
             (options, args) = parser.parse_args (sys.argv[3:])
             options.sourceType = "json"
             options.json = args[0]
-            index(options)
+            index (options)
         elif sourceType == "scan":
             (options, args) = parser.parse_args (sys.argv[3:])
             options.sourceType = "scan"
             options.srcdir = args[0]
             options.clangArgs = args[1:]
-            index(options)
+            index (options)
+        elif sourceType == "fake":
+            (options, args) = parser.parse_args (sys.argv[3:])
+            options.sourceType = "fake"
+            options.input = args[0]
+            index (options)
         else:
             sys.stderr.write ("unknown compilation commands source: %s\n" % sourceType)
             parser.print_help ()
