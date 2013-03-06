@@ -10,6 +10,7 @@ import json
 import shlex, subprocess
 import time
 import pickle
+import re
 
 class SourceFile:
     def __init__ (self, compileDirectory, compileArgs):
@@ -101,8 +102,6 @@ class ClangTags:
             self._readJsonDb ()
         elif opts.sourceType == "scan":
             self._scanSourceFiles ()
-        elif opts.sourceType == "fake":
-            self._readFakeCompiler ()
         else:
             raise RuntimeError ("No source were given to populate the "
                                 "compilation database.")
@@ -116,7 +115,7 @@ class ClangTags:
         for compilationCommand in db:
             sourceFile = compilationCommand["file"]
             directory  = compilationCommand["directory"]
-            command    = shlex.split(compilationCommand["command"])[1:]
+            command    = shlex.split(compilationCommand["command"].encode())[1:]
             self._project.addSourceFile (sourceFile, directory, command)
 
     def _scanSourceFiles (self):
@@ -129,23 +128,6 @@ class ClangTags:
                 if fileName.endswith (".cxx"):
                     sourceFile = os.path.realpath (os.path.join (root, fileName))
                     self._project.addSourceFile (sourceFile, ".", clangArgs + [sourceFile])
-
-    def _readFakeCompiler (self):
-        opts = self._project.options()
-        f = open (opts.input, "r")
-        for line in f:
-            line = eval(line)
-            directory = line[0]
-            sourceFile = None
-            for arg in line[1:]:
-                if arg.endswith(".cxx"):
-                    sourceFile = arg
-                    break
-            if sourceFile is not None:
-                self._project.addSourceFile (sourceFile, directory, line[1:])
-        f.close()
-
-
 
 
     def updateIndex (self, debug = False):
@@ -204,6 +186,67 @@ def load (fileName):
     res = pickle.load (f)
     f.close()
     return res
+
+def trace (args):
+    def execve (programName, command):
+        return (programName, command)
+
+    def endsWithOne (string, suffixes):
+        for suffix in suffixes:
+            if string.endswith(suffix):
+                return True
+        return False
+
+    compilers  = ["gcc", "g++", "c++", "clang", "clang++"]
+    extensions = [".c", ".cxx", ".cc", ".C"]
+
+    command  = ["strace", "-f", "-s256", "-etrace=execve,chdir", "-q"]
+    command += args.command
+
+    p = subprocess.Popen (command,
+                          stderr = subprocess.PIPE)
+
+    sourceFiles = {}
+    cwd = os.getcwd()
+
+    chdir_re = re.compile ("\[pid \d+\] chdir\((.*)\) = 0")
+    exec_re  = re.compile ("\[pid \d+\] (execve\(.*\)) = 0")
+
+    for line in p.stderr:
+
+        m = chdir_re.match (line)
+        if m is not None:
+            cwd = eval(m.group(1))
+            continue
+
+        m = exec_re.match (line)
+        if m is not None:
+            command = None
+            sourceFile = None
+
+            line = m.group(1)
+            line = line.replace('"...', '"')
+            line = re.sub(", \[/\* [^*]+ \*/\]", "", line)
+
+            (programName, command) = eval(line)
+            if endsWithOne(programName, [ "/" + c for c in compilers]):
+                for arg in command:
+                    if endsWithOne (arg, extensions):
+                        sourceFiles[arg] = (cwd, command)
+                        break
+    p.wait()
+
+    compilationDb = []
+    for sourceFile in sourceFiles:
+        (directory, command) = sourceFiles[sourceFile]
+        compilationDb.append ({"file": sourceFile,
+                               "directory": directory,
+                               "command": subprocess.list2cmdline(command)})
+    f = open ("compile_commands.json", "w")
+    json.dump(compilationDb, f,
+              indent=4)
+    f.close()
+
 
 def index (args):
     "Entry point for indexing the source code base"
@@ -270,6 +313,14 @@ def main_argparse ():
 
     subparsers = parser.add_subparsers (metavar = "SUBCOMMAND")
 
+    parserTrace = subparsers.add_parser (
+        "trace", help = "trace a build command",
+        description = "Create a compilation database by tracing a build command.")
+    parserTrace.add_argument (
+        "command", metavar = "COMMAND",
+        help = "build command line")
+    parserTrace.set_defaults (fun = trace)
+
     parserIndex = subparsers.add_parser (
         "index", help = "index source code base",
         description =
@@ -304,10 +355,6 @@ def main_argparse ():
                                   nargs = argparse.REMAINDER,
                                   help = "additional clang command-line arguments")
     parserIndexScan.set_defaults (sourceType = "scan")
-
-    parserIndexFake = sp.add_parser("fake")
-    parserIndexFake.add_argument ("input")
-    parserIndexFake.set_defaults (sourceType = "fake")
 
 
     parserUpdate = subparsers.add_parser (
@@ -355,7 +402,12 @@ def main_optparse ():
                        help = "print debugging information")
 
     subcommand = sys.argv[1]
-    if subcommand == "index":
+    if subcommand == "trace":
+        (options, args) = parser.parse_args (sys.argv[2:])
+        options.command = args
+        trace (options)
+
+    elif subcommand == "index":
         parser.add_option ("--emacs-conf", dest="emacsConf")
         sourceType = sys.argv[2]
         if sourceType == "json":
@@ -368,11 +420,6 @@ def main_optparse ():
             options.sourceType = "scan"
             options.srcdir = args[0]
             options.clangArgs = args[1:]
-            index (options)
-        elif sourceType == "fake":
-            (options, args) = parser.parse_args (sys.argv[3:])
-            options.sourceType = "fake"
-            options.input = args[0]
             index (options)
         else:
             sys.stderr.write ("unknown compilation commands source: %s\n" % sourceType)

@@ -30,7 +30,7 @@ cmake ../src
 
 ## How to use
 
-### Creating the index
+### Creating the compilation database
 
 #### From a `cmake` project
 
@@ -41,6 +41,32 @@ necessary information to build the project:
 ```
 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ../src
 ```
+
+#### Tracing the standard build process
+
+```
+clang-tags trace -- BUILD COMMAND
+```
+
+For non-CMake-managed projects, there is no free way to build the compilation database. One way to
+get the necessary information consists in inspecting the build process as a black box using
+[strace](http://linux.die.net/man/1/strace) (also see [bear](https://github.com/rizsotto/Bear) for a
+tool using `LD_PRELOAD` to implement the same kind of strategy).
+
+Such a method is inherently independant of the build process: Makefile (possibly
+autotools-generated), shell or python script, ... However, the downside with this approach is that
+`make` and other build systems traditionally only rebuild what's needed, and the generated
+compilation database can thus be incomplete.
+
+Example usage:
+
+```
+make clean                 # Ensure that the whole project will be rebuilt
+clang-tags trace -- make   # Generate the compilation database
+```
+
+
+### Creating the index
 
 `clang-tags` can use this information to build the index:
 
