@@ -4,10 +4,26 @@ set -e
 
 TIME="/usr/bin/time --format %e --output tests.time"
 
+echo -ne "scan     " 1>&2
+${TIME} \
+    clang-tags scan ../src -- -I. \
+    >tests.tmp
+echo $(cat tests.time) 1>&2
+
+
+echo -ne "trace    " 1>&2
+make clean
+${TIME} \
+    clang-tags trace make \
+    >tests.tmp
+echo $(cat tests.time) 1>&2
+
+
 echo -ne "index    " 1>&2
 ${TIME} \
-    clang-tags index scan ../src -- -I. \
+    clang-tags index \
     >tests.tmp 2>&1
+if grep -q error tests.tmp; then false; else true; fi
 echo $(cat tests.time) 1>&2
 
 
@@ -15,6 +31,7 @@ echo -ne "update   " 1>&2
 ${TIME} \
     clang-tags update \
     >tests.tmp 2>&1
+if grep -q error tests.tmp; then false; else true; fi
 echo $(cat tests.time) 1>&2
 
 

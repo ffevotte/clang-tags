@@ -12,24 +12,26 @@ import time
 import pickle
 import re
 
+
 class SourceFile:
     def __init__ (self, compileDirectory, compileArgs):
         self.compileDirectory = compileDirectory
         self.compileArgs = compileArgs
         self.lastIndexed = 0
 
-
+
 class Project:
     def __init__ (self):
-        self._options = None
+        self._options = {"index":  None,
+                         "source": None}
         self._sourceFiles = {}
         self._includedFiles = {}
 
-    def options (self, args = None):
+    def options (self, action, args = None):
         if args is None:
-            return self._options
+            return self._options[action]
         else:
-            self._options = args
+            self._options[action] = args
 
     def addSourceFile (self, fileName, directory, command):
         if fileName not in self._sourceFiles:
@@ -58,7 +60,7 @@ class Project:
     def addInclude (self, includedFileName, sourceFileName):
         self._includedFiles[sourceFileName][includedFileName] = True
 
-
+
 class Index:
     def __init__ (self):
         self._tags = {}
@@ -82,33 +84,45 @@ class Index:
             for line in fileTags.get(usr, []):
                 print line,
 
-
+
 class ClangTags:
     def __init__ (self):
         self._project = None
         self._index   = None
 
-    def setProject (self, project):
-        self._project = project
+    def loadProject (self, require = True):
+        try:
+            p = load (".ct.db")
+        except IOError:
+            if require is True:
+                raise
+            else:
+                p = Project()
+        self._project = p
 
-    def setIndex (self, index):
-        self._index = index
+    def loadIndex (self, require = True):
+        try:
+            i = load (".ct.index")
+        except IOError:
+            if require is True:
+                raise
+            else:
+                i = Index()
+        self._index = i
 
+    def save (self):
+        if self._project is not None:
+            save (self._project, ".ct.db")
 
+        if self._index is not None:
+            save (self._index, ".ct.index")
+
+    def options (self, action, args = None):
+        return self._project.options(action, args)
 
     def updateProject (self):
-        opts = self._project.options ()
-        if opts.sourceType == "json":
-            self._readJsonDb ()
-        elif opts.sourceType == "scan":
-            self._scanSourceFiles ()
-        else:
-            raise RuntimeError ("No source were given to populate the "
-                                "compilation database.")
-
-    def _readJsonDb (self):
-        opts = self._project.options()
-        f = open (opts.json, "r")
+        opts = self._project.options("index")
+        f = open (opts.input, "r")
         db = json.load (f)
         f.close()
 
@@ -117,18 +131,6 @@ class ClangTags:
             directory  = compilationCommand["directory"]
             command    = shlex.split(compilationCommand["command"].encode())[1:]
             self._project.addSourceFile (sourceFile, directory, command)
-
-    def _scanSourceFiles (self):
-        opts = self._project.options()
-        srcdir = opts.srcdir
-        clangArgs = opts.clangArgs
-
-        for (root, _, files) in os.walk (srcdir):
-            for fileName in files:
-                if fileName.endswith (".cxx"):
-                    sourceFile = os.path.realpath (os.path.join (root, fileName))
-                    self._project.addSourceFile (sourceFile, ".", clangArgs + [sourceFile])
-
 
     def updateIndex (self, debug = False):
         "Create and populate a tags database"
@@ -176,6 +178,7 @@ class ClangTags:
     def grep (self, usr):
         self._index.grep (usr)
 
+
 def save (obj, fileName):
     f = open (fileName, "w")
     pickle.dump (obj, f)
@@ -187,15 +190,18 @@ def load (fileName):
     f.close()
     return res
 
-def trace (args):
-    def execve (programName, command):
-        return (programName, command)
+def endsWithOne (string, suffixes):
+    for suffix in suffixes:
+        if string.endswith(suffix):
+            return True
+    return False
 
-    def endsWithOne (string, suffixes):
-        for suffix in suffixes:
-            if string.endswith(suffix):
-                return True
-        return False
+
+def trace (args):
+    ct = ClangTags()
+    ct.loadProject(require = False)
+    ct.options ("source", args)
+    ct.save()
 
     compilers  = ["gcc", "g++", "c++", "clang", "clang++"]
     extensions = [".c", ".cxx", ".cc", ".C"]
@@ -210,7 +216,7 @@ def trace (args):
     cwd = os.getcwd()
 
     chdir_re = re.compile ("\[pid \d+\] chdir\((.*)\) = 0")
-    exec_re  = re.compile ("\[pid \d+\] (execve\(.*\)) = 0")
+    exec_re  = re.compile ("\[pid \d+\] execve(\(.*\)) = 0")
 
     for line in p.stderr:
 
@@ -247,21 +253,43 @@ def trace (args):
               indent=4)
     f.close()
 
+
+def scan (args):
+    ct = ClangTags()
+    ct.loadProject(require=False)
+    ct.options ("source", args)
+    ct.save()
 
+    srcdir = args.srcdir
+    clangArgs = args.clangArgs
+    compiler = args.compiler
+
+    compilationDb = []
+    for (root, _, files) in os.walk (srcdir):
+        for fileName in files:
+            if endsWithOne (fileName, [".c", ".cxx", ".cc", ".C"]):
+                sourceFile = os.path.realpath (os.path.join (root, fileName))
+                command  = "%s %s" % (compiler, sourceFile)
+                command += " " + subprocess.list2cmdline(clangArgs)
+                compilationDb.append({"file": sourceFile,
+                                      "directory": ".",
+                                      "command": command})
+    f = open ("compile_commands.json", "w")
+    json.dump(compilationDb, f,
+              indent=4)
+    f.close()
+
+
 def index (args):
     "Entry point for indexing the source code base"
-    p = Project()
-    p.options(args)
 
-    ct = ClangTags()
-    ct.setProject (p)
+    ct = ClangTags ()
+    ct.loadProject (require = False)
+    ct.loadIndex (require = False)
+    ct.options ("index", args)
     ct.updateProject()
-
-    ct.setIndex (Index())
     ct.updateIndex(debug = args.debug)
-
-    save (ct._project, ".ct.db")
-    save (ct._index, ".ct.tags")
+    ct.save ()
 
     if args.emacsConf is not None:
         f = open (os.path.join (args.emacsConf, ".dir-locals.el"), "w")
@@ -274,34 +302,41 @@ def index (args):
             % os.getcwd())
         f.close ()
 
-
+
 def update (args):
     "Entry point for updating the source code base index"
 
     ct = ClangTags()
-    ct.setProject (load (".ct.db"))
-    ct.setIndex (load (".ct.tags"))
+    ct.loadProject()
+    ct.loadIndex()
+
+    if args.all is True:
+        argsSource = ct.options("source")
+        if argsSource is not None:
+            argsSource.fun (argsSource)
+
     ct.updateIndex(debug = args.debug)
+    ct.save()
 
-
+
 def findDefinition (args):
     "Entry point for finding the definition of an identifier"
     fileName = os.path.realpath (args.fileName)
     offset   = args.offset
 
     ct = ClangTags()
-    ct.setProject (load (".ct.db"))
+    ct.loadProject()
     ct.findDefinition (fileName, offset)
 
-
+
 def grep (args):
-    "Entry point fir finding the uses of a definition"
+    "Entry point for finding the uses of a definition"
     ct = ClangTags()
-    ct.setProject (load (".ct.db"))
-    ct.setIndex (load (".ct.tags"))
+    ct.loadProject()
+    ct.loadIndex()
     ct.grep (args.usr)
 
-
+
 def main_argparse ():
     "Entry point for the application"
 
@@ -317,52 +352,58 @@ def main_argparse ():
         "trace", help = "trace a build command",
         description = "Create a compilation database by tracing a build command.")
     parserTrace.add_argument (
-        "command", metavar = "COMMAND",
+        "command",
+        metavar = "COMMAND",
+        nargs = argparse.REMAINDER,
         help = "build command line")
+    parserTrace.set_defaults (sourceType = "trace")
     parserTrace.set_defaults (fun = trace)
+
+    parserScan = subparsers.add_parser (
+        "scan", help = "scan a source directory",
+        description =
+        "Create a compilation database by scanning a source directory")
+    parserScan.add_argument ("--compiler", "-c",
+                             default = "gcc",
+                             help = "compiler name (default: gcc)")
+    parserScan.add_argument ("srcdir",
+                             help = "top sources directory")
+    parserScan.add_argument ("clangArgs",
+                             metavar = "CLANG_ARGS",
+                             nargs = argparse.REMAINDER,
+                             help = "additional clang command-line arguments")
+    parserScan.set_defaults (sourceType = "scan")
+    parserScan.set_defaults (fun = scan)
+
 
     parserIndex = subparsers.add_parser (
         "index", help = "index source code base",
-        description =
-        "Create an index of all tags in the source code base.")
+        description = "Create an index of all tags in the source code base."
+        " Source files and compilation commands are taken from a clang"
+        " \"compilation database\" in JSON format.")
     parserIndex.add_argument (
-        "--emacs-conf", metavar = "SRCDIR",
+        "--input", "-i",
+        default = "compile_commands.json",
+        help = "compilation database (default: compile_commands.json)")
+    parserIndex.add_argument (
+        "--emacs-conf",
+        metavar = "SRCDIR",
         dest = "emacsConf",
-        help = "create an emacs configuration file in the top source files "
-            "directory")
+        help = "create an emacs configuration file in the top source files"
+        " directory")
     parserIndex.set_defaults (fun = index)
-
-    sp = parserIndex.add_subparsers (metavar = "SOURCE_TYPE",
-                                     help = "keyword identifying the type of source:")
-    parserIndexJson = sp.add_parser (
-        "json",
-        help = "clang \"compilation database\" in JSON format",
-        description = "Create an index of all tags in the source code base. "
-        "Source files and compilation commands are taken from a clang "
-        "\"compilation database\" in JSON format.")
-    parserIndexJson.add_argument ("json", metavar = "COMPILE_DB")
-    parserIndexJson.set_defaults (sourceType = "json")
-
-    parserIndexScan = sp.add_parser (
-        "scan",
-        help = "all `*.cxx` files under a top sources directory",
-        description = "Create an index of all tags in the source code base. "
-        "All `*.cxx` files found under the top sources directory are taken as "
-        "source files. Additional clang arguments can optionally be provided.")
-    parserIndexScan.add_argument ("srcdir", metavar = "TOP_SRCDIR",
-                                  help = "top sources directory")
-    parserIndexScan.add_argument ("clangArgs", metavar = "CLANG_ARGS",
-                                  nargs = argparse.REMAINDER,
-                                  help = "additional clang command-line arguments")
-    parserIndexScan.set_defaults (sourceType = "scan")
 
 
     parserUpdate = subparsers.add_parser (
         "update",
         help = "update index",
         description =
-        "Update the source code base index, using the same source as previous "
+        "Update the source code base index, using the same arguments as previous "
         "call to `index'")
+    parserUpdate.add_argument (
+        "--all", "-a",
+        action = "store_true",
+        help = "also update the compilation database")
     parserUpdate.set_defaults (fun = update)
 
 
@@ -384,7 +425,8 @@ def main_argparse ():
         description =
         "Find all uses of a definition, identified by its USR (Unified Symbol "
         "Resolution). Outputs results in a grep-like format.")
-    parserGrep.add_argument ("usr", metavar = "USR",
+    parserGrep.add_argument ("usr",
+                             metavar = "USR",
                              help = "USR for the definition")
     parserGrep.set_defaults (fun = grep)
 
@@ -392,7 +434,7 @@ def main_argparse ():
     args = parser.parse_args ()
     args.fun (args)
 
-
+
 def main_optparse ():
     parser = optparse.OptionParser(
         usage = "usage: %prog SUBCOMMAND [options]",
