@@ -127,7 +127,7 @@ class ClangTags:
         f.close()
 
         for compilationCommand in db:
-            sourceFile = compilationCommand["file"]
+            sourceFile = os.path.realpath(compilationCommand["file"])
             directory  = compilationCommand["directory"]
             command    = shlex.split(compilationCommand["command"].encode())[1:]
             self._project.addSourceFile (sourceFile, directory, command)
@@ -447,27 +447,25 @@ def main_optparse ():
     if subcommand == "trace":
         (options, args) = parser.parse_args (sys.argv[2:])
         options.command = args
+        options.fun = trace
         trace (options)
+
+    elif subcommand == "scan":
+        parser.add_option ("--compiler", "-c", default = "gcc")
+        (options, args) = parser.parse_args (sys.argv[2:])
+        options.srcdir = args[0]
+        options.clangArgs = args[1:]
+        options.fun = scan
+        scan (options)
 
     elif subcommand == "index":
         parser.add_option ("--emacs-conf", dest="emacsConf")
-        sourceType = sys.argv[2]
-        if sourceType == "json":
-            (options, args) = parser.parse_args (sys.argv[3:])
-            options.sourceType = "json"
-            options.json = args[0]
-            index (options)
-        elif sourceType == "scan":
-            (options, args) = parser.parse_args (sys.argv[3:])
-            options.sourceType = "scan"
-            options.srcdir = args[0]
-            options.clangArgs = args[1:]
-            index (options)
-        else:
-            sys.stderr.write ("unknown compilation commands source: %s\n" % sourceType)
-            parser.print_help ()
+        parser.add_option ("--input", "-i", default = "compile_commands.json")
+        (options, args) = parser.parse_args (sys.argv[2:])
+        index (options)
 
     elif subcommand == "update":
+        parser.add_option ("--all", "-a", action = "store_true")
         (options, args) = parser.parse_args (sys.argv[2:])
         update (options)
 
