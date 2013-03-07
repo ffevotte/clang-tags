@@ -1,0 +1,200 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Clang-tags by ffevotte</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/main.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <header>
+        <h1>Clang-tags</h1>
+        <p>C/C++ source code indexing tool based on libclang</p>
+      </header>
+
+      <div id="banner">
+        <span id="logo"></span>
+
+        <a href="https://github.com/ffevotte/clang-tags" class="button fork"><strong>View On GitHub</strong></a>
+        <div class="downloads">
+          <span>Downloads:</span>
+          <ul>
+            <li><a href="https://github.com/ffevotte/clang-tags/zipball/master" class="button">ZIP</a></li>
+            <li><a href="https://github.com/ffevotte/clang-tags/tarball/master" class="button">TAR</a></li>
+          </ul>
+        </div>
+      </div><!-- end banner -->
+
+    <div class="wrapper">
+      <nav>
+        <ul></ul>
+      </nav>
+      <section>
+        <h1>clang-tags</h1>
+
+<p><code>clang-tags</code> is a C / C++ source code indexing tool. Unlike many other indexing
+tools, <code>clang-tags</code> relies on the <a href="http://clang.llvm.org">clang</a> compiler (via
+the libclang interface) to analyse and index the source code base.</p>
+
+<h2>How to install</h2>
+
+<h3>Requirements</h3>
+
+<ul>
+<li>
+<code>libclang</code> (&gt;= 3.0)</li>
+<li>
+<code>python</code> (&gt;= 2.3)
+
+<ul>
+<li>a version newer than 2.7 is recommended to benefit from the more recent <code>argparse</code> module.</li>
+</ul>
+</li>
+</ul><h3>Build</h3>
+
+<p><code>clang-tags</code> uses <a href="http://www.cmake.org/"><code>CMake</code></a> as a build system.</p>
+
+<p>A complete build process could for example look like this:</p>
+
+<pre><code>git clone https://github.com/ffevotte/clang-tags.git src
+mkdir build &amp;&amp; cd build
+cmake ../src
+</code></pre>
+
+<h2>How to use</h2>
+
+<h3>Creating the compilation database</h3>
+
+<h4>From a <code>cmake</code> project</h4>
+
+<p><code>CMake</code> (since version 2.8.5) supports the generation of
+<a href="http://clang.llvm.org/docs/JSONCompilationDatabase.html">JSON compilation databases</a> listing all
+necessary information to build the project:</p>
+
+<pre><code>cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ../src
+</code></pre>
+
+<h4>Tracing the standard build process</h4>
+
+<pre><code>clang-tags trace -- BUILD COMMAND
+</code></pre>
+
+<p>For non-CMake-managed projects, there is no free way to build the compilation database. One way to
+get the necessary information consists in inspecting the build process as a black box using
+<a href="http://linux.die.net/man/1/strace">strace</a> (also see <a href="https://github.com/rizsotto/Bear">bear</a> for a
+tool using <code>LD_PRELOAD</code> to implement the same kind of strategy).</p>
+
+<p>Such a method is inherently independant of the build process: Makefile (possibly
+autotools-generated), shell or python script, ... However, the downside with this approach is that
+<code>make</code> and other build systems traditionally only rebuild what's needed, and the generated
+compilation database can thus be incomplete.</p>
+
+<p>Example usage:</p>
+
+<pre><code>make clean                 # Ensure that the whole project will be rebuilt
+clang-tags trace -- make   # Generate the compilation database
+</code></pre>
+
+<h4>Scanning <code>*.cxx</code> files</h4>
+
+<pre><code>clang-tags scan SRC_DIR -- CLANG ARGS
+</code></pre>
+
+<p>For relatively simple projects, it can be sufficient to simply scan the top sources directory to
+find all <code>*.c</code> or <code>*.cxx</code> files, and additionally provide <code>clang-tags</code> with a set of command-line
+arguments necessary for <code>clang</code> to parse these files. For example:</p>
+
+<pre><code>clang-tags scan ../src -- -I.
+</code></pre>
+
+<h3>Creating the index</h3>
+
+<pre><code>clang-tags index [--emacs-conf SRC_DIR]
+</code></pre>
+
+<p>This command uses the compilation database to index all source files. An
+optional argument <code>--emacs-conf</code> allows generating a suitable <code>.dir-local.el</code>
+emacs configuration file in the sources directory.</p>
+
+<pre><code>clang-tags update [--all]
+</code></pre>
+
+<p>This command updates the index. With the optional <code>--all</code> switch, the
+compilation database is also rebuilt using the same subcommand <code>trace</code> or
+<code>build</code> as previously.</p>
+
+<h3>Using the Emacs UI</h3>
+
+<p>First, load the package using <code>M-x load-file RET path/to/clang-tags.el RET</code></p>
+
+<p>With the configuration file generated by the <code>clang-tags index</code> command, all
+C/C++ source files in the indexed source directory should automatically activate
+<code>clang-tags-mode</code> and have the <code>ct/default-directory</code> variable point to the
+index directory.</p>
+
+<h4>Find the definition of the symbol at point</h4>
+
+<p>While in a source buffer, you can use <code>clang-tags</code> to find the location of the definition
+of the symbol under point by pressing <code>M-.</code>.</p>
+
+<p>The list of relevant definitions is presented in a buffer, where pressing <code>RET</code> will take you to the
+location of the definition.</p>
+
+<h4>Find all uses of a definition in the source base</h4>
+
+<p>After having looked for a definition of the symbol under point, and while in the definitions list
+buffer, press <code>M-,</code> to list all uses of the current definition in the source code base.</p>
+
+<p>Results are presented in a <code>grep-mode</code> buffer.</p>
+
+<h2>See also</h2>
+
+<ul>
+<li><a href="http://clang.llvm.org/doxygen/group__CINDEX.html">libclang API documentation</a></li>
+<li><a href="http://llvm.org/devmtg/2010-11/Gregor-libclang.pdf">Doug Gregor's presentation on libclang</a></li>
+<li>
+<a href="https://github.com/drothlis/clang-ctags">clang-ctags</a>: a similar project
+using libclang to generate <code>ctags</code>/<code>etags</code> index files.</li>
+</ul><h2>Contributing</h2>
+
+<p>If you make improvements to this code or have suggestions, please do not
+hesitate to fork the repository or submit bug reports on
+<a href="https://github.com/ffevotte/clang-tags">github</a>. The repository's URL is:</p>
+
+<pre><code>https://github.com/ffevotte/clang-tags.el.git
+</code></pre>
+
+<h2>License</h2>
+
+<p>Copyright (C) 2013 François Févotte.</p>
+
+<p>This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.</p>
+
+<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU General Public License along with
+this program. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
+      </section>
+      <footer>
+        <p>Project maintained by <a href="https://github.com/ffevotte">ffevotte</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
