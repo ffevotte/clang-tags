@@ -1,200 +1,615 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Clang-tags by ffevotte</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/main.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+lang="en" xml:lang="en">
+<head>
+<title>Clang-tags</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2013-03-07 16:33:25 CET"/>
+<meta name="author" content="FEVOTTE Francois"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="org.css"/>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
 
-  </head>
-  <body>
-
-      <header>
-        <h1>Clang-tags</h1>
-        <p>C/C++ source code indexing tool based on libclang</p>
-      </header>
-
-      <div id="banner">
-        <span id="logo"></span>
-
-        <a href="https://github.com/ffevotte/clang-tags" class="button fork"><strong>View On GitHub</strong></a>
-        <div class="downloads">
-          <span>Downloads:</span>
-          <ul>
-            <li><a href="https://github.com/ffevotte/clang-tags/zipball/master" class="button">ZIP</a></li>
-            <li><a href="https://github.com/ffevotte/clang-tags/tarball/master" class="button">TAR</a></li>
-          </ul>
-        </div>
-      </div><!-- end banner -->
-
-    <div class="wrapper">
-      <nav>
-        <ul></ul>
-      </nav>
-      <section>
-        <h1>clang-tags</h1>
+<h1 class="title">Clang-tags</h1>
 
 <p><code>clang-tags</code> is a C / C++ source code indexing tool. Unlike many other indexing
 tools, <code>clang-tags</code> relies on the <a href="http://clang.llvm.org">clang</a> compiler (via
-the libclang interface) to analyse and index the source code base.</p>
+the libclang interface) to analyse and index the source code base.
+</p>
 
-<h2>How to install</h2>
 
-<h3>Requirements</h3>
-
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
 <ul>
-<li>
-<code>libclang</code> (&gt;= 3.0)</li>
-<li>
-<code>python</code> (&gt;= 2.3)
-
+<li><a href="#sec-1">1 Introduction </a>
 <ul>
-<li>a version newer than 2.7 is recommended to benefit from the more recent <code>argparse</code> module.</li>
+<li><a href="#sec-1_1">1.1 Features </a></li>
 </ul>
 </li>
-</ul><h3>Build</h3>
+<li><a href="#sec-2">2 How to install </a>
+<ul>
+<li><a href="#sec-2_1">2.1 Requirements </a></li>
+<li><a href="#sec-2_2">2.2 Build </a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3 How to use </a>
+<ul>
+<li><a href="#sec-3_1">3.1 Creating the compilation database </a></li>
+<li><a href="#sec-3_2">3.2 Indexing the source files </a></li>
+<li><a href="#sec-3_3">3.3 Using the Emacs UI </a></li>
+</ul>
+</li>
+<li><a href="#sec-4">4 See also </a></li>
+<li><a href="#sec-5">5 Contributing </a></li>
+<li><a href="#sec-6">6 License </a></li>
+</ul>
+</div>
+</div>
 
-<p><code>clang-tags</code> uses <a href="http://www.cmake.org/"><code>CMake</code></a> as a build system.</p>
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Introduction </h2>
+<div class="outline-text-2" id="text-1">
 
-<p>A complete build process could for example look like this:</p>
 
-<pre><code>git clone https://github.com/ffevotte/clang-tags.git src
-mkdir build &amp;&amp; cd build
-cmake ../src
-</code></pre>
+<p>
+Let us consider the following C++ code:
+</p>
 
-<h2>How to use</h2>
 
-<h3>Creating the compilation database</h3>
 
-<h4>From a <code>cmake</code> project</h4>
+<pre class="src src-c++"><span class="linenr"> 1:  </span><span style="color: #7a378b;">#include</span> <span style="color: #8b2252;">"config.h"</span>
+<span class="linenr"> 2:  </span><span style="color: #7a378b;">#include</span> <span style="color: #8b2252;">&lt;iostream&gt;</span>
+<span class="linenr"> 3:  </span>
+<span class="linenr"> 4:  </span><span style="color: #7a378b;">#ifdef</span> DEBUG
+<span id="coderef-debug1" class="coderef-off"><span class="linenr"> 5:  </span><span style="color: #a020f0;">inline</span> <span style="color: #228b22;">void</span> <span style="color: #0000ff;">debug</span> (<span style="color: #a020f0;">const</span> <span style="color: #228b22;">char</span>* <span style="color: #a0522d;">message</span>) {</span>
+<span class="linenr"> 6:  </span>  <span style="color: #008b8b;">std</span>::cerr &lt;&lt; message &lt;&lt; <span style="color: #008b8b;">std</span>::endl;
+<span class="linenr"> 7:  </span>}
+<span class="linenr"> 8:  </span><span style="color: #7a378b;">#else</span>
+<span id="coderef-debug2" class="coderef-off"><span class="linenr"> 9:  </span><span style="color: #a020f0;">inline</span> <span style="color: #228b22;">void</span> <span style="color: #0000ff;">debug</span> (<span style="color: #a020f0;">const</span> <span style="color: #228b22;">char</span>* <span style="color: #a0522d;">message</span>) {</span>
+<span class="linenr">10:  </span>}
+<span class="linenr">11:  </span><span style="color: #7a378b;">#endif</span>
+<span class="linenr">12:  </span>
+<span class="linenr">13:  </span><span style="color: #a020f0;">template</span> &lt;<span style="color: #a020f0;">typename</span> <span style="color: #228b22;">T</span>&gt;
+<span class="linenr">14:  </span><span style="color: #a020f0;">struct</span> <span style="color: #228b22;">MyClass</span> {
+<span id="coderef-defCtor" class="coderef-off"><span class="linenr">15:  </span>  <span style="color: #0000ff;">MyClass</span> () {</span>
+<span class="linenr">16:  </span>    debug (<span style="color: #8b2252;">"MyClass::MyClass"</span>);
+<span class="linenr">17:  </span>  }
+<span class="linenr">18:  </span>
+<span id="coderef-defDisplayT" class="coderef-off"><span class="linenr">19:  </span>  <span style="color: #228b22;">void</span> <span style="color: #0000ff;">display</span> () {</span>
+<span class="linenr">20:  </span>    <span style="color: #008b8b;">std</span>::cout &lt;&lt; <span style="color: #8b2252;">"MyClass&lt;T&gt;"</span> &lt;&lt; <span style="color: #008b8b;">std</span>::endl;
+<span class="linenr">21:  </span>  }
+<span class="linenr">22:  </span>};
+<span class="linenr">23:  </span>
+<span class="linenr">24:  </span><span style="color: #a020f0;">template</span> &lt;&gt;
+<span class="linenr">25:  </span><span style="color: #a020f0;">struct</span> <span style="color: #228b22;">MyClass</span>&lt;<span style="color: #228b22;">int</span>&gt; {
+<span id="coderef-defDisplayInt" class="coderef-off"><span class="linenr">26:  </span>  <span style="color: #228b22;">void</span> <span style="color: #0000ff;">display</span> () {</span>
+<span class="linenr">27:  </span>    <span style="color: #008b8b;">std</span>::cout &lt;&lt; <span style="color: #8b2252;">"MyClass&lt;int&gt;"</span> &lt;&lt; <span style="color: #008b8b;">std</span>::endl;
+<span class="linenr">28:  </span>  }
+<span class="linenr">29:  </span>};
+<span class="linenr">30:  </span>
+<span class="linenr">31:  </span><span style="color: #228b22;">int</span> <span style="color: #0000ff;">main</span> () {
+<span id="coderef-display1" class="coderef-off"><span class="linenr">32:  </span>  <span style="color: #228b22;">int</span> <span style="color: #a0522d;">display</span> = 3;</span>
+<span class="linenr">33:  </span>
+<span id="coderef-ctor" class="coderef-off"><span class="linenr">34:  </span>  <span style="color: #228b22;">MyClass</span>&lt;<span style="color: #228b22;">double</span>&gt; <span style="color: #a0522d;">a</span>;</span>
+<span id="coderef-display2" class="coderef-off"><span class="linenr">35:  </span>  a.display();</span>
+<span class="linenr">36:  </span>
+<span class="linenr">37:  </span>  <span style="color: #228b22;">MyClass</span>&lt;<span style="color: #228b22;">int</span>&gt; <span style="color: #a0522d;">b</span>;
+<span id="coderef-display3" class="coderef-off"><span class="linenr">38:  </span>  b.display();</span>
+<span class="linenr">39:  </span>
+<span class="linenr">40:  </span>  <span style="color: #228b22;">MyClass</span>&lt;<span style="color: #228b22;">char</span>&gt; <span style="color: #a0522d;">c</span>;
+<span class="linenr">41:  </span>  c.display();
+<span class="linenr">42:  </span>}
+</pre>
 
-<p><code>CMake</code> (since version 2.8.5) supports the generation of
-<a href="http://clang.llvm.org/docs/JSONCompilationDatabase.html">JSON compilation databases</a> listing all
-necessary information to build the project:</p>
 
-<pre><code>cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ../src
-</code></pre>
 
-<h4>Tracing the standard build process</h4>
+<p>
+A few difficulties can be found in this file, making indexing difficult without the help of a
+full-fledged C++ compiler:
+</p>
+<ol>
+<li>
+Depending on the <code>DEBUG</code> preprocessor macro, the definition of the function <code>debug</code> might be found
+at line <a href=""class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-debug1');" onmouseout="CodeHighlightOff(this, 'coderef-debug1');">5</a> or <a href=""class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-debug2');" onmouseout="CodeHighlightOff(this, 'coderef-debug2');">9</a>.
 
-<pre><code>clang-tags trace -- BUILD COMMAND
-</code></pre>
+</li>
+<li>
+The <code>display</code> identifier is used in several places to mean widely different things (for example
+at lines <a href=""class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display1');" onmouseout="CodeHighlightOff(this, 'coderef-display1');">32</a> and <a href=""class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display2');" onmouseout="CodeHighlightOff(this, 'coderef-display2');">35</a>). Context information is necessary to disambiguate uses of
+the same identifier.
 
-<p>For non-CMake-managed projects, there is no free way to build the compilation database. One way to
-get the necessary information consists in inspecting the build process as a black box using
-<a href="http://linux.die.net/man/1/strace">strace</a> (also see <a href="https://github.com/rizsotto/Bear">bear</a> for a
-tool using <code>LD_PRELOAD</code> to implement the same kind of strategy).</p>
+</li>
+<li>
+Even when <code>display</code> refers to the method of template class <code>MyClass&lt;&gt;</code>, a precise knowledge of the
+complex C++ template specialization rules is required to associate <a href=""class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display2');" onmouseout="CodeHighlightOff(this, 'coderef-display2');">a.display()</a> with
+<a href=""class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-defDisplayT');" onmouseout="CodeHighlightOff(this, 'coderef-defDisplayT');">MyClass&lt;T&gt;::display()</a> and <a href=""class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display3');" onmouseout="CodeHighlightOff(this, 'coderef-display3');">b.display()</a> with <a href=""class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-defDisplayInt');" onmouseout="CodeHighlightOff(this, 'coderef-defDisplayInt');">MyClass&lt;int&gt;::display()</a>.
 
-<p>Such a method is inherently independant of the build process: Makefile (possibly
-autotools-generated), shell or python script, ... However, the downside with this approach is that
-<code>make</code> and other build systems traditionally only rebuild what's needed, and the generated
-compilation database can thus be incomplete.</p>
+</li>
+<li>
+Some functions such as constructors or operators can be called without explicitly appearing in
+the code. For example, the <a href=""class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-defCtor');" onmouseout="CodeHighlightOff(this, 'coderef-defCtor');">MyClass::MyClass()</a> constructor is called at line <a href=""class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-ctor');" onmouseout="CodeHighlightOff(this, 'coderef-ctor');">34</a>.
 
-<p>Example usage:</p>
 
-<pre><code>make clean                 # Ensure that the whole project will be rebuilt
-clang-tags trace -- make   # Generate the compilation database
-</code></pre>
+</li>
+</ol>
 
-<h4>Scanning <code>*.cxx</code> files</h4>
+<p>On the other hand, using a C++ compiler such as <code>clang</code> to parse this code and generate an AST
+requires information about the project configuration and its build environment:
+</p>
+<ol>
+<li>
+The <code>config.h</code> file could be automatically generated by <code>autoconf</code> or <code>CMake</code> and reside in a
+completely different directory than other source files. The compiler will typically need to be
+provided with <code>-I</code> command-line arguments to know where to find header files.
 
-<pre><code>clang-tags scan SRC_DIR -- CLANG ARGS
-</code></pre>
+</li>
+<li>
+The <code>DEBUG</code> macro could well be defined by the compilation command line (typically using a <code>-D</code>
+switch).
 
-<p>For relatively simple projects, it can be sufficient to simply scan the top sources directory to
-find all <code>*.c</code> or <code>*.cxx</code> files, and additionally provide <code>clang-tags</code> with a set of command-line
-arguments necessary for <code>clang</code> to parse these files. For example:</p>
+</li>
+</ol>
 
-<pre><code>clang-tags scan ../src -- -I.
-</code></pre>
+<p>A compiler-based indexing tool thus needs to be aware of the full compilation commands which are
+used to build the project, including for each source file:
+</p><ul>
+<li>
+the full list of command-line switches,
+</li>
+<li>
+the directory from which the file is compiled.
 
-<h3>Creating the index</h3>
+</li>
+</ul>
 
-<pre><code>clang-tags index [--emacs-conf SRC_DIR]
-</code></pre>
+<p>Such information, which we will refer to as a "compilation database" in the following, is usually
+found in the build system configuration, which can take a wide variety of forms: hand-crafted
+<code>Makefile</code>, <code>autotools</code> project, <code>CMake</code> project, <i>etc.</i>
+</p>
 
-<p>This command uses the compilation database to index all source files. An
-optional argument <code>--emacs-conf</code> allows generating a suitable <code>.dir-local.el</code>
-emacs configuration file in the sources directory.</p>
+</div>
 
-<pre><code>clang-tags update [--all]
-</code></pre>
+<div id="outline-container-1_1" class="outline-3">
+<h3 id="sec-1_1"><span class="section-number-3">1.1</span> Features </h3>
+<div class="outline-text-3" id="text-1_1">
 
-<p>This command updates the index. With the optional <code>--all</code> switch, the
-compilation database is also rebuilt using the same subcommand <code>trace</code> or
-<code>build</code> as previously.</p>
 
-<h3>Using the Emacs UI</h3>
+<p>
+<code>clang-tags</code> aims at providing the following features:
+</p><ol>
+<li>
+generate a compilation database in a build-system-agnostic way,
+</li>
+<li>
+index the sources of the project,
+</li>
+<li>
+use this index to provide IDE-like features in Emacs.
 
-<p>First, load the package using <code>M-x load-file RET path/to/clang-tags.el RET</code></p>
 
-<p>With the configuration file generated by the <code>clang-tags index</code> command, all
-C/C++ source files in the indexed source directory should automatically activate
-<code>clang-tags-mode</code> and have the <code>ct/default-directory</code> variable point to the
-index directory.</p>
+</li>
+</ol>
+</div>
+</div>
 
-<h4>Find the definition of the symbol at point</h4>
+</div>
 
-<p>While in a source buffer, you can use <code>clang-tags</code> to find the location of the definition
-of the symbol under point by pressing <code>M-.</code>.</p>
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> How to install </h2>
+<div class="outline-text-2" id="text-2">
 
-<p>The list of relevant definitions is presented in a buffer, where pressing <code>RET</code> will take you to the
-location of the definition.</p>
 
-<h4>Find all uses of a definition in the source base</h4>
 
-<p>After having looked for a definition of the symbol under point, and while in the definitions list
-buffer, press <code>M-,</code> to list all uses of the current definition in the source code base.</p>
+</div>
 
-<p>Results are presented in a <code>grep-mode</code> buffer.</p>
+<div id="outline-container-2_1" class="outline-3">
+<h3 id="sec-2_1"><span class="section-number-3">2.1</span> Requirements </h3>
+<div class="outline-text-3" id="text-2_1">
 
-<h2>See also</h2>
 
 <ul>
-<li><a href="http://clang.llvm.org/doxygen/group__CINDEX.html">libclang API documentation</a></li>
-<li><a href="http://llvm.org/devmtg/2010-11/Gregor-libclang.pdf">Doug Gregor's presentation on libclang</a></li>
+<li>
+<code>libclang</code> (&ge; 3.0)
+</li>
+<li>
+<code>python</code> (&ge; 2.3)
+<ul>
+<li>
+a version newer than 2.7 is recommended to benefit from the more recent <code>argparse</code> module.
+
+
+</li>
+</ul>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2_2" class="outline-3">
+<h3 id="sec-2_2"><span class="section-number-3">2.2</span> Build </h3>
+<div class="outline-text-3" id="text-2_2">
+
+
+<p>
+<code>clang-tags</code> uses <a href="http://www.cmake.org/"><code>CMake</code></a> as a build system.
+</p>
+<p>
+A complete build process could for example look like this:
+</p>
+
+
+
+<pre class="src src-sh">git clone https://github.com/ffevotte/clang-tags.git src
+mkdir build &amp;&amp; <span style="color: #7a378b;">cd</span> build
+cmake ../src
+</pre>
+
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> How to use </h2>
+<div class="outline-text-2" id="text-3">
+
+
+
+</div>
+
+<div id="outline-container-3_1" class="outline-3">
+<h3 id="sec-3_1"><span class="section-number-3">3.1</span> Creating the compilation database </h3>
+<div class="outline-text-3" id="text-3_1">
+
+
+<p>
+<code>clang-tags</code> uses a <a href="http://clang.llvm.org/docs/JSONCompilationDatabase.html">JSON compilation database</a> to get the information needed to correctly build the
+project: compile directories and command-line switches. There are different ways to collect this
+information.
+</p>
+
+</div>
+
+<div id="outline-container-3_1_1" class="outline-4">
+<h4 id="sec-3_1_1"><span class="section-number-4">3.1.1</span> From a <code>CMake</code> project </h4>
+<div class="outline-text-4" id="text-3_1_1">
+
+
+<p>
+<code>CMake</code> (since version 2.8.5) supports the generation of a compilation database with the option
+<code>CMAKE_EXPORT_COMPILE_COMMANDS</code>. For a <code>CMake</code>-managed project, creating the compilation database is
+thus as simple as:
+</p>
+
+
+<pre class="src src-sh">cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ../src
+</pre>
+
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3_1_2" class="outline-4">
+<h4 id="sec-3_1_2"><span class="section-number-4">3.1.2</span> Tracing the standard build process </h4>
+<div class="outline-text-4" id="text-3_1_2">
+
+
+
+
+
+<pre class="src src-sh">clang-tags trace -- BUILD COMMAND
+</pre>
+
+
+
+<p>
+For non <code>CMake</code>-managed projects, there is no "free" way to build the compilation database. One
+way to get the necessary information consists in inspecting the build process as a black box
+using <a href="http://linux.die.net/man/1/strace"><code>strace</code></a> (also see <a href="https://github.com/rizsotto/Bear"><code>Bear</code></a> for a tool using <code>LD_PRELOAD</code> to implement the same kind of
+strategy).
+</p>
+<p>
+Such a method is inherently independent of the build process: Makefile (possibly
+autotools-generated), shell or python script, &hellip; However, the downside with this approach is
+that <code>make</code> and other build systems traditionally only rebuild what's needed, and the generated
+compilation database can thus be incomplete.
+</p>
+<p>
+Example usage:
+</p>
+
+
+<pre class="src src-sh">make clean                 <span style="color: #b22222;"># </span><span style="color: #b22222;">Ensure that the whole project will be rebuilt
+</span>clang-tags trace -- make   <span style="color: #b22222;"># </span><span style="color: #b22222;">Generate the compilation database
+</span></pre>
+
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3_1_3" class="outline-4">
+<h4 id="sec-3_1_3"><span class="section-number-4">3.1.3</span> Scanning the sources directory </h4>
+<div class="outline-text-4" id="text-3_1_3">
+
+
+
+
+
+<pre class="src src-sh">clang-tags scan SRC_DIR -- CLANG ARGS
+</pre>
+
+
+
+<p>
+For relatively simple projects, it can be sufficient to simply scan the top sources directory to
+find all <code>*.c</code> or <code>*.cxx</code> files, and additionally provide <code>clang-tags</code> with a set of command-line
+arguments necessary for <code>clang</code> to parse these files.
+</p>
+<p>
+Example usage:
+</p>
+
+
+<pre class="src src-sh">clang-tags scan ../src -- -I.
+</pre>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3_2" class="outline-3">
+<h3 id="sec-3_2"><span class="section-number-3">3.2</span> Indexing the source files </h3>
+<div class="outline-text-3" id="text-3_2">
+
+
+
+</div>
+
+<div id="outline-container-3_2_1" class="outline-4">
+<h4 id="sec-3_2_1"><span class="section-number-4">3.2.1</span> Creating the index </h4>
+<div class="outline-text-4" id="text-3_2_1">
+
+
+
+
+
+<pre class="src src-sh">clang-tags index [--emacs-conf SRC_DIR]
+</pre>
+
+
+
+<p>
+This command uses the compilation database to index all source files. An
+optional argument <code>--emacs-conf</code> allows generating a suitable <code>.dir-local.el</code>
+emacs configuration file in the sources directory.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-3_2_2" class="outline-4">
+<h4 id="sec-3_2_2"><span class="section-number-4">3.2.2</span> Updating the index </h4>
+<div class="outline-text-4" id="text-3_2_2">
+
+
+
+
+
+<pre class="src src-sh">clang-tags update [--all]
+</pre>
+
+
+
+<p>
+This command updates the index. With the optional <code>--all</code> switch, the
+compilation database is also rebuilt using the same subcommand <code>trace</code> or
+<code>build</code> as previously.
+</p>
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3_3" class="outline-3">
+<h3 id="sec-3_3"><span class="section-number-3">3.3</span> Using the Emacs UI </h3>
+<div class="outline-text-3" id="text-3_3">
+
+
+<p>
+First, load the package using <code>M-x load-file RET path/to/clang-tags.el RET</code>
+</p>
+<p>
+With the configuration file generated by the <code>clang-tags index</code> command, all
+C/C++ source files in the indexed source directory should automatically activate
+<code>clang-tags-mode</code> and have the <code>ct/default-directory</code> variable point to the
+index directory.
+</p>
+
+
+</div>
+
+<div id="outline-container-3_3_1" class="outline-4">
+<h4 id="sec-3_3_1"><span class="section-number-4">3.3.1</span> Find the definition of the symbol at point </h4>
+<div class="outline-text-4" id="text-3_3_1">
+
+
+<p>
+While in a source buffer, you can use <code>clang-tags</code> to find the location of the definition
+of the symbol under point by pressing <code>M-&lt;dot&gt;</code>.
+</p>
+<p>
+The list of relevant definitions is presented in a buffer, where pressing <code>RET</code> will take you to the
+location of the definition.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-3_3_2" class="outline-4">
+<h4 id="sec-3_3_2"><span class="section-number-4">3.3.2</span> Find all uses of a definition in the source base </h4>
+<div class="outline-text-4" id="text-3_3_2">
+
+
+<p>
+After having looked for a definition of the symbol under point, and while in the definitions list
+buffer, press <code>M-&lt;comma&gt;</code> to list all uses of the current definition in the source code base.
+</p>
+<p>
+Results are presented in a <code>grep-mode</code> buffer.
+</p>
+
+</div>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> See also </h2>
+<div class="outline-text-2" id="text-4">
+
+
+<ul>
+<li>
+<a href="http://clang.llvm.org/doxygen/group__CINDEX.html">libclang API documentation</a>
+</li>
+<li>
+<a href="http://llvm.org/devmtg/2010-11/Gregor-libclang.pdf">Doug Gregor's presentation on libclang</a>
+</li>
 <li>
 <a href="https://github.com/drothlis/clang-ctags">clang-ctags</a>: a similar project
-using libclang to generate <code>ctags</code>/<code>etags</code> index files.</li>
-</ul><h2>Contributing</h2>
+using libclang to generate <code>ctags</code> / <code>etags</code> index files.
 
-<p>If you make improvements to this code or have suggestions, please do not
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Contributing </h2>
+<div class="outline-text-2" id="text-5">
+
+
+<p>
+If you make improvements to this code or have suggestions, please do not
 hesitate to fork the repository or submit bug reports on
-<a href="https://github.com/ffevotte/clang-tags">github</a>. The repository's URL is:</p>
+<a href="https://github.com/ffevotte/clang-tags">github</a>. The repository's URL is:
+</p>
+<p>
+<a href="https://github.com/ffevotte/clang-tags.el.git">https://github.com/ffevotte/clang-tags.el.git</a>
+</p>
 
-<pre><code>https://github.com/ffevotte/clang-tags.el.git
-</code></pre>
+</div>
 
-<h2>License</h2>
+</div>
 
-<p>Copyright (C) 2013 François Févotte.</p>
+<div id="outline-container-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> License </h2>
+<div class="outline-text-2" id="text-6">
 
-<p>This program is free software: you can redistribute it and/or modify it under
+
+<p>
+Copyright (C) 2013 François Févotte.
+</p>
+<p>
+This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
 Foundation, either version 3 of the License, or (at your option) any later
-version.</p>
-
-<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY
+version.
+</p>
+<p>
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
-
-<p>You should have received a copy of the GNU General Public License along with
-this program. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
-      </section>
-      <footer>
-        <p>Project maintained by <a href="https://github.com/ffevotte">ffevotte</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></small></p>
-      </footer>
-    </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
-  </body>
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+</p>
+<p>
+You should have received a copy of the GNU General Public License along with
+this program. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.
+</p></div>
+</div>
+<div id="postamble">
+</div>
+</div>
+</body>
 </html>
