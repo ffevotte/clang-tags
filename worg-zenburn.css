@@ -1,0 +1,75 @@
+@media all
+{
+  @import url(/worg/style/zenburn-emacs.css);
+  body {
+    color: #dcdccc;
+    background-color: #3f3f3f;
+    font:0.9em serif;
+    max-width: 95%;
+    margin: auto;
+    /* background-image: url(http://orgmode.org/tmp/org-mode-unicorn.png); */
+    /* background-repeat: no-repeat; */
+    }
+    body #content {
+      padding-top: 45px;
+    }
+    body pre {
+      border: none; }
+    body a {
+      color: #8cd0d3; }
+    body #content {
+      padding-top: 100px; }
+    body .title {
+      margin-left: 120px;
+    }
+
+  /* TOC inspired by http://jashkenas.github.com/coffee-script */
+  #table-of-contents {
+    font-size: 10pt;
+    position: fixed;
+    right: 0em;
+    top: 0em;
+    background: #2b2b2b;
+    color: #dcdccc;
+    -webkit-box-shadow: 0 0 1em #777777;
+    -moz-box-shadow: 0 0 1em #777777;
+    -webkit-border-bottom-left-radius: 5px;
+    -moz-border-radius-bottomleft: 5px;
+    text-align: right;
+    /* ensure doesn't flow off the screen when expanded */
+    max-height: 80%;
+    overflow: auto; }
+    #table-of-contents h2 {
+      font-size: 10pt;
+      max-width: 8em;
+      font-weight: normal;
+      padding-left: 0.5em;
+      padding-left: 0.5em;
+      padding-top: 0.05em;
+      padding-bottom: 0.05em; }
+    #table-of-contents #text-table-of-contents {
+      display: none;
+      text-align: left; }
+    #table-of-contents:hover #text-table-of-contents {
+      display: block;
+      padding: 0.5em;
+      margin-top: -1.5em; }
+    
+  .rss_box {}
+  .rss_title, rss_title a {}
+  .rss_items {}
+  .rss_item a:link, .rss_item a:visited, .rss_item a:active {}
+  .rss_item a:hover {}
+  .rss_date {}
+
+} /* END OF @media all */
+
+@media screen
+{
+  #table-of-contents {
+    float: right;
+    border: 1px solid #CCC;
+    max-width: 50%;
+    overflow: auto;
+  }
+} /* END OF @media screen */
