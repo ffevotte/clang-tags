@@ -55,5 +55,42 @@ install (
 
 install (
   PROGRAMS     clang-tags
-  DESTINATION  bin
-)
+  DESTINATION  bin)
+
+
+
+enable_testing()
+
+set (ENV env PATH=${PROJECT_SOURCE_DIR}:${PATH})
+
+add_test (
+  NAME    clang-tags-index-runs
+  COMMAND clang-tags-index -h)
+
+add_test (
+  NAME    clang-tags-def-runs
+  COMMAND clang-tags-def -h)
+
+add_test (
+  NAME    clang-tags-runs
+  COMMAND ${ENV} clang-tags -h)
+
+add_test (
+  NAME    clang-tags-scan
+  COMMAND ${ENV} clang-tags scan ${PROJECT_SOURCE_DIR} -- -I.)
+
+add_test (
+  NAME    clang-tags-index
+  COMMAND ${ENV} clang-tags index)
+
+add_test (
+  NAME    clang-tags-find-def
+  COMMAND ${ENV} clang-tags find-def ../src/index.cxx 903)
+set_tests_properties (clang-tags-find-def PROPERTIES
+  PASS_REGULAR_EXPRESSION c:@N@Clang@C@Cursor@F@location\#1)
+
+add_test (
+  NAME    clang-tags-grep
+  COMMAND ${ENV} clang-tags grep c:@N@Clang@C@Cursor@F@location\#1)
+set_tests_properties (clang-tags-grep PROPERTIES
+  PASS_REGULAR_EXPRESSION findDefinition.cxx:52:)

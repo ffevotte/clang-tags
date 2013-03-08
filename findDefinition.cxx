@@ -85,6 +85,11 @@ int main (int argc, char **argv) {
     return (EXIT_FAILURE);
   }
 
+  if (args["help"] == "true") {
+    std::cerr << args.usage();
+    return (EXIT_SUCCESS);
+  }
+
   // Get first argument: FILE
   std::string fileName = args.shift();
   if (fileName == "") {

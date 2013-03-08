@@ -78,6 +78,11 @@ int main(int argc, char *argv[]) {
     return (EXIT_SUCCESS);
   }
 
+  if (args.argc() == 0) {
+    std::cerr << std::endl << args.usage();
+    return (EXIT_FAILURE);
+  }
+
   Clang::TranslationUnit tu (args.argc(), args.argv());
   Clang::Cursor top (tu);
 

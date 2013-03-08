@@ -23,17 +23,18 @@ complete description of `clang-tags`' features and a usage documentation.
 - `python` (>= 2.3)
   - a version newer than 2.7 is recommended to benefit from the more recent `argparse` module.
 
-
 ### Building
 
 `clang-tags` uses [`CMake`](http://www.cmake.org/) as a build system.
 
-A complete build process could for example look like this:
+A complete build and test process could for example look like this:
 
 ```
 git clone https://github.com/ffevotte/clang-tags.git src
 mkdir build && cd build
 cmake ../src
+make
+make test
 ```
 
 ### Testing and using without installing
@@ -70,61 +71,69 @@ All details are in the [user manual](http://ffevotte.github.com/clang-tags), but
 here are a few steps which should get you started. If anything goes wrong,
 please consult the documentation.
 
-1. build the compilation database:
+0. source the environment:
 
    ```
-   ~> cd path/to/your/build/directory
-   build> make clean
-   build> clang-tags trace make
-   [ 33%] Building CXX object CMakeFiles/getopt++.dir/getopt/getopt.cxx.o
-   Linking CXX static library libgetopt++.a
-   [ 33%] Built target getopt++
-   [ 66%] Building CXX object CMakeFiles/clang-tags-def.dir/findDefinition.cxx.o
-   Linking CXX executable clang-tags-def
-   [ 66%] Built target clang-tags-def
-   [100%] Building CXX object CMakeFiles/clang-tags-index.dir/index.cxx.o
-   Linking CXX executable clang-tags-index
-   [100%] Built target clang-tags-index
+    ~> source path/to/build/env.sh
+    ~> echo $PATH
+    /usr/local/bin:/usr/bin:/bin:path/to/clang-tags/src:path/to/clang-tags/build
+   ```
+
+1. build the compilation database (in this example, we'll index the sources of `clang-tags` itself):
+
+   ```
+    ~> cd path/to/clang-tags/build
+    build> make clean
+    build> clang-tags trace make
+    [ 33%] Building CXX object CMakeFiles/getopt++.dir/getopt/getopt.cxx.o
+    Linking CXX static library libgetopt++.a
+    [ 33%] Built target getopt++
+    [ 66%] Building CXX object CMakeFiles/clang-tags-def.dir/findDefinition.cxx.o
+    Linking CXX executable clang-tags-def
+    [ 66%] Built target clang-tags-def
+    [100%] Building CXX object CMakeFiles/clang-tags-index.dir/index.cxx.o
+    Linking CXX executable clang-tags-index
+    [100%] Built target clang-tags-index
    ```
 
 2. index the source files:
 
    ```
-   build> clang-tags index --emacs-conf ../src/
-   src/getopt/getopt.cxx...          1.27s.
-   src/findDefinition.cxx...         0.34s.
-   src/index.cxx...                  0.33s.
+    build> clang-tags index --emacs-conf ../src/
+    src/getopt/getopt.cxx...          1.27s.
+    src/findDefinition.cxx...         0.34s.
+    src/index.cxx...                  0.33s.
    ```
 
 3. find the definition location of the identifier located in `index.cxx` at
    offset 902:
 
    ```
-   build> clang-tags find-def ../src/index.cxx 902
-   -- cursor.location().expansionLocation() -- CallExpr expansionLocation
-      src/clang/sourceLocation.hxx:31-51:20-5: CXXMethod expansionLocation
-      USR: c:@N@Clang@C@SourceLocation@F@expansionLocation#1
-
-   -- cursor.location() -- CallExpr location
-      src/clang/cursor.hxx:63-65:20-5: CXXMethod location
-      USR: c:@N@Clang@C@Cursor@F@location#1
-
-   -- cursor -- DeclRefExpr cursor
-      src/index.cxx:21-21:23-40: VarDecl cursor
-      USR: c:index.cxx@557@F@indexFile#$@SA@CXCursor#S0_#*v#@cursor
+    build> clang-tags find-def ../src/index.cxx 902
+      -- cursor.location().expansionLocation() -- CallExpr expansionLocation
+         src/clang/sourceLocation.hxx:31-51:20-5: CXXMethod expansionLocation
+         USR: c:@N@Clang@C@SourceLocation@F@expansionLocation#1
+       
+      -- cursor.location() -- CallExpr location
+         src/clang/cursor.hxx:63-65:20-5: CXXMethod location
+         USR: c:@N@Clang@C@Cursor@F@location#1
+       
+      -- cursor -- DeclRefExpr cursor
+         src/index.cxx:21-21:23-40: VarDecl cursor
+         USR: c:index.cxx@557@F@indexFile#$@SA@CXCursor#S0_#*v#@cursor
    ```
 
 4. find all uses of the `Cursor::location()` method (identified by its USR, as
    given in the second result of `clang-tags find-def` above):
 
    ```
-   build> clang-tags grep 'c:@N@Clang@C@Cursor@F@location#1'
-   src/findDefinition.cxx:13:  const Clang::SourceLocation location(cursor.location());
-   src/findDefinition.cxx:33:    const Clang::SourceLocation::Position begin = cursorDef.location().expansionLocation();
-   src/findDefinition.cxx:52:  const Clang::SourceLocation location (cursor.location());
-   src/findDefinition.cxx:131:    Clang::SourceLocation target = cursor.location();
-   src/clang/cursor.hxx:63:    SourceLocation location () const {
-   src/index.cxx:34:  const Clang::SourceLocation::Position begin = cursor.location().expansionLocation();
+    build> clang-tags grep 'c:@N@Clang@C@Cursor@F@location#1'
+    src/findDefinition.cxx:13:  const Clang::SourceLocation location(cursor.location());
+    src/findDefinition.cxx:33:    const Clang::SourceLocation::Position begin = cursorDef.location().expansionLocation();
+    src/findDefinition.cxx:52:  const Clang::SourceLocation location (cursor.location());
+    src/findDefinition.cxx:131:    Clang::SourceLocation target = cursor.location();
+    src/clang/cursor.hxx:63:    SourceLocation location () const {
+    src/index.cxx:34:  const Clang::SourceLocation::Position begin = cursor.location().expansionLocation();
    ```
 
 
