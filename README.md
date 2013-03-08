@@ -7,10 +7,10 @@ the libclang interface) to analyse and index the source code base.
 Its main features are:
 - generating
   [compilation databases](http://clang.llvm.org/docs/JSONCompilationDatabase.html)
-  in a build-system-agnostic way
-- indexing a C/C++ project source files
-- finding the definition location of an identifier in a source file
-- finding all uses of a definition in the project sources
+  in a build-system-agnostic way,
+- indexing a C/C++ project source files,
+- finding the definition location of an identifier in a source file,
+- finding all uses of a definition in the project sources.
 
 Please see the [user manual](http://ffevotte.github.com/clang-tags) for a
 complete description of `clang-tags`' features and a usage documentation.
@@ -24,7 +24,7 @@ complete description of `clang-tags`' features and a usage documentation.
   - a version newer than 2.7 is recommended to benefit from the more recent `argparse` module.
 
 
-### Build
+### Building
 
 `clang-tags` uses [`CMake`](http://www.cmake.org/) as a build system.
 
@@ -35,6 +35,33 @@ git clone https://github.com/ffevotte/clang-tags.git src
 mkdir build && cd build
 cmake ../src
 ```
+
+### Testing and using without installing
+
+It is possible to use `clang-tags` immediately after the build, without properly installing it on
+the system. Two environment setup scripts are generated during the build to help in this respect:
+
+- **setup the shell environment**: `env.sh` appropriately sets the required environment variables,
+  such as `PATH`:
+
+  ```
+  source env.sh
+  ```
+
+- **setup script for Emacs**: `env.el` sets the required environment variables and loads the
+  `clang-tags.el` library. You can either:
+  - load it interactively: `M-x load-file RET /path/to/build/env.el RET`
+  - or put the following in your Emacs initialization file (`~/.emacs.d/init.el` or `~/.emacs`):
+  
+    ```lisp
+    (load-file "/path/to/build/env.el")
+    ```
+
+### Installing
+
+Running `make install` in the build directory should install `clang-tags`, but this has not been
+tested much yet. For now, it is safer to follow the instructions in the previous section.
+
 
 
 ## Getting started
@@ -103,14 +130,28 @@ please consult the documentation.
 
 ## See also
 
+### Similar tools
+
 - [Bear](https://github.com/rizsotto/Bear): a tool to generate compilation databases.
 - [clang-ctags](https://github.com/drothlis/clang-ctags): a similar project
   using libclang to generate `ctags`/`etags` index files.
-- clangd
-  ([proposal](http://lists.cs.uiuc.edu/pipermail/cfe-dev/2012-June/022028.html)
-  /
-  [design document](https://github.com/chandlerc/llvm-designs/blob/master/ClangService.rst)):
+- clangd ([proposal][clangd_proposal] / [design document][clangd_design]):
   a Clang-based IDE-like service (still in design phase AFAIK).
+
+[clangd_proposal]: http://lists.cs.uiuc.edu/pipermail/cfe-dev/2012-June/022028.html
+[clangd_design]:   https://github.com/chandlerc/llvm-designs/blob/master/ClangService.rst
+
+### Clang documentation
+
+- [libclang API documentation][libclang]
+- Eli Bendersky's [blog post on C++ parsing][bendersky] using libclang's Python bindings
+- Doug Gregor's [presentation on libclang][gregor]
+- Manuel Klimek's [presentation on clang-based IDE-like tools][klimek]
+
+[libclang]:  http://clang.llvm.org/doxygen/group__CINDEX.html
+[bendersky]: http://eli.thegreenplace.net/2011/07/03/parsing-c-in-python-with-clang/
+[gregor]:    http://llvm.org/devmtg/2010-11/Gregor-libclang.pdf
+[klimek]:    http://llvm.org/devmtg/2012-04-12/Slides/Manuel_Klimek.pdf
 
 
 ## Contributing
