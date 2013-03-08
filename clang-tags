@@ -215,8 +215,8 @@ def trace (args):
     sourceFiles = {}
     cwd = os.getcwd()
 
-    chdir_re = re.compile ("\[pid \d+\] chdir\((.*)\) = 0")
-    exec_re  = re.compile ("\[pid \d+\] execve(\(.*\)) = 0")
+    chdir_re = re.compile ("\[pid\s+\d+\] chdir\((.*)\) = 0")
+    exec_re  = re.compile ("\[pid\s+\d+\] execve(\(.*\)) = ")
 
     for line in p.stderr:
 
