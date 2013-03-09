@@ -65,7 +65,9 @@ class Index:
     def __init__ (self):
         self._tags = {}
 
-    def addTag (self, usr, fileName, lineNo, line):
+    def addTag (self, usr, fileName, lineNo, offset1, offset2):
+        lineNo = int(lineNo)
+
         if fileName not in self._tags:
             self._tags[fileName] = {}
 
@@ -74,15 +76,73 @@ class Index:
             fileTags[usr] = []
 
         tags = fileTags[usr]
-        line = "%s:%s:%s" % (fileName, lineNo, line)
-        if line not in tags:
-            fileTags[usr].append (line)
+        if lineNo not in tags:
+            tags.append (lineNo)
 
     def grep (self, usr):
         for fileName in self._tags:
             fileTags = self._tags[fileName]
-            for line in fileTags.get(usr, []):
-                print line,
+            for lineNo in fileTags.get(usr, []):
+                line = extractLine (fileName, lineNo)
+                print "%s:%d:%s" % (fileName, lineNo, line)
+
+    def save (self):
+        save (self, ".ct.index")
+
+import sqlite3
+class SQLiteIndex:
+    def __init__ (self):
+        self._conn = sqlite3.connect ('.ct.sqlite')
+        self._db = self._conn.cursor()
+        self._db.execute ('CREATE TABLE IF NOT EXISTS files ('
+                          '  id    INTEGER PRIMARY KEY,'
+                          '  name  TEXT'
+                          ')')
+        self._db.execute ('CREATE TABLE IF NOT EXISTS tags ('
+                          '  fileId   INTEGER REFERENCES files(id),'
+                          '  usr      TEXT,'
+                          '  line     INTEGER,'
+                          '  offset1  INTEGER,'
+                          '  offset2  INTEGER'
+                          ')')
+
+    def addTag (self, usr, fileName, lineNo, offset1, offset2):
+        lineNo = int(lineNo)
+        offset1 = int(offset1)
+        offset2 = int(offset2)
+
+        self._db.execute ('SELECT * FROM files WHERE name=?', (fileName,))
+        res = self._db.fetchone()
+        if res is None:
+            self._db.execute ('INSERT INTO files VALUES (NULL, ?)', (fileName,))
+            fileId = self._db.lastrowid
+        else:
+            fileId = res[0]
+
+        self._db.execute ('SELECT * FROM tags'
+                          '  WHERE fileId=?'
+                          '  AND   usr=?'
+                          '  AND   offset1=?'
+                          '  AND   offset2=?',
+                          (fileId, usr, offset1, offset2))
+        if self._db.fetchone() is None:
+            self._db.execute ('INSERT INTO tags VALUES (?,?,?,?,?)',
+                              (fileId, usr, lineNo, offset1, offset2))
+
+    def grep (self, usr):
+        self._db.execute ('SELECT files.name, tags.line FROM tags'
+                          ' INNER JOIN files ON files.id = tags.fileId'
+                          ' WHERE tags.usr=?',
+                          (usr,))
+        for row in self._db.fetchall():
+            fileName = row[0]
+            lineNo = row[1]
+            line = extractLine (fileName, lineNo)
+            print "%s:%d:%s" % (fileName, lineNo, line),
+
+    def save (self):
+        self._conn.commit()
+        self._conn.close()
 
 
 class ClangTags:
@@ -101,21 +161,21 @@ class ClangTags:
         self._project = p
 
     def loadIndex (self, require = True):
-        try:
-            i = load (".ct.index")
-        except IOError:
-            if require is True:
-                raise
-            else:
-                i = Index()
-        self._index = i
+        # try:
+        #     i = load (".ct.index")
+        # except IOError:
+        #     if require is True:
+        #         raise
+        #     else:
+        #         i = Index()
+        self._index = SQLiteIndex()
 
     def save (self):
         if self._project is not None:
             save (self._project, ".ct.db")
 
         if self._index is not None:
-            save (self._index, ".ct.index")
+            self._index.save()
 
     def options (self, action, args = None):
         return self._project.options(action, args)
@@ -152,12 +212,18 @@ class ClangTags:
                                         cwd = compilationCommand.compileDirectory,
                                         stdout = subprocess.PIPE)
 
-            for line in process.stdout:
-                (usr, _, line) = line.partition (" ")
-                (fileName, _, line) = line.partition (":")
-                (lineNo, _, line) = line.partition (":")
+            while True:
+                usr = process.stdout.readline().strip()
+                fileName = process.stdout.readline().strip()
+                lineNo = process.stdout.readline().strip()
+                offset1 = process.stdout.readline().strip()
+                offset2 = process.stdout.readline().strip()
+                sep = process.stdout.readline()
+                if len(sep) == 0:
+                    break
+                assert sep == "--\n"
 
-                self._index.addTag (usr, fileName, lineNo, line)
+                self._index.addTag (usr, fileName, lineNo, offset1, offset2)
                 self._project.addInclude (fileName, sourceFileName)
 
             process.wait ()
@@ -195,6 +261,21 @@ def endsWithOne (string, suffixes):
         if string.endswith(suffix):
             return True
     return False
+
+def extractLine (fileName, lineNo):
+    f = open (fileName, "r")
+    for i in xrange (lineNo):
+        line = f.readline()
+    f.close()
+    return line
+
+def extractRegion (fileName, offset1, offset2):
+    f = open (fileName, "r")
+    f.seek(offset1)
+    region = f.read (offset2-offset1)
+    f.close()
+    return region
+
 
 
 def trace (args):

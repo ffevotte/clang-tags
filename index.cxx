@@ -46,9 +46,12 @@ CXChildVisitResult indexFile (CXCursor rawCursor,
   const Clang::SourceLocation::Position end = cursor.end().expansionLocation();
   SourceFile sourceFile (begin.file);
 
-  std::cout << usr << " "
-            << begin.file << ":" << begin.line << ":"
-            << sourceFile.line (begin.line) << std::endl;
+  std::cout << usr                          << std::endl
+            << begin.file                   << std::endl
+            << begin.line                   << std::endl
+            << begin.offset                 << std::endl
+            << end.offset                   << std::endl
+            << "--"                         << std::endl;
 
   return CXChildVisit_Recurse;
 }
