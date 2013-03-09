@@ -85,7 +85,7 @@ add_test (
 
 add_test (
   NAME    clang-tags-find-def
-  COMMAND ${ENV} clang-tags find-def ../src/index.cxx 903)
+  COMMAND ${ENV} clang-tags find-def ../src/index.cxx 807)
 set_tests_properties (clang-tags-find-def PROPERTIES
   PASS_REGULAR_EXPRESSION c:@N@Clang@C@Cursor@F@location\#1)
 

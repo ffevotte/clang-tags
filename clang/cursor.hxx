@@ -34,6 +34,10 @@ namespace Clang {
       return clang_isUnexposed (clang_getCursorKind(raw()));
     }
 
+    bool isDeclaration () const {
+      return clang_isDeclaration(clang_getCursorKind(raw()));
+    }
+
     Cursor referenced () const {
       return clang_getCursorReferenced (raw());
     }

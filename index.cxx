@@ -17,7 +17,6 @@ CXChildVisitResult indexFile (CXCursor rawCursor,
                               CXCursor rawParent, //unused
                               CXClientData client_data)
 {
-  std::map<std::string, bool> & includedFiles = *((std::map<std::string, bool>*) client_data);
   const Clang::Cursor cursor (rawCursor);
   const Clang::Cursor cursorDef (cursor.referenced());
 
@@ -41,17 +40,20 @@ CXChildVisitResult indexFile (CXCursor rawCursor,
     return CXChildVisit_Continue;
   }
 
-  includedFiles[begin.file] = true;
-
   const Clang::SourceLocation::Position end = cursor.end().expansionLocation();
   SourceFile sourceFile (begin.file);
 
-  std::cout << usr                          << std::endl
-            << begin.file                   << std::endl
-            << begin.line                   << std::endl
-            << begin.offset                 << std::endl
-            << end.offset                   << std::endl
-            << "--"                         << std::endl;
+  std::cout << usr                    << std::endl
+            << cursor.kindStr ()      << std::endl
+            << begin.file             << std::endl
+            << begin.line             << std::endl
+            << begin.column           << std::endl
+            << begin.offset           << std::endl
+            << end.line               << std::endl
+            << end.column             << std::endl
+            << end.offset             << std::endl
+            << cursor.isDeclaration() << std::endl
+            << "--"                   << std::endl;
 
   return CXChildVisit_Recurse;
 }

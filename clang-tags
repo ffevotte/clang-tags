@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python -O
 
 """
 C and C++ source code base indexer using libclang.
@@ -101,13 +101,21 @@ class SQLiteIndex:
         self._db.execute ('CREATE TABLE IF NOT EXISTS tags ('
                           '  fileId   INTEGER REFERENCES files(id),'
                           '  usr      TEXT,'
-                          '  line     INTEGER,'
+                          '  kind     TEXT,'
+                          '  line1    INTEGER,'
+                          '  col1     INTEGER,'
                           '  offset1  INTEGER,'
-                          '  offset2  INTEGER'
+                          '  line2    INTEGER,'
+                          '  col2     INTEGER,'
+                          '  offset2  INTEGER,'
+                          '  isDecl   BOOLEAN'
                           ')')
 
-    def addTag (self, usr, fileName, lineNo, offset1, offset2):
-        lineNo = int(lineNo)
+    def addTag (self, usr, kind, fileName,
+                line1, col1, offset1,
+                line2, col2, offset2,
+                isDecl):
+        line1 = int(line1)
         offset1 = int(offset1)
         offset2 = int(offset2)
 
@@ -119,26 +127,65 @@ class SQLiteIndex:
         else:
             fileId = res[0]
 
-        self._db.execute ('SELECT * FROM tags'
-                          '  WHERE fileId=?'
-                          '  AND   usr=?'
-                          '  AND   offset1=?'
-                          '  AND   offset2=?',
+        self._db.execute ('SELECT * FROM tags '
+                          'WHERE fileId=?'
+                          '  AND usr=?'
+                          '  AND offset1=?'
+                          '  AND offset2=?',
                           (fileId, usr, offset1, offset2))
         if self._db.fetchone() is None:
-            self._db.execute ('INSERT INTO tags VALUES (?,?,?,?,?)',
-                              (fileId, usr, lineNo, offset1, offset2))
+            self._db.execute ('INSERT INTO tags VALUES (?,?,?,?,?,?,?,?,?,?)',
+                              (fileId, usr, kind,
+                               line1, col1, offset1,
+                               line2, col2, offset2,
+                               isDecl))
 
     def grep (self, usr):
-        self._db.execute ('SELECT files.name, tags.line FROM tags'
-                          ' INNER JOIN files ON files.id = tags.fileId'
-                          ' WHERE tags.usr=?',
+        self._db.execute ('SELECT files.name, tags.line1 FROM tags '
+                          'INNER JOIN files ON files.id = tags.fileId '
+                          'WHERE tags.usr=?',
                           (usr,))
         for row in self._db.fetchall():
             fileName = row[0]
-            lineNo = row[1]
-            line = extractLine (fileName, lineNo)
-            print "%s:%d:%s" % (fileName, lineNo, line),
+            line1 = row[1]
+            line = extractLine (fileName, line1)
+            print "%s:%d:%s" % (fileName, line1, line),
+
+    def findDefinition (self, fileName, offset):
+        self._db.execute ('SELECT tags.usr, tags.offset1, tags.offset2 '
+                          'FROM tags '
+                          'INNER JOIN files ON files.id = tags.fileId '
+                          'WHERE files.name = ? '
+                          '  AND tags.offset1 <= ? '
+                          '  AND tags.offset2 >= ? '
+                          'ORDER BY (offset2 - offset1)',
+                          (fileName, offset, offset))
+        rows = self._db.fetchall()
+        usrList = []
+        for row in rows:
+            (usr, offset1, offset2) = row
+            if usr in usrList:
+                continue
+
+            usrList.append(usr)
+            spelling = extractRegion (fileName, offset1, offset2)
+            self._db.execute ('SELECT files.name, '
+                              '       tags.line1, tags.line2, '
+                              '       tags.col1,  tags.col2,'
+                              '       tags.kind '
+                              'FROM tags '
+                              'INNER JOIN files ON files.id = tags.fileId '
+                              'WHERE isDecl = 1 '
+                              '  AND usr = ?',
+                              (usr,))
+            rows2 = self._db.fetchall()
+            if rows2 != []:
+                kind = rows2[0][5]
+                print "-- %s -- %s"  % (spelling, kind)
+                for row2 in rows2:
+                    print "   %s:%d-%d:%d-%d: %s" % row2
+                print "   USR: %s" % usr
+                print ""
 
     def save (self):
         self._conn.commit()
@@ -214,16 +261,24 @@ class ClangTags:
 
             while True:
                 usr = process.stdout.readline().strip()
+                kind = process.stdout.readline().strip()
                 fileName = process.stdout.readline().strip()
-                lineNo = process.stdout.readline().strip()
+                line1 = process.stdout.readline().strip()
+                col1 = process.stdout.readline().strip()
                 offset1 = process.stdout.readline().strip()
+                line2 = process.stdout.readline().strip()
+                col2 = process.stdout.readline().strip()
                 offset2 = process.stdout.readline().strip()
+                isDecl = process.stdout.readline().strip()
                 sep = process.stdout.readline()
                 if len(sep) == 0:
                     break
                 assert sep == "--\n"
 
-                self._index.addTag (usr, fileName, lineNo, offset1, offset2)
+                self._index.addTag (usr, kind, fileName,
+                                    line1, col1, offset1,
+                                    line2, col2, offset2,
+                                    isDecl)
                 self._project.addInclude (fileName, sourceFileName)
 
             process.wait ()
@@ -231,15 +286,28 @@ class ClangTags:
             if debug is True:
                 sys.stderr.write ("\n")
 
-    def findDefinition (self, fileName, offset):
-        compilationCommand = self._project.compilationCommand(fileName)
+    def findDefinition (self, fileName, offset, fromIndex = True):
+        if fromIndex is True:
+            self._index.findDefinition (fileName, offset)
+        else:
+            compilationCommand = self._project.compilationCommand(fileName)
 
-        command = ["clang-tags-def", fileName, offset, "--"]
-        command += compilationCommand.compileArgs
+            command = ["clang-tags-def", fileName, offset, "--"]
+            command += compilationCommand.compileArgs
 
-        process = subprocess.Popen (command,
-                                    cwd = compilationCommand.compileDirectory)
-        process.wait()
+            process = subprocess.Popen (command,
+                                        cwd = compilationCommand.compileDirectory,
+                                        stdout = subprocess.PIPE)
+            buf = []
+            for line in process.stdout:
+                if line.startswith("--"):
+                    buf.append("")
+                buf[-1] += line
+            process.wait()
+
+            l = len(buf)
+            for i in xrange(l):
+                print "%s" % buf[l-i-1],
 
     def grep (self, usr):
         self._index.grep (usr)
@@ -274,7 +342,10 @@ def extractRegion (fileName, offset1, offset2):
     f.seek(offset1)
     region = f.read (offset2-offset1)
     f.close()
-    return region
+    region = re.sub ("\s+", " ", region)
+    if len(region) > 40:
+        region = region[:37] + "..."
+    return region[:40]
 
 
 
@@ -407,7 +478,8 @@ def findDefinition (args):
 
     ct = ClangTags()
     ct.loadProject()
-    ct.findDefinition (fileName, offset)
+    ct.loadIndex()
+    ct.findDefinition (fileName, offset, args.fromIndex)
 
 
 def grep (args):
@@ -497,6 +569,15 @@ def main_argparse ():
                                 help = "source file name")
     parserFindDef.add_argument ("offset", metavar = "OFFSET",
                                 help = "offset in bytes")
+    parserFindDef.add_argument ("--index", "-i",
+                                dest = "fromIndex",
+                                action = "store_true",
+                                help = "look for the definition in the index")
+    parserFindDef.add_argument ("--recompile", "-r",
+                                dest = "fromIndex",
+                                action = "store_false",
+                                help = "recompile the file to find the definition")
+    parserFindDef.set_defaults (fromIndex = True)
     parserFindDef.set_defaults (fun = findDefinition)
 
 

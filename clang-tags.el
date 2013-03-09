@@ -14,15 +14,7 @@
 
 ;;; Specific compilation mode for `clang-tags find-def'
 
-;; Go to the last message after compilation is done
-(defvar ct/find-def-finish-functions
-  `(,(lambda (buffer message)
-       (select-window (get-buffer-window buffer))
-       (goto-char (point-max))
-       (compilation-previous-error 1)))
-  "Functions to call when a clang-tags process finishes.
-Each function is called with two arguments: the compilation buffer,
-and a string describing how the process finished.")
+(defvar ct/find-def-scroll-output 'first-error)
 
 ;; Error regexp
 (defvar ct/find-def-error-regexp-alist
