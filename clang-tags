@@ -12,91 +12,31 @@ import time
 import pickle
 import re
 
-
-class SourceFile:
-    def __init__ (self, compileDirectory, compileArgs):
-        self.compileDirectory = compileDirectory
-        self.compileArgs = compileArgs
-        self.lastIndexed = 0
-
-
-class Project:
-    def __init__ (self):
-        self._options = {"index":  None,
-                         "source": None}
-        self._sourceFiles = {}
-        self._includedFiles = {}
-
-    def options (self, action, args = None):
-        if args is None:
-            return self._options[action]
-        else:
-            self._options[action] = args
-
-    def addSourceFile (self, fileName, directory, command):
-        if fileName not in self._sourceFiles:
-            self._sourceFiles[fileName] = SourceFile (directory, command)
-        else:
-            sourceFile = self._sourceFiles[fileName]
-            sourceFile.compileDirectory = directory
-            sourceFile.compileArgs = command
-
-    def sourceFiles (self):
-        return self._sourceFiles.keys()
-
-    def compilationCommand (self, fileName):
-        if fileName in self._sourceFiles:
-            return self._sourceFiles[fileName]
-        else:
-            for sourceFileName in self._sourceFiles:
-                if fileName in self._includedFiles[sourceFileName]:
-                    return self._sourceFiles[sourceFileName]
-        raise RuntimeError ("Could not find file \"%s\" in the project" % fileName)
-
-    def beginIndexing (self, fileName):
-        self._sourceFiles[fileName].lastIndexed = time.time()
-        self._includedFiles[fileName] = {}
-
-    def addInclude (self, includedFileName, sourceFileName):
-        self._includedFiles[sourceFileName][includedFileName] = True
-
-
-class Index:
-    def __init__ (self):
-        self._tags = {}
-
-    def addTag (self, usr, fileName, lineNo, offset1, offset2):
-        lineNo = int(lineNo)
-
-        if fileName not in self._tags:
-            self._tags[fileName] = {}
-
-        fileTags = self._tags[fileName]
-        if usr not in fileTags:
-            fileTags[usr] = []
-
-        tags = fileTags[usr]
-        if lineNo not in tags:
-            tags.append (lineNo)
-
-    def grep (self, usr):
-        for fileName in self._tags:
-            fileTags = self._tags[fileName]
-            for lineNo in fileTags.get(usr, []):
-                line = extractLine (fileName, lineNo)
-                print "%s:%d:%s" % (fileName, lineNo, line)
-
-    def save (self):
-        save (self, ".ct.index")
-
 import sqlite3
-class SQLiteIndex:
+class SQLiteStore:
+    """SQLite backend for ClangTags data storage"""
+
     def __init__ (self):
         self._conn = sqlite3.connect ('.ct.sqlite')
         self._db = self._conn.cursor()
+        self._db.execute ('CREATE TABLE IF NOT EXISTS options ('
+                          '  command   TEXT,'
+                          '  arguments TEXT'
+                          ')')
         self._db.execute ('CREATE TABLE IF NOT EXISTS files ('
-                          '  id    INTEGER PRIMARY KEY,'
-                          '  name  TEXT'
+                          '  id          INTEGER PRIMARY KEY,'
+                          '  name        TEXT,'
+                          '  lastIndexed INTEGER,'
+                          '  included    INTEGER'
+                          ')')
+        self._db.execute ('CREATE TABLE IF NOT EXISTS commands ('
+                          '  fileId     INTEGER REFERENCES files(id),'
+                          '  directory  TEXT,'
+                          '  args       TEXT'
+                          ')')
+        self._db.execute ('CREATE TABLE IF NOT EXISTS includes ('
+                          '  sourceId   INTEGER REFERENCES files(id),'
+                          '  includedId INTEGER REFERENCES files(id)'
                           ')')
         self._db.execute ('CREATE TABLE IF NOT EXISTS tags ('
                           '  fileId   INTEGER REFERENCES files(id),'
@@ -111,21 +51,129 @@ class SQLiteIndex:
                           '  isDecl   BOOLEAN'
                           ')')
 
+    def _fileId (self, fileName):
+        """Return the id of a file in the database, or None if the file is not
+        present."""
+        self._db.execute ('SELECT * FROM files WHERE name=?', (fileName,))
+        row = self._db.fetchone()
+        if row is None:
+            return None
+        else:
+            return row[0]
+
+    def _addFile (self, fileName, included=False):
+        "Add a file to the database if not present. Returns its id."
+        fileId = self._fileId(fileName)
+        if fileId is None:
+            self._db.execute ('INSERT INTO files VALUES (NULL, ?, 0, ?)',
+                              (fileName, included))
+            fileId = self._db.lastrowid
+        return fileId
+
+    def _includer (self, includedId):
+        "Select a source file which a header file is included."
+        self._db.execute ('SELECT source.name FROM includes '
+                          'INNER JOIN files AS source ON sourceId = source.id '
+                          'WHERE includedId = ?',
+                          (includedId,))
+        return self._db.fetchone()[0]
+
+    def setOptions (self, command, args):
+        "Store the command-line arguments given for `command`."
+        self._db.execute ('DELETE FROM options WHERE command=?', (command,))
+        self._db.execute ('INSERT INTO options VALUES (?,?)',
+                          (command, pickle.dumps(args)))
+
+    def getOptions (self, command):
+        "Get the last command-line arguments used for `command`."
+        self._db.execute ('SELECT * FROM options WHERE command=?', (command,))
+        row = self._db.fetchone()
+        if row is None:
+            return None
+        else:
+            return pickle.loads(row[1])
+
+    def addSourceFile (self, fileName, directory, command):
+        "Add a source file (with its compilation command) to the project."
+        fileId = self._addFile (fileName)
+        self._db.execute ('DELETE FROM commands WHERE fileId=?', (fileId,))
+        self._db.execute ('INSERT INTO commands VALUES (?,?,?)',
+                          (fileId, directory, str(command)))
+
+    def compilationCommand (self, fileName):
+        """Return the compilation command for a source file as a (directory,
+        args) tuple.  In case of a header file, select a source file including
+        it and return the relevant compilation command."""
+        fileId = self._fileId (fileName)
+        self._db.execute ('SELECT * FROM commands WHERE fileId=?', (fileId,))
+        row = self._db.fetchone()
+        if row is None:
+            return self.compilationCommand (self._includer (fileId))
+        directory = row[1]
+        args = eval(row[2])
+        return (directory, args)
+
+    def addInclude (self, includedFile, sourceFile):
+        "Add an included file to the project."
+        sourceId = self._fileId (sourceFile)
+        includedId = self._fileId (includedFile)
+        self._db.execute ('DELETE FROM includes '
+                          'WHERE sourceId = ? '
+                          '  AND includedId = ?',
+                          (sourceId, includedId))
+        self._db.execute ('INSERT INTO includes VALUES (?,?)',
+                          (sourceId, includedId))
+
+    def nextFile (self):
+        """Select the next file to be updated. Main source files are selected
+        first; if an included file remains to be updated, return a source file
+        including it."""
+        self._db.execute ('SELECT * FROM files ORDER BY included')
+        for row in self._db.fetchall():
+            fileId = row[0]
+            fileName = row[1]
+            lastIndexed = row[2]
+            included = row[3]
+            lastModified = os.stat(fileName).st_mtime
+            if lastModified > lastIndexed:
+                if included == 0:
+                    return fileName
+                else:
+                    return self._includer (fileId)
+        return None
+
+    def beginFile (self, fileName, included):
+        """Begin indexing a file. The file is added to the project. If it needs
+        updating, associated tags are deleted and True is returned. Otherwise,
+        return False."""
+        fileId = self._addFile (fileName, included)
+        self._db.execute ("SELECT * FROM files WHERE name = ?",
+                          (fileName,))
+        row = self._db.fetchone()
+        lastIndexed = row[2]
+        lastModified = os.stat(fileName).st_mtime
+        if lastModified > lastIndexed:
+            self._db.execute ('DELETE FROM tags WHERE fileId = ?', (fileId,))
+            self._db.execute ('UPDATE files '
+                              'SET lastIndexed = ? '
+                              'WHERE id = ?',
+                              (time.time(), fileId))
+            return True
+        else:
+            return False
+
     def addTag (self, usr, kind, fileName,
                 line1, col1, offset1,
                 line2, col2, offset2,
                 isDecl):
+        """Add a tag to the database."""
         line1 = int(line1)
         offset1 = int(offset1)
         offset2 = int(offset2)
 
         self._db.execute ('SELECT * FROM files WHERE name=?', (fileName,))
         res = self._db.fetchone()
-        if res is None:
-            self._db.execute ('INSERT INTO files VALUES (NULL, ?)', (fileName,))
-            fileId = self._db.lastrowid
-        else:
-            fileId = res[0]
+        fileId = res[0]
 
         self._db.execute ('SELECT * FROM tags '
                           'WHERE fileId=?'
@@ -141,6 +189,8 @@ class SQLiteIndex:
                                isDecl))
 
     def grep (self, usr):
+        """Return all uses of a definition (as identified by its USR) in the
+        project. Output results in a grep-like format."""
         self._db.execute ('SELECT files.name, tags.line1 FROM tags '
                           'INNER JOIN files ON files.id = tags.fileId '
                           'WHERE tags.usr=?',
@@ -152,6 +202,7 @@ class SQLiteIndex:
             print "%s:%d:%s" % (fileName, line1, line),
 
     def findDefinition (self, fileName, offset):
+        "Find in the index the definition of identifier at point."
         self._db.execute ('SELECT tags.usr, tags.offset1, tags.offset2 '
                           'FROM tags '
                           'INNER JOIN files ON files.id = tags.fileId '
@@ -188,47 +239,33 @@ class SQLiteIndex:
                 print ""
 
     def save (self):
+        "Commit and save all changes to the database."
         self._conn.commit()
         self._conn.close()
 
 
 class ClangTags:
+    """The main class, implementing project management and tagging
+    algorithms."""
+
     def __init__ (self):
-        self._project = None
-        self._index   = None
-
-    def loadProject (self, require = True):
-        try:
-            p = load (".ct.db")
-        except IOError:
-            if require is True:
-                raise
-            else:
-                p = Project()
-        self._project = p
-
-    def loadIndex (self, require = True):
-        # try:
-        #     i = load (".ct.index")
-        # except IOError:
-        #     if require is True:
-        #         raise
-        #     else:
-        #         i = Index()
-        self._index = SQLiteIndex()
+        self._store   = SQLiteStore()
 
     def save (self):
-        if self._project is not None:
-            save (self._project, ".ct.db")
-
-        if self._index is not None:
-            self._index.save()
+        "Save the internal state of clang-tags."
+        self._store.save()
 
     def options (self, action, args = None):
-        return self._project.options(action, args)
+        "Set or get the command-line options used for a given action."
+        if args is None:
+            return self._store.getOptions (action)
+        else:
+            return self._store.setOptions (action, args)
 
     def updateProject (self):
-        opts = self._project.options("index")
+        """Update the project (i.e. the set of source files and associated
+        compilation commands)."""
+        opts = self._store.getOptions("index")
         f = open (opts.input, "r")
         db = json.load (f)
         f.close()
@@ -237,49 +274,62 @@ class ClangTags:
             sourceFile = os.path.realpath(compilationCommand["file"])
             directory  = compilationCommand["directory"]
             command    = shlex.split(compilationCommand["command"].encode())[1:]
-            self._project.addSourceFile (sourceFile, directory, command)
+            self._store.addSourceFile (sourceFile, directory, command)
 
     def updateIndex (self, debug = False):
         "Create and populate a tags database"
 
-        for sourceFileName in self._project.sourceFiles():
-            compilationCommand = self._project.compilationCommand (sourceFileName)
+        while True:
+            sourceFileName = self._store.nextFile()
+            if sourceFileName is None:
+                break
+
+            needsUpdate = {}
+            needsUpdate[sourceFileName] = \
+                self._store.beginFile (sourceFileName, 0)
+
+            (compileDirectory, compileArgs) = \
+                self._store.compilationCommand (sourceFileName)
 
             command = ["clang-tags-index", "--"]
-            command += compilationCommand.compileArgs
+            command += compileArgs
 
             sys.stderr.write ("%-70s\t" % (sourceFileName + "..."))
             if debug is True:
                 sys.stderr.write ("\n  " + " ".join (command) + "\n")
 
             begin = time.time()
-            self._project.beginIndexing (sourceFileName)
 
             process = subprocess.Popen (command,
-                                        cwd = compilationCommand.compileDirectory,
+                                        cwd = compileDirectory,
                                         stdout = subprocess.PIPE)
 
             while True:
-                usr = process.stdout.readline().strip()
-                kind = process.stdout.readline().strip()
-                fileName = process.stdout.readline().strip()
-                line1 = process.stdout.readline().strip()
-                col1 = process.stdout.readline().strip()
-                offset1 = process.stdout.readline().strip()
-                line2 = process.stdout.readline().strip()
-                col2 = process.stdout.readline().strip()
-                offset2 = process.stdout.readline().strip()
-                isDecl = process.stdout.readline().strip()
-                sep = process.stdout.readline()
-                if len(sep) == 0:
+                usr      = process.stdout.readline().strip()
+                if len (usr) == 0:
                     break
+                kind     = process.stdout.readline().strip()
+                fileName = process.stdout.readline().strip()
+                line1    = process.stdout.readline().strip()
+                col1     = process.stdout.readline().strip()
+                offset1  = process.stdout.readline().strip()
+                line2    = process.stdout.readline().strip()
+                col2     = process.stdout.readline().strip()
+                offset2  = process.stdout.readline().strip()
+                isDecl   = process.stdout.readline().strip()
+                sep      = process.stdout.readline()
                 assert sep == "--\n"
 
-                self._index.addTag (usr, kind, fileName,
-                                    line1, col1, offset1,
-                                    line2, col2, offset2,
-                                    isDecl)
-                self._project.addInclude (fileName, sourceFileName)
+                if fileName not in needsUpdate:
+                    needsUpdate[fileName] = self._store.beginFile (fileName, 1)
+
+                if needsUpdate[fileName]:
+                    self._store.addTag (usr, kind, fileName,
+                                        line1, col1, offset1,
+                                        line2, col2, offset2,
+                                        isDecl)
+
+                self._store.addInclude (fileName, sourceFileName)
 
             process.wait ()
             sys.stderr.write ("%.2fs.\n" % (time.time() - begin))
@@ -287,16 +337,19 @@ class ClangTags:
                 sys.stderr.write ("\n")
 
     def findDefinition (self, fileName, offset, fromIndex = True):
+        """Find the definition of the identifier at point. If fromIndex is True,
+        get the information in the index; otherwise, call `clang-tags-def`."""
         if fromIndex is True:
-            self._index.findDefinition (fileName, offset)
+            self._store.findDefinition (fileName, offset)
         else:
-            compilationCommand = self._project.compilationCommand(fileName)
+            (compileDirectory, compileArgs) = \
+                self._store.compilationCommand(fileName)
 
             command = ["clang-tags-def", fileName, offset, "--"]
-            command += compilationCommand.compileArgs
+            command += compileArgs
 
             process = subprocess.Popen (command,
-                                        cwd = compilationCommand.compileDirectory,
+                                        cwd = compileDirectory,
                                         stdout = subprocess.PIPE)
             buf = []
             for line in process.stdout:
@@ -310,27 +363,22 @@ class ClangTags:
                 print "%s" % buf[l-i-1],
 
     def grep (self, usr):
-        self._index.grep (usr)
+        """Find all uses of a definition (as identified by its USR) in the
+        project. Output results in a grep-like format."""
+        self._store.grep (usr)
 
 
-def save (obj, fileName):
-    f = open (fileName, "w")
-    pickle.dump (obj, f)
-    f.close ()
-
-def load (fileName):
-    f = open (fileName, "r")
-    res = pickle.load (f)
-    f.close()
-    return res
+### Helper functions
 
 def endsWithOne (string, suffixes):
+    "Return True iff STRING ends with one of SUFFIXES."
     for suffix in suffixes:
         if string.endswith(suffix):
             return True
     return False
 
 def extractLine (fileName, lineNo):
+    "Extract the contents of line LINENO in file FILENAME."
     f = open (fileName, "r")
     for i in xrange (lineNo):
         line = f.readline()
@@ -338,6 +386,8 @@ def extractLine (fileName, lineNo):
     return line
 
 def extractRegion (fileName, offset1, offset2):
+    """Extract the contents of the region between offsets OFFSET1 and OFFSET2
+    (in bytes) in file FILENAME."""
     f = open (fileName, "r")
     f.seek(offset1)
     region = f.read (offset2-offset1)
@@ -348,10 +398,12 @@ def extractRegion (fileName, offset1, offset2):
     return region[:40]
 
 
+### Entry points for the subcommands
 
 def trace (args):
+    """Entry point for generating a compilation database by tracing a build
+    command."""
     ct = ClangTags()
-    ct.loadProject(require = False)
     ct.options ("source", args)
     ct.save()
 
@@ -407,8 +459,9 @@ def trace (args):
 
 
 def scan (args):
+    """Entry point for generating a compilation database by scanning a sources
+    directory."""
     ct = ClangTags()
-    ct.loadProject(require=False)
     ct.options ("source", args)
     ct.save()
 
@@ -436,8 +489,6 @@ def index (args):
     "Entry point for indexing the source code base"
 
     ct = ClangTags ()
-    ct.loadProject (require = False)
-    ct.loadIndex (require = False)
     ct.options ("index", args)
     ct.updateProject()
     ct.updateIndex(debug = args.debug)
@@ -459,8 +510,6 @@ def update (args):
     "Entry point for updating the source code base index"
 
     ct = ClangTags()
-    ct.loadProject()
-    ct.loadIndex()
 
     if args.all is True:
         argsSource = ct.options("source")
@@ -477,16 +526,12 @@ def findDefinition (args):
     offset   = args.offset
 
     ct = ClangTags()
-    ct.loadProject()
-    ct.loadIndex()
     ct.findDefinition (fileName, offset, args.fromIndex)
 
 
 def grep (args):
     "Entry point for finding the uses of a definition"
     ct = ClangTags()
-    ct.loadProject()
-    ct.loadIndex()
     ct.grep (args.usr)
 
 
@@ -503,7 +548,8 @@ def main_argparse ():
 
     parserTrace = subparsers.add_parser (
         "trace", help = "trace a build command",
-        description = "Create a compilation database by tracing a build command.")
+        description =
+        "Create a compilation database by tracing a build command.")
     parserTrace.add_argument (
         "command",
         metavar = "COMMAND",
@@ -551,8 +597,8 @@ def main_argparse ():
         "update",
         help = "update index",
         description =
-        "Update the source code base index, using the same arguments as previous "
-        "call to `index'")
+        "Update the source code base index, using the same arguments as "
+        "previous call to `index'")
     parserUpdate.add_argument (
         "--all", "-a",
         action = "store_true",
@@ -576,7 +622,8 @@ def main_argparse ():
     parserFindDef.add_argument ("--recompile", "-r",
                                 dest = "fromIndex",
                                 action = "store_false",
-                                help = "recompile the file to find the definition")
+                                help =
+                                "recompile the file to find the definition")
     parserFindDef.set_defaults (fromIndex = True)
     parserFindDef.set_defaults (fun = findDefinition)
 
@@ -598,6 +645,9 @@ def main_argparse ():
 
 
 def main_optparse ():
+    """Main entry point for the application, used for python <2.7 when argparse
+    is not available."""
+
     parser = optparse.OptionParser(
         usage = "usage: %prog SUBCOMMAND [options]",
         description = "Index a source code base using libclang. "

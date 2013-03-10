@@ -4,9 +4,6 @@
 
 #include "getopt/getopt.hxx"
 
-#include "findDefinition.hxx"
-#include "sourceFile.hxx"
-
 #include <clang-c/Index.h>
 #include <cstdlib>
 #include <string>
@@ -41,7 +38,6 @@ CXChildVisitResult indexFile (CXCursor rawCursor,
   }
 
   const Clang::SourceLocation::Position end = cursor.end().expansionLocation();
-  SourceFile sourceFile (begin.file);
 
   std::cout << usr                    << std::endl
             << cursor.kindStr ()      << std::endl
