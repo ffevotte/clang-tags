@@ -11,6 +11,7 @@ import shlex, subprocess
 import time
 import pickle
 import re
+import types
 
 import sqlite3
 class SQLiteStore:
@@ -80,9 +81,10 @@ class SQLiteStore:
 
     def setOptions (self, command, args):
         "Store the command-line arguments given for `command`."
+        s = str(args2dict(args))
         self._db.execute ('DELETE FROM options WHERE command=?', (command,))
         self._db.execute ('INSERT INTO options VALUES (?,?)',
-                          (command, pickle.dumps(args)))
+                          (command, s))
 
     def getOptions (self, command):
         "Get the last command-line arguments used for `command`."
@@ -91,7 +93,7 @@ class SQLiteStore:
         if row is None:
             return None
         else:
-            return pickle.loads(row[1])
+            return dict2args(eval(row[1]))
 
     def addSourceFile (self, fileName, directory, command):
         "Add a source file (with its compilation command) to the project."
@@ -369,7 +371,6 @@ class ClangTags:
 
 
 ### Helper functions
-
 def endsWithOne (string, suffixes):
     "Return True iff STRING ends with one of SUFFIXES."
     for suffix in suffixes:
@@ -396,6 +397,21 @@ def extractRegion (fileName, offset1, offset2):
     if len(region) > 40:
         region = region[:37] + "..."
     return region[:40]
+
+def args2dict (args):
+    d = {}
+    for attr in dir (args):
+        if not (attr.startswith("_") or type(getattr(args, attr)) is types.MethodType) :
+            d[attr] =  getattr(args, attr)
+    return d
+
+class Options:
+    pass
+def dict2args (d):
+    args = Options()
+    for attr in d:
+        setattr(args, attr, d[attr])
+    return args
 
 
 ### Entry points for the subcommands
@@ -682,6 +698,13 @@ def main_optparse ():
         update (options)
 
     elif subcommand == "find-def":
+        parser.add_option ("--index", "-i",
+                           dest = "fromIndex",
+                           action = "store_true")
+        parser.add_option ("--recompile", "-r",
+                           dest = "fromIndex",
+                           action = "store_false")
+        parser.set_defaults (fromIndex = True)
         (options, args) = parser.parse_args (sys.argv[2:])
         options.fileName = args[0]
         options.offset = args[1]

@@ -45,18 +45,18 @@ the system. Two environment setup scripts are generated during the build to help
 - **setup the shell environment**: `env.sh` appropriately sets the required environment variables,
   such as `PATH`:
 
-  ```
-  source env.sh
-  ```
+    ```
+    source env.sh
+    ```
 
 - **setup script for Emacs**: `env.el` sets the required environment variables and loads the
   `clang-tags.el` library. You can either:
   - load it interactively: `M-x load-file RET /path/to/build/env.el RET`
   - or put the following in your Emacs initialization file (`~/.emacs.d/init.el` or `~/.emacs`):
-  
-    ```lisp
-    (load-file "/path/to/build/env.el")
-    ```
+
+        ```lisp
+        (load-file "/path/to/build/env.el")
+        ```
 
 ### Installing
 
@@ -73,15 +73,15 @@ please consult the documentation.
 
 0. source the environment:
 
-   ```
+    ```
     ~> source path/to/build/env.sh
     ~> echo $PATH
     /usr/local/bin:/usr/bin:/bin:path/to/clang-tags/src:path/to/clang-tags/build
-   ```
+    ```
 
 1. build the compilation database (in this example, we'll index the sources of `clang-tags` itself):
 
-   ```
+    ```
     ~> cd path/to/clang-tags/build
     build> make clean
     build> clang-tags trace make
@@ -94,47 +94,47 @@ please consult the documentation.
     [100%] Building CXX object CMakeFiles/clang-tags-index.dir/index.cxx.o
     Linking CXX executable clang-tags-index
     [100%] Built target clang-tags-index
-   ```
+    ```
 
 2. index the source files:
 
-   ```
+    ```
     build> clang-tags index --emacs-conf ../src/
     src/getopt/getopt.cxx...          1.27s.
     src/findDefinition.cxx...         0.34s.
     src/index.cxx...                  0.33s.
-   ```
+    ```
 
 3. find the definition location of the identifier located in `index.cxx` at
-   offset 902:
+   offset 750:
 
-   ```
+    ```
     build> clang-tags find-def ../src/index.cxx 902
-      -- cursor.location().expansionLocation() -- CallExpr expansionLocation
-         src/clang/sourceLocation.hxx:31-51:20-5: CXXMethod expansionLocation
-         USR: c:@N@Clang@C@SourceLocation@F@expansionLocation#1
-       
-      -- cursor.location() -- CallExpr location
-         src/clang/cursor.hxx:63-65:20-5: CXXMethod location
-         USR: c:@N@Clang@C@Cursor@F@location#1
-       
-      -- cursor -- DeclRefExpr cursor
-         src/index.cxx:21-21:23-40: VarDecl cursor
-         USR: c:index.cxx@557@F@indexFile#$@SA@CXCursor#S0_#*v#@cursor
-   ```
+    -- cursor -- DeclRefExpr cursor
+       /local00/home/H55056/local/perso/projets/git/clang-tags/src/index.cxx:17-17:23-40: VarDecl cursor
+       USR: c:index.cxx@405@F@indexFile#$@SA@CXCursor#S0_#*v#@cursor
+
+    -- cursor.location() -- CallExpr location
+       /local00/home/H55056/local/perso/projets/git/clang-tags/src/clang/cursor.hxx:67-69:20-5: CXXMethod location
+       USR: c:@N@Clang@C@Cursor@F@location#1
+
+    -- cursor.location().expansionLocation() -- CallExpr expansionLocation
+       /local00/home/H55056/local/perso/projets/git/clang-tags/src/clang/sourceLocation.hxx:31-51:20-5: CXXMethod expansionLocation
+       USR: c:@N@Clang@C@SourceLocation@F@expansionLocation#1
+    ```
 
 4. find all uses of the `Cursor::location()` method (identified by its USR, as
    given in the second result of `clang-tags find-def` above):
 
-   ```
-    build> clang-tags grep 'c:@N@Clang@C@Cursor@F@location#1'
-    src/findDefinition.cxx:13:  const Clang::SourceLocation location(cursor.location());
-    src/findDefinition.cxx:33:    const Clang::SourceLocation::Position begin = cursorDef.location().expansionLocation();
-    src/findDefinition.cxx:52:  const Clang::SourceLocation location (cursor.location());
-    src/findDefinition.cxx:131:    Clang::SourceLocation target = cursor.location();
-    src/clang/cursor.hxx:63:    SourceLocation location () const {
-    src/index.cxx:34:  const Clang::SourceLocation::Position begin = cursor.location().expansionLocation();
-   ```
+    ```
+    build> clang-tags grep 'c:@N@Clang@C@Cursor@F@location#1' | sort -u
+    clang/cursor.hxx:67:    SourceLocation location () const {
+    findDefinition.cxx:12:  const Clang::SourceLocation location (cursor.location());
+    findDefinition.cxx:135:    Clang::SourceLocation target = cursor.location();
+    findDefinition.cxx:32:    const Clang::SourceLocation::Position begin = cursorDef.location().expansionLocation();
+    findDefinition.cxx:51:  const Clang::SourceLocation location (cursor.location());
+    index.cxx:30:  const Clang::SourceLocation::Position begin = cursor.location().expansionLocation();
+    ```
 
 
 ## See also
