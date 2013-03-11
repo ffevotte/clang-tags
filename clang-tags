@@ -205,7 +205,7 @@ class SQLiteStore:
 
     def findDefinition (self, fileName, offset):
         "Find in the index the definition of identifier at point."
-        self._db.execute ('SELECT tags.usr, tags.offset1, tags.offset2 '
+        self._db.execute ('SELECT tags.usr, tags.offset1, tags.offset2, tags.kind '
                           'FROM tags '
                           'INNER JOIN files ON files.id = tags.fileId '
                           'WHERE files.name = ? '
@@ -216,7 +216,7 @@ class SQLiteStore:
         rows = self._db.fetchall()
         usrList = []
         for row in rows:
-            (usr, offset1, offset2) = row
+            (usr, offset1, offset2, kind) = row
             if usr in usrList:
                 continue
 
@@ -224,7 +224,7 @@ class SQLiteStore:
             spelling = extractRegion (fileName, offset1, offset2)
             self._db.execute ('SELECT files.name, '
                               '       tags.line1, tags.line2, '
-                              '       tags.col1,  tags.col2,'
+                              '       tags.col1,  tags.col2, '
                               '       tags.kind '
                               'FROM tags '
                               'INNER JOIN files ON files.id = tags.fileId '
@@ -232,13 +232,17 @@ class SQLiteStore:
                               '  AND usr = ?',
                               (usr,))
             rows2 = self._db.fetchall()
-            if rows2 != []:
+            if rows2 == []:
+                print "-- %s -- %s"  % (spelling, kind)
+                print "   <non indexed>"
+            else:
                 kind = rows2[0][5]
                 print "-- %s -- %s"  % (spelling, kind)
                 for row2 in rows2:
-                    print "   %s:%d-%d:%d-%d: %s" % row2
-                print "   USR: %s" % usr
-                print ""
+                    print "   %s:%d-%d:%d-%d: " % row2[:5]
+
+            print "   USR: %s" % usr
+            print ""
 
     def save (self):
         "Commit and save all changes to the database."
