@@ -9,7 +9,6 @@ import sys
 import json
 import shlex, subprocess
 import time
-import pickle
 import re
 import types
 
@@ -429,7 +428,9 @@ def extractRegion (fileName, offset1, offset2):
 def args2dict (args):
     d = {}
     for attr in dir (args):
-        if not (attr.startswith("_") or type(getattr(args, attr)) is types.MethodType) :
+        if not (attr.startswith("_")
+                or type(getattr(args, attr)) is types.MethodType
+                or type(getattr(args, attr)) is types.FunctionType):
             d[attr] =  getattr(args, attr)
     return d
 
@@ -591,7 +592,7 @@ def main_argparse ():
     parser = argparse.ArgumentParser (
         description = "Index a source code base using libclang.")
 
-    parser.add_argument ("--debug", action = 'store_true',
+    parser.add_argument ("--debug", "-d", action = 'store_true',
                          help = "print debugging information")
 
     subparsers = parser.add_subparsers (metavar = "SUBCOMMAND")
@@ -635,21 +636,21 @@ def main_argparse ():
         default = "compile_commands.json",
         help = "compilation database (default: compile_commands.json)")
     parserIndex.add_argument (
-        "--emacs-conf",
-        metavar = "SRCDIR",
-        dest = "emacsConf",
-        help = "create an emacs configuration file in the top source files"
-        " directory")
-    parser.add_option (
+        "--exclude", "-e",
+        metavar = "DIR",
+        action = "append",
+        help = "do not index files under DIR")
+    parserIndex.add_argument (
         "--exclude-clear", "-E",
         dest="exclude",
         action="store_const", const=[],
         help = "reset exclude list")
     parserIndex.add_argument (
-        "--exclude", "-e",
-        metavar = "PATH",
-        action = "append",
-        help = "do not index files under PATH")
+        "--emacs-conf",
+        metavar = "SRCDIR",
+        dest = "emacsConf",
+        help = "create an emacs configuration file in the top source files"
+        " directory")
     parserIndex.set_defaults (exclude = ["/usr"])
     parserIndex.set_defaults (fun = index)
 
