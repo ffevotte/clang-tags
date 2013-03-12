@@ -161,6 +161,7 @@ class SQLiteStore:
         lastModified = os.stat(fileName).st_mtime
         if lastModified > lastIndexed:
             self._db.execute ('DELETE FROM tags WHERE fileId = ?', (fileId,))
+            self._db.execute ('DELETE FROM includes WHERE sourceId = ?', (fileId,))
             self._db.execute ('UPDATE files '
                               'SET lastIndexed = ? '
                               'WHERE id = ?',
