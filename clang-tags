@@ -144,6 +144,11 @@ class SQLiteStore:
                     return self._includer (fileId)
         return None
 
+    def beginIndex (self):
+        """Begin creating the index."""
+        self._db.execute ('DELETE FROM tags')
+        self._db.execute ('UPDATE files SET lastIndexed = 0')
+
     def beginFile (self, fileName, included):
         """Begin indexing a file. The file is added to the project. If it needs
         updating, associated tags are deleted and True is returned. Otherwise,
@@ -298,6 +303,9 @@ class ClangTags:
             directory  = compilationCommand["directory"]
             command    = shlex.split(compilationCommand["command"].encode())[1:]
             self._store.addSourceFile (sourceFile, directory, command)
+
+    def beginIndex (self):
+        self._store.beginIndex()
 
     def updateIndex (self, debug = False):
         "Create and populate a tags database"
@@ -528,8 +536,9 @@ def index (args):
     ct = ClangTags ()
     ct.options ("index", args)
     ct.updateProject()
-    ct.updateIndex(debug = args.debug)
-    ct.save ()
+    ct.beginIndex()
+    ct.updateIndex (debug = args.debug)
+    ct.save()
 
     if args.emacsConf is not None:
         f = open (os.path.join (args.emacsConf, ".dir-locals.el"), "w")
