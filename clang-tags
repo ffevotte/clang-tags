@@ -170,11 +170,13 @@ class SQLiteStore:
         else:
             return False
 
-    def addTag (self, usr, kind, fileName,
-                line1, col1, offset1,
-                line2, col2, offset2,
-                isDecl):
+    def addTag (self, data):
         """Add a tag to the database."""
+        (usr, kind, fileName,
+         line1, col1, offset1,
+         line2, col2, offset2,
+         isDecl, _) = data
+
         line1 = int(line1)
         offset1 = int(offset1)
         offset2 = int(offset2)
@@ -340,32 +342,24 @@ class ClangTags:
                                         cwd = compileDirectory,
                                         stdout = subprocess.PIPE)
 
-            while True:
-                usr      = process.stdout.readline().strip()
-                if len (usr) == 0:
-                    break
-                kind     = process.stdout.readline().strip()
-                fileName = process.stdout.readline().strip()
-                line1    = process.stdout.readline().strip()
-                col1     = process.stdout.readline().strip()
-                offset1  = process.stdout.readline().strip()
-                line2    = process.stdout.readline().strip()
-                col2     = process.stdout.readline().strip()
-                offset2  = process.stdout.readline().strip()
-                isDecl   = process.stdout.readline().strip()
-                sep      = process.stdout.readline()
-                assert sep == "--\n"
+            tagData = range(11)
+            index = -1
+            for line in process.stdout:
+                index += 1
+                tagData[index] = line.strip()
+                if index == 10:
+                    fileName = tagData[2]
+                    sep = tagData[10]
+                    index = -1
 
-                if fileName not in needsUpdate:
-                    needsUpdate[fileName] = self._store.beginFile (fileName, 1)
+                    assert sep == "--"
 
-                if needsUpdate[fileName]:
-                    self._store.addTag (usr, kind, fileName,
-                                        line1, col1, offset1,
-                                        line2, col2, offset2,
-                                        isDecl)
+                    if fileName not in needsUpdate:
+                        self._store.addInclude (fileName, sourceFileName)
+                        needsUpdate[fileName] = self._store.beginFile (fileName, 1)
 
-                self._store.addInclude (fileName, sourceFileName)
+                    if needsUpdate[fileName]:
+                        self._store.addTag (tagData)
 
             process.wait ()
             sys.stderr.write ("%.2fs.\n" % (time.time() - begin))
