@@ -310,6 +310,8 @@ class ClangTags:
     def updateIndex (self, debug = False):
         "Create and populate a tags database"
 
+        opts = self._store.getOptions("index")
+
         while True:
             sourceFileName = self._store.nextFile()
             if sourceFileName is None:
@@ -322,8 +324,10 @@ class ClangTags:
             (compileDirectory, compileArgs) = \
                 self._store.compilationCommand (sourceFileName)
 
-            command = ["clang-tags-index", "--"]
-            command += compileArgs
+            command = ["clang-tags-index"]
+            for path in opts.exclude:
+                command += ["--exclude", path]
+            command += ["--"] + compileArgs
 
             sys.stderr.write ("%-70s\t" % (sourceFileName + "..."))
             if debug is True:
@@ -641,6 +645,17 @@ def main_argparse ():
         dest = "emacsConf",
         help = "create an emacs configuration file in the top source files"
         " directory")
+    parser.add_option (
+        "--exclude-clear", "-E",
+        dest="exclude",
+        action="store_const", const=[],
+        help = "reset exclude list")
+    parserIndex.add_argument (
+        "--exclude", "-e",
+        metavar = "PATH",
+        action = "append",
+        help = "do not index files under PATH")
+    parserIndex.set_defaults (exclude = ["/usr"])
     parserIndex.set_defaults (fun = index)
 
 
@@ -734,6 +749,10 @@ def main_optparse ():
     elif subcommand == "index":
         parser.add_option ("--emacs-conf", dest="emacsConf")
         parser.add_option ("--input", "-i", default = "compile_commands.json")
+        parser.add_option ("--exclude-clear", "-E", dest="exclude",
+                           action="store_const", const=[])
+        parser.add_option ("--exclude", "-e", action="append")
+        parser.set_defaults (exclude = ["/usr"])
         (options, args) = parser.parse_args (sys.argv[2:])
         index (options)
 

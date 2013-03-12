@@ -6,8 +6,8 @@ include (CheckFunctionExists)
 include (CheckLibraryExists)
 
 add_definitions (-Wall)
-#add_definitions (-g -O1)
-add_definitions (-O3)
+add_definitions (-g -O1)
+#add_definitions (-O3)
 
 check_include_file (clang-c/Index.h LIBCLANG_DEV)
 if (NOT LIBCLANG_DEV)
@@ -30,7 +30,7 @@ include_directories ("${PROJECT_BINARY_DIR}")
 
 
 add_library (getopt++
-  getopt/getopt.cxx)
+  getopt++/getopt.cxx)
 
 add_executable(clang-tags-def
   findDefinition.cxx)
@@ -89,7 +89,7 @@ add_test (
 
 add_test (
   NAME    clang-tags-find-def
-  COMMAND ${ENV} clang-tags find-def ../src/index.cxx 750)
+  COMMAND ${ENV} clang-tags find-def ${PROJECT_SOURCE_DIR}/findDefinition.cxx 249)
 set_tests_properties (clang-tags-find-def PROPERTIES
   PASS_REGULAR_EXPRESSION c:@N@Clang@C@Cursor@F@location\#1)
 

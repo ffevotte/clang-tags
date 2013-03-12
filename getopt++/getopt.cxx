@@ -2,6 +2,8 @@
 
 #include <iomanip>
 
+const Getopt::OptionValues Getopt::None_;
+
 Getopt::Getopt (int argc, char **argv, const char *documentation)
   : argc_ (argc),
     argv_ (argv)
@@ -98,13 +100,14 @@ void Getopt::get ()
               index = shortIndex_[c];
             }
 
+          std::string optionName = options_[index].name;
           if (options_[index].has_arg == 0)
             {
-              cl_[std::string (options_[index].name)] = std::string ("true");
+              cl_[optionName].push_back("true");
             }
           else
             {
-              cl_[std::string (options_[index].name)] = std::string (optarg);
+              cl_[optionName].push_back(optarg);
             }
         }
     }

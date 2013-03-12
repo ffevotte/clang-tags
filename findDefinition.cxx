@@ -1,7 +1,7 @@
 #include "sourceFile.hxx"
 #include "clang/translationUnit.hxx"
 #include "clang/cursor.hxx"
-#include "getopt/getopt.hxx"
+#include "getopt++/getopt.hxx"
 
 #include <iostream>
 #include <cstdlib>

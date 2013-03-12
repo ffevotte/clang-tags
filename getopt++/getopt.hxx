@@ -20,6 +20,9 @@
 class Getopt
 {
 public:
+  typedef std::vector<std::string> OptionValues;
+  typedef std::map<std::string, OptionValues> OptionsMap;
+
   /** @brief Constructor
    *    @param argc       number of command-line arguments
    *    @param argv       command-line arguments
@@ -52,9 +55,20 @@ public:
 
 
   /** @brief Get the value of a command-line option
+   *  If the switch was given multiple times, only return the last value.
    *  @return "" if the switch is unset
    */
-  inline std::string operator[] (std::string opt);
+  inline std::string operator[] (std::string opt) const;
+
+  /** @brief Get the number of times a command-line switch was given
+   *  @return count
+   */
+  inline int getCount (std::string opt) const;
+
+  /** @brief get all provided values for a command-line option
+   *  @return a vector of values
+   */
+  inline const OptionValues & getAll (std::string opt) const;
 
 
   /** @brief Shift remaining positional arguments
@@ -89,7 +103,8 @@ private:
   std::ostringstream  usage_;
   std::vector<Option> options_;
   std::map<char,int>  shortIndex_;
-  std::map<std::string, std::string> cl_;
+  OptionsMap          cl_;
+  static const OptionValues None_;
 };
 
 inline std::string Getopt::usage ()
@@ -97,9 +112,34 @@ inline std::string Getopt::usage ()
   return usage_.str();
 }
 
-inline std::string Getopt::operator[] (std::string opt)
+inline std::string Getopt::operator[] (std::string opt) const
 {
-  return cl_[opt];
+  OptionsMap::const_iterator it = cl_.find(opt);
+  if (it == cl_.end()) {
+    return "";
+  }
+
+  return it->second.back();
+}
+
+inline int Getopt::getCount (std::string opt) const
+{
+  OptionsMap::const_iterator it = cl_.find(opt);
+  if (it == cl_.end()) {
+    return 0;
+  }
+
+  return it->second.size();
+}
+
+inline const Getopt::OptionValues & Getopt::getAll (std::string opt) const
+{
+  OptionsMap::const_iterator it = cl_.find(opt);
+  if (it == cl_.end()) {
+    return None_;
+  }
+
+  return it->second;
 }
 
 inline std::string Getopt::shift ()

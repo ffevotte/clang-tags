@@ -2,7 +2,7 @@
 #include "clang/cursor.hxx"
 #include "clang/sourceLocation.hxx"
 
-#include "getopt/getopt.hxx"
+#include "getopt++/getopt.hxx"
 
 #include <clang-c/Index.h>
 #include <cstdlib>
@@ -10,12 +10,19 @@
 #include <iostream>
 #include <fstream>
 
+inline
+bool startsWith (const std::string & str, const std::string & prefix)
+{
+  return str.compare(0, prefix.size(), prefix) == 0;
+}
+
 CXChildVisitResult indexFile (CXCursor rawCursor,
                               CXCursor rawParent, //unused
                               CXClientData client_data)
 {
   const Clang::Cursor cursor (rawCursor);
   const Clang::Cursor cursorDef (cursor.referenced());
+  const Getopt & options = *((Getopt*)client_data);
 
   // Skip non-reference cursors
   if (cursorDef.isNull()) {
@@ -33,8 +40,16 @@ CXChildVisitResult indexFile (CXCursor rawCursor,
     return CXChildVisit_Continue;
   }
 
-  if (begin.file.compare(0, 4, "/usr") == 0) {
-    return CXChildVisit_Continue;
+  {
+    typedef std::vector<std::string> Container;
+    const Container & exclude = options.getAll("exclude");
+    Container::const_iterator it = exclude.begin();
+    Container::const_iterator end = exclude.end();
+    for ( ; it != end ; ++it) {
+      if (startsWith (begin.file, *it)) {
+        return CXChildVisit_Continue;
+      }
+    }
   }
 
   const Clang::SourceLocation::Position end = cursor.end().expansionLocation();
@@ -58,12 +73,13 @@ int main(int argc, char *argv[]) {
 
   // Command-line arguments handling
   Getopt args (argc, argv,
-               "Usage: %c FILE [options] -- CLANG ARGS\n\n"
+               "Usage: %c [options] FILE -- CLANG ARGS\n\n"
                "  Index identifiers in a C++ source file.\n\n"
                "  FILE      \t Source file to examine\n"
                "  CLANG ARGS\t Clang command-line arguments");
   args.add ("help",           'h', 0, "Show this help");
   args.add ("no-diagnostics", 'D', 0, "Don't print compiler diagnostics");
+  args.add ("exclude",        'e', 1, "Exclude path");
 
   // Get optional arguments
   try {
@@ -87,9 +103,6 @@ int main(int argc, char *argv[]) {
   Clang::TranslationUnit tu (args.argc(), args.argv());
   Clang::Cursor top (tu);
 
-  typedef std::map<std::string, bool>  map;
-  map includedFiles;
-
   // Print clang diagnostics if requested
   if (args["no-diagnostics"] == "") {
     for (unsigned int N = tu.numDiagnostics(),
@@ -98,7 +111,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  clang_visitChildren (top.raw(), indexFile, &includedFiles);
+  clang_visitChildren (top.raw(), indexFile, &args);
 
   return EXIT_SUCCESS;
 }
