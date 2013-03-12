@@ -249,6 +249,23 @@ class SQLiteStore:
         self._conn.commit()
         self._conn.close()
 
+    def dump (self):
+        "Dump the database on screen for debugging purposes."
+        def dumpSQL (title, sql):
+            print "\n\n## %s\n" % title
+            self._db.execute (sql)
+            for row in self._db.fetchall():
+                print " ; ".join([str(e) for e in row])
+        dumpSQL ("Options", 'SELECT * FROM options')
+        dumpSQL ("Commands", 'SELECT files.name, commands.* FROM commands '
+                 'INNER JOIN files ON files.id = commands.fileId')
+        dumpSQL ("Includes", 'SELECT source.name, included.name FROM includes '
+                 'INNER JOIN files AS source ON source.id = includes.sourceId '
+                 'INNER JOIN files AS included ON included.id = includes.includedId')
+        dumpSQL ("Tags", 'SELECT files.name, tags.* FROM tags '
+                 'INNER JOIN files ON files.id = tags.fileId')
+
+
 
 class ClangTags:
     """The main class, implementing project management and tagging
@@ -555,6 +572,11 @@ def grep (args):
     ct.grep (args.usr)
 
 
+def dump (args):
+    ct = ClangTags()
+    ct._store.dump()
+
+
 def main_argparse ():
     "Entry point for the application"
 
@@ -660,6 +682,16 @@ def main_argparse ():
     parserGrep.set_defaults (fun = grep)
 
 
+    parserDebug = subparsers.add_parser (
+        "debug",
+        help = "Some debugging features")
+    subparserDebug = parserDebug.add_subparsers(metavar = "SUBCOMMAND")
+    parserDebugDump = subparserDebug.add_parser (
+        "dump",
+        help = "dump database information.")
+    parserDebugDump.set_defaults (fun = dump)
+
+
     args = parser.parse_args ()
     args.fun (args)
 
@@ -718,6 +750,13 @@ def main_optparse ():
         (options, args) = parser.parse_args (sys.argv[2:])
         options.usr = args[0]
         grep (options)
+
+    elif subcommand == "debug":
+        subcommand = sys.argv[2]
+        if subcommand == "dump":
+            dump(None)
+        else:
+            sys.stderr.write ("invalid command line\n")
 
     else:
         sys.stderr.write ("unknown subcommand: %s\n" % subcommand)
