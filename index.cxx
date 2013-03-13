@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
                "  CLANG ARGS\t Clang command-line arguments");
   args.add ("help",           'h', 0, "Show this help");
   args.add ("no-diagnostics", 'D', 0, "Don't print compiler diagnostics");
-  args.add ("exclude",        'e', 1, "Exclude path");
+  args.add ("exclude",        'e', 1, "Exclude path", "PATH");
 
   // Get optional arguments
   try {

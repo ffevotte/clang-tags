@@ -5,9 +5,9 @@ include (CheckIncludeFile)
 include (CheckFunctionExists)
 include (CheckLibraryExists)
 
-add_definitions (-Wall)
-add_definitions (-g -O1)
-#add_definitions (-O3)
+add_definitions (-Wall -std=c++11)
+#add_definitions (-g -O1)
+add_definitions (-O3)
 
 check_include_file (clang-c/Index.h LIBCLANG_DEV)
 if (NOT LIBCLANG_DEV)
