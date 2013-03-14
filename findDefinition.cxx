@@ -1,16 +1,20 @@
 #include "sourceFile.hxx"
-#include "clang/translationUnit.hxx"
-#include "clang/cursor.hxx"
+
+#include "libclang++/index.hxx"
+#include "libclang++/translationUnit.hxx"
+#include "libclang++/sourceLocation.hxx"
+#include "libclang++/cursor.hxx"
+
 #include "getopt++/getopt.hxx"
 
 #include <iostream>
 #include <cstdlib>
 
 
-void displayCursor (Clang::Cursor cursor)
+void displayCursor (LibClang::Cursor cursor)
 {
-  const Clang::SourceLocation location (cursor.location());
-  const Clang::Cursor cursorDef = cursor.referenced();
+  const LibClang::SourceLocation location (cursor.location());
+  const LibClang::Cursor cursorDef = cursor.referenced();
 
   if (cursorDef.isNull()) {
     return;
@@ -18,8 +22,8 @@ void displayCursor (Clang::Cursor cursor)
 
   // Display cursor
   {
-    const Clang::SourceLocation::Position begin = location.expansionLocation();
-    const Clang::SourceLocation::Position end = cursor.end().expansionLocation();
+    const LibClang::SourceLocation::Position begin = location.expansionLocation();
+    const LibClang::SourceLocation::Position end = cursor.end().expansionLocation();
     SourceFile sourceFile (begin.file);
 
     std::cout << "-- " << sourceFile.substring (begin.offset, end.offset) << " -- "
@@ -29,8 +33,8 @@ void displayCursor (Clang::Cursor cursor)
 
   // Display referenced cursor
   {
-    const Clang::SourceLocation::Position begin = cursorDef.location().expansionLocation();
-    const Clang::SourceLocation::Position end = cursorDef.end().expansionLocation();
+    const LibClang::SourceLocation::Position begin = cursorDef.location().expansionLocation();
+    const LibClang::SourceLocation::Position end = cursorDef.end().expansionLocation();
 
     std::cout << "   "
               << begin.file << ":"
@@ -46,9 +50,9 @@ CXChildVisitResult findDefinition (CXCursor rawCursor,
                                    CXCursor rawParent, //unused
                                    CXClientData client_data)
 {
-  Clang::Cursor cursor (rawCursor);
-  const Clang::SourceLocation & targetLocation = *((Clang::SourceLocation*)client_data);
-  const Clang::SourceLocation location (cursor.location());
+  LibClang::Cursor cursor (rawCursor);
+  const LibClang::SourceLocation & targetLocation = *((LibClang::SourceLocation*)client_data);
+  const LibClang::SourceLocation location (cursor.location());
 
   // Skip unexposed cursor kinds
   if (cursor.isUnexposed()) {
@@ -116,7 +120,8 @@ int main (int argc, char **argv) {
     }
   }
 
-  Clang::TranslationUnit tu (args.argc(), args.argv());
+  LibClang::Index index;
+  LibClang::TranslationUnit tu = index.parse (args.argc(), args.argv());
 
   // Print clang diagnostics if requested
   if (args["no-diagnostics"] == "") {
@@ -127,14 +132,13 @@ int main (int argc, char **argv) {
   }
 
   // Print cursor definition
-  Clang::Cursor cursor (tu, fileName.c_str(), offset);
+  LibClang::Cursor cursor (tu, fileName.c_str(), offset);
   if (args["most-specific"] == "true") {
     displayCursor (cursor);
   }
   else {
-    Clang::SourceLocation target = cursor.location();
-    Clang::Cursor topCursor (tu);
-    clang_visitChildren (topCursor.raw(), findDefinition, &target);
+    LibClang::SourceLocation target = cursor.location();
+    clang_visitChildren (tu.cursor().raw(), findDefinition, &target);
   }
 
   return EXIT_SUCCESS;

@@ -32,13 +32,19 @@ include_directories ("${PROJECT_BINARY_DIR}")
 add_library (getopt++
   getopt++/getopt.cxx)
 
+add_library (libclang++
+  libclang++/index.cxx
+  libclang++/translationUnit.cxx
+  libclang++/sourceLocation.cxx
+  libclang++/cursor.cxx)
+
 add_executable(clang-tags-def
   findDefinition.cxx)
-target_link_libraries(clang-tags-def clang getopt++)
+target_link_libraries(clang-tags-def clang getopt++ libclang++)
 
 add_executable(clang-tags-index
   index.cxx)
-target_link_libraries(clang-tags-index clang getopt++)
+target_link_libraries(clang-tags-index clang getopt++ libclang++)
 
 
 configure_file (
@@ -89,12 +95,12 @@ add_test (
 
 add_test (
   NAME    clang-tags-find-def
-  COMMAND ${ENV} clang-tags find-def ${PROJECT_SOURCE_DIR}/findDefinition.cxx 249)
+  COMMAND ${ENV} clang-tags find-def ${PROJECT_SOURCE_DIR}/findDefinition.cxx 342)
 set_tests_properties (clang-tags-find-def PROPERTIES
-  PASS_REGULAR_EXPRESSION c:@N@Clang@C@Cursor@F@location\#1)
+  PASS_REGULAR_EXPRESSION c:@N@LibClang@C@Cursor@F@location\#1)
 
 add_test (
   NAME    clang-tags-grep
-  COMMAND ${ENV} clang-tags grep c:@N@Clang@C@Cursor@F@location\#1)
+  COMMAND ${ENV} clang-tags grep c:@N@LibClang@C@Cursor@F@location\#1)
 set_tests_properties (clang-tags-grep PROPERTIES
-  PASS_REGULAR_EXPRESSION findDefinition.cxx:51:)
+  PASS_REGULAR_EXPRESSION findDefinition.cxx:55:)

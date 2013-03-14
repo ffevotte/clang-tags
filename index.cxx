@@ -1,10 +1,10 @@
-#include "clang/translationUnit.hxx"
-#include "clang/cursor.hxx"
-#include "clang/sourceLocation.hxx"
+#include "libclang++/index.hxx"
+#include "libclang++/translationUnit.hxx"
+#include "libclang++/cursor.hxx"
+#include "libclang++/sourceLocation.hxx"
 
 #include "getopt++/getopt.hxx"
 
-#include <clang-c/Index.h>
 #include <cstdlib>
 #include <string>
 #include <iostream>
@@ -20,8 +20,8 @@ CXChildVisitResult indexFile (CXCursor rawCursor,
                               CXCursor rawParent, //unused
                               CXClientData client_data)
 {
-  const Clang::Cursor cursor (rawCursor);
-  const Clang::Cursor cursorDef (cursor.referenced());
+  const LibClang::Cursor cursor (rawCursor);
+  const LibClang::Cursor cursorDef (cursor.referenced());
   const Getopt & options = *((Getopt*)client_data);
 
   // Skip non-reference cursors
@@ -34,7 +34,7 @@ CXChildVisitResult indexFile (CXCursor rawCursor,
     return CXChildVisit_Recurse;
   }
 
-  const Clang::SourceLocation::Position begin = cursor.location().expansionLocation();
+  const LibClang::SourceLocation::Position begin = cursor.location().expansionLocation();
 
   if (begin.file == "") {
     return CXChildVisit_Continue;
@@ -52,7 +52,7 @@ CXChildVisitResult indexFile (CXCursor rawCursor,
     }
   }
 
-  const Clang::SourceLocation::Position end = cursor.end().expansionLocation();
+  const LibClang::SourceLocation::Position end = cursor.end().expansionLocation();
 
   std::cout << usr                    << std::endl
             << cursor.kindStr ()      << std::endl
@@ -100,8 +100,9 @@ int main(int argc, char *argv[]) {
     return (EXIT_FAILURE);
   }
 
-  Clang::TranslationUnit tu (args.argc(), args.argv());
-  Clang::Cursor top (tu);
+  LibClang::Index index;
+  LibClang::TranslationUnit tu = index.parse (args.argc(), args.argv());
+  LibClang::Cursor top (tu);
 
   // Print clang diagnostics if requested
   if (args["no-diagnostics"] == "") {
