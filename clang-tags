@@ -486,7 +486,7 @@ def trace (args):
             (programName, command) = eval(line)
             if endsWithOne(programName, [ "/" + c for c in compilers]):
                 for arg in command:
-                    if endsWithOne (arg, extensions):
+                    if endsWithOne (arg, extensions) and os.path.exists (arg):
                         sourceFiles[arg] = (cwd, command)
                         break
     p.wait()
