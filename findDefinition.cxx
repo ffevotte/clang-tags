@@ -4,12 +4,12 @@
 #include "libclang++/translationUnit.hxx"
 #include "libclang++/sourceLocation.hxx"
 #include "libclang++/cursor.hxx"
+#include "libclang++/visitor.hxx"
 
 #include "getopt++/getopt.hxx"
 
 #include <iostream>
 #include <cstdlib>
-
 
 void displayCursor (LibClang::Cursor cursor)
 {
@@ -46,25 +46,33 @@ void displayCursor (LibClang::Cursor cursor)
   }
 }
 
-CXChildVisitResult findDefinition (CXCursor rawCursor,
-                                   CXCursor rawParent, //unused
-                                   CXClientData client_data)
+class FindDefinition : public LibClang::Visitor<FindDefinition>
 {
-  LibClang::Cursor cursor (rawCursor);
-  const LibClang::SourceLocation & targetLocation = *((LibClang::SourceLocation*)client_data);
-  const LibClang::SourceLocation location (cursor.location());
+public:
+  FindDefinition (const LibClang::SourceLocation & targetLocation)
+    : targetLocation_ (targetLocation)
+  {}
 
-  // Skip unexposed cursor kinds
-  if (cursor.isUnexposed()) {
+  CXChildVisitResult visit (LibClang::Cursor cursor,
+                            LibClang::Cursor parent)
+  {
+    const LibClang::SourceLocation location (cursor.location());
+
+    // Skip unexposed cursor kinds
+    if (cursor.isUnexposed()) {
+      return CXChildVisit_Recurse;
+    }
+
+    if (location == targetLocation_) {
+      displayCursor (cursor);
+    }
+
     return CXChildVisit_Recurse;
   }
 
-  if (location == targetLocation) {
-    displayCursor (cursor);
-  }
-
-  return CXChildVisit_Recurse;
-}
+private:
+  const LibClang::SourceLocation & targetLocation_;
+};
 
 int main (int argc, char **argv) {
   // Command-line arguments handling
@@ -138,7 +146,8 @@ int main (int argc, char **argv) {
   }
   else {
     LibClang::SourceLocation target = cursor.location();
-    clang_visitChildren (tu.cursor().raw(), findDefinition, &target);
+    FindDefinition findDef (target);
+    findDef.visitChildren (tu.cursor());
   }
 
   return EXIT_SUCCESS;

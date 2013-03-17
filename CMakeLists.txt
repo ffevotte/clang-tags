@@ -95,7 +95,13 @@ add_test (
 
 add_test (
   NAME    clang-tags-find-def
-  COMMAND ${ENV} clang-tags find-def ${PROJECT_SOURCE_DIR}/findDefinition.cxx 342)
+  COMMAND ${ENV} clang-tags find-def ${PROJECT_SOURCE_DIR}/findDefinition.cxx 376)
+set_tests_properties (clang-tags-find-def PROPERTIES
+  PASS_REGULAR_EXPRESSION c:@N@LibClang@C@Cursor@F@location\#1)
+
+add_test (
+  NAME    clang-tags-find-def-r
+  COMMAND ${ENV} clang-tags find-def -r ${PROJECT_SOURCE_DIR}/findDefinition.cxx 376)
 set_tests_properties (clang-tags-find-def PROPERTIES
   PASS_REGULAR_EXPRESSION c:@N@LibClang@C@Cursor@F@location\#1)
 
@@ -103,4 +109,4 @@ add_test (
   NAME    clang-tags-grep
   COMMAND ${ENV} clang-tags grep c:@N@LibClang@C@Cursor@F@location\#1)
 set_tests_properties (clang-tags-grep PROPERTIES
-  PASS_REGULAR_EXPRESSION findDefinition.cxx:55:)
+  PASS_REGULAR_EXPRESSION findDefinition.cxx:59:)
