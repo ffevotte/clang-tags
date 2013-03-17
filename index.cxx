@@ -2,6 +2,7 @@
 #include "libclang++/translationUnit.hxx"
 #include "libclang++/cursor.hxx"
 #include "libclang++/sourceLocation.hxx"
+#include "libclang++/visitor.hxx"
 
 #include "getopt++/getopt.hxx"
 
@@ -16,58 +17,66 @@ bool startsWith (const std::string & str, const std::string & prefix)
   return str.compare(0, prefix.size(), prefix) == 0;
 }
 
-CXChildVisitResult indexFile (CXCursor rawCursor,
-                              CXCursor rawParent, //unused
-                              CXClientData client_data)
-{
-  const LibClang::Cursor cursor (rawCursor);
-  const LibClang::Cursor cursorDef (cursor.referenced());
-  const Getopt & options = *((Getopt*)client_data);
+class Indexer : public LibClang::Visitor<Indexer> {
+public:
+  Indexer (const Getopt & options)
+    : options_ (options)
+  {}
 
-  // Skip non-reference cursors
-  if (cursorDef.isNull()) {
-    return CXChildVisit_Recurse;
-  }
-
-  const std::string usr = cursorDef.USR();
-  if (usr == "") {
-    return CXChildVisit_Recurse;
-  }
-
-  const LibClang::SourceLocation::Position begin = cursor.location().expansionLocation();
-
-  if (begin.file == "") {
-    return CXChildVisit_Continue;
-  }
-
+  CXChildVisitResult visit (LibClang::Cursor cursor,
+                            LibClang::Cursor parent)
   {
-    typedef std::vector<std::string> Container;
-    const Container & exclude = options.getAll("exclude");
-    Container::const_iterator it = exclude.begin();
-    Container::const_iterator end = exclude.end();
-    for ( ; it != end ; ++it) {
-      if (startsWith (begin.file, *it)) {
-        return CXChildVisit_Continue;
+    const LibClang::Cursor cursorDef (cursor.referenced());
+
+    // Skip non-reference cursors
+    if (cursorDef.isNull()) {
+      return CXChildVisit_Recurse;
+    }
+
+    const std::string usr = cursorDef.USR();
+    if (usr == "") {
+      return CXChildVisit_Recurse;
+    }
+
+    const LibClang::SourceLocation::Position begin = cursor.location().expansionLocation();
+
+    if (begin.file == "") {
+      return CXChildVisit_Continue;
+    }
+
+    {
+      typedef std::vector<std::string> Container;
+      const Container & exclude = options_.getAll("exclude");
+      Container::const_iterator it = exclude.begin();
+      Container::const_iterator end = exclude.end();
+      for ( ; it != end ; ++it) {
+        if (startsWith (begin.file, *it)) {
+          return CXChildVisit_Continue;
+        }
       }
     }
+
+    const LibClang::SourceLocation::Position end = cursor.end().expansionLocation();
+
+    std::cout << usr                    << std::endl
+              << cursor.kindStr ()      << std::endl
+              << begin.file             << std::endl
+              << begin.line             << std::endl
+              << begin.column           << std::endl
+              << begin.offset           << std::endl
+              << end.line               << std::endl
+              << end.column             << std::endl
+              << end.offset             << std::endl
+              << cursor.isDeclaration() << std::endl
+              << "--"                   << std::endl;
+
+    return CXChildVisit_Recurse;
   }
 
-  const LibClang::SourceLocation::Position end = cursor.end().expansionLocation();
+private:
+  const Getopt & options_;
+};
 
-  std::cout << usr                    << std::endl
-            << cursor.kindStr ()      << std::endl
-            << begin.file             << std::endl
-            << begin.line             << std::endl
-            << begin.column           << std::endl
-            << begin.offset           << std::endl
-            << end.line               << std::endl
-            << end.column             << std::endl
-            << end.offset             << std::endl
-            << cursor.isDeclaration() << std::endl
-            << "--"                   << std::endl;
-
-  return CXChildVisit_Recurse;
-}
 
 int main(int argc, char *argv[]) {
 
@@ -112,7 +121,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  clang_visitChildren (top.raw(), indexFile, &args);
+  Indexer indexer (args);
+  indexer.visitChildren (top);
 
   return EXIT_SUCCESS;
 }
