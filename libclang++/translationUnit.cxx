@@ -4,14 +4,6 @@
 #include "cursor.hxx"
 
 namespace LibClang {
-  TranslationUnit::TranslationUnit (const Index & index, int argc, char **argv)
-    : translationUnit_ (new CXTranslationUnit
-                        (clang_parseTranslationUnit (index.raw(), 0,
-                                                     argv, argc,
-                                                     0, 0,
-                                                     CXTranslationUnit_None)))
-  { }
-
   TranslationUnit::TranslationUnit (CXTranslationUnit tu)
     : translationUnit_ (new CXTranslationUnit (tu))
   { }

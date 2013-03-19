@@ -4,7 +4,7 @@
 
 const Getopt::OptionValues Getopt::None_;
 
-Getopt::Getopt (int argc, char **argv, const char *documentation)
+Getopt::Getopt (int argc, char *const *argv, const char *documentation)
   : argc_ (argc),
     argv_ (argv)
 {

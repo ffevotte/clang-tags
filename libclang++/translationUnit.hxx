@@ -10,7 +10,6 @@ namespace LibClang {
 
   class TranslationUnit {
   public:
-    TranslationUnit (const Index & index, int argc, char **argv);
     TranslationUnit (CXTranslationUnit tu);
     ~TranslationUnit ();
 

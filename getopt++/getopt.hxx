@@ -28,7 +28,7 @@ public:
    *    @param argv       command-line arguments
    *    @param arguments  description of non-switch command-line arguments
    */
-  Getopt (int argc, char **argv, const char *documentation = "Usage: %c [options]");
+  Getopt (int argc, char *const * argv, const char *documentation = "Usage: %c [options]");
 
 
   /** @brief Define an option
@@ -82,7 +82,7 @@ public:
 
   /** @brief Get remaining positional arguments
    */
-  inline char **argv () const;
+  inline char const *const * argv () const;
 
   /** @brief Get remaining positional arguments
    */
@@ -98,7 +98,7 @@ private:
 private:
   typedef struct option Option;
   int                 argc_;
-  char              **argv_;
+  char *const *       argv_;
   std::string         shortOpts_;
   std::ostringstream  usage_;
   std::vector<Option> options_;
@@ -158,7 +158,7 @@ inline int Getopt::argc () const
   return argc_-optind;
 }
 
-inline char** Getopt::argv () const
+inline char const *const * Getopt::argv () const
 {
   return argv_+optind;
 }
