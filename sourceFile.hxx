@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <sstream>
 
 class SourceFile : public std::ifstream {
 public:
@@ -18,7 +19,8 @@ public:
 
     std::string res (buffer);
     delete[] buffer;
-    return res;
+
+    return shorten (res, 42);
   }
 
   std::string line (const unsigned int lineno) {
@@ -30,4 +32,26 @@ public:
 
     return line;
   }
+
+private:
+  static std::string shorten (const std::string & s, const unsigned int sizeMax) {
+    std::istringstream iss (s);
+
+    std::string word;
+    iss >> word;
+    std::string res = word;
+    while (! iss.eof()) {
+      iss >> word;
+      res += " " + word;
+
+      if (res.size() > sizeMax) {
+        res = res.substr(0, sizeMax-3);
+        res += "...";
+        break;
+      }
+    }
+
+    return res;
+  }
+
 };
