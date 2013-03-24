@@ -3,12 +3,8 @@
 
 namespace LibClang {
   Index::Index ()
-    : index_ (new CXIndex (clang_createIndex (0, 0)))
+    : index_ (new Index_ (clang_createIndex (0, 0)))
   { }
-
-  Index::~Index () {
-    clang_disposeIndex (raw());
-  }
 
   TranslationUnit Index::parse (int argc, char const *const *const argv) const {
     return clang_parseTranslationUnit (raw(), 0,
@@ -29,6 +25,6 @@ namespace LibClang {
   }
 
   const CXIndex & Index::raw () const {
-    return *index_;
+    return index_->index_;
   }
 }

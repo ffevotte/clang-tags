@@ -6,22 +6,30 @@
 
 #include "getopt++/getopt.hxx"
 
+#include "request.hxx"
+
+#include "util.hxx"
+
+#include "index.hxx"
+
 #include <cstdlib>
 #include <string>
 #include <iostream>
 #include <fstream>
 
-inline
-bool startsWith (const std::string & str, const std::string & prefix)
-{
-  return str.compare(0, prefix.size(), prefix) == 0;
-}
+
 
 class Indexer : public LibClang::Visitor<Indexer> {
 public:
-  Indexer (const Getopt & options)
-    : options_ (options)
-  {}
+  Indexer (const std::string & fileName,
+           const std::vector<std::string> & exclude,
+           Storage & storage)
+    : sourceFile_ (fileName),
+      exclude_    (exclude),
+      storage_    (storage)
+  {
+    needsUpdate_[fileName] = storage.beginFile (fileName);
+  }
 
   CXChildVisitResult visit (LibClang::Cursor cursor,
                             LibClang::Cursor parent)
@@ -39,90 +47,91 @@ public:
     }
 
     const LibClang::SourceLocation::Position begin = cursor.location().expansionLocation();
+    const String fileName = begin.file;
 
-    if (begin.file == "") {
+    if (fileName == "") {
       return CXChildVisit_Continue;
     }
 
-    {
-      typedef std::vector<std::string> Container;
-      const Container & exclude = options_.getAll("exclude");
-      Container::const_iterator it = exclude.begin();
-      Container::const_iterator end = exclude.end();
+    { // Skip excluded paths
+      auto it  = exclude_.begin();
+      auto end = exclude_.end();
       for ( ; it != end ; ++it) {
-        if (startsWith (begin.file, *it)) {
+        if (fileName.startsWith (*it)) {
           return CXChildVisit_Continue;
         }
       }
     }
 
-    const LibClang::SourceLocation::Position end = cursor.end().expansionLocation();
+    if (needsUpdate_.count(fileName) == 0) {
+      needsUpdate_[fileName] = storage_.beginFile (fileName);
+      storage_.addInclude (fileName, sourceFile_);
+    }
 
-    std::cout << usr                    << std::endl
-              << cursor.kindStr ()      << std::endl
-              << begin.file             << std::endl
-              << begin.line             << std::endl
-              << begin.column           << std::endl
-              << begin.offset           << std::endl
-              << end.line               << std::endl
-              << end.column             << std::endl
-              << end.offset             << std::endl
-              << cursor.isDeclaration() << std::endl
-              << "--"                   << std::endl;
+    if (needsUpdate_[fileName]) {
+      const LibClang::SourceLocation::Position end = cursor.end().expansionLocation();
+      storage_.addTag (usr, cursor.kindStr(), fileName,
+                       begin.line, begin.column, begin.offset,
+                       end.line,   end.column,   end.offset,
+                       cursor.isDeclaration());
+    }
 
     return CXChildVisit_Recurse;
   }
 
 private:
-  const Getopt & options_;
+  const std::string              & sourceFile_;
+  const std::vector<std::string> & exclude_;
+  Storage                        & storage_;
+  std::map<std::string, bool>      needsUpdate_;
 };
 
 
-int main(int argc, char *argv[]) {
+void index (Storage & storage) {
+  std::vector<std::string> exclude;
+  bool diagnostics (true);
+  Request::reader () >> Request::key ("exclude", exclude)
+                     >> Request::key ("diagnostics", diagnostics)
+                     >> Request::read (std::cin);
 
-  // Command-line arguments handling
-  Getopt args (argc, argv,
-               "Usage: %c [options] FILE -- CLANG ARGS\n\n"
-               "  Index identifiers in a C++ source file.\n\n"
-               "  FILE      \t Source file to examine\n"
-               "  CLANG ARGS\t Clang command-line arguments");
-  args.add ("help",           'h', 0, "Show this help");
-  args.add ("no-diagnostics", 'D', 0, "Don't print compiler diagnostics");
-  args.add ("exclude",        'e', 1, "Exclude path", "PATH");
+  storage.cleanIndex();
+  storage.beginIndex();
 
-  // Get optional arguments
-  try {
-    args.get ();
-  }
-  catch (...) {
-    std::cerr << std::endl << args.usage();
-    return (EXIT_FAILURE);
-  }
+  std::cerr << std::endl
+            << "-- Indexing project" << std::endl;
+  Timer totalTimer;
 
-  if (args["help"] == "true") {
-    std::cerr << args.usage();
-    return (EXIT_SUCCESS);
-  }
+  std::string fileName;
+  while ((fileName = storage.nextFile()) != "") {
+    std::cerr << fileName << ":" << std::endl
+              << "  parsing..." << std::flush;
+    Timer timer;
 
-  if (args.argc() == 0) {
-    std::cerr << std::endl << args.usage();
-    return (EXIT_FAILURE);
-  }
+    std::string directory;
+    std::vector<std::string> args;
+    storage.getCompileCommand (fileName, directory, args);
 
-  LibClang::Index index;
-  LibClang::TranslationUnit tu = index.parse (args.argc(), args.argv());
-  LibClang::Cursor top (tu);
+    LibClang::Index index;
+    LibClang::TranslationUnit tu = index.parse (args);
 
-  // Print clang diagnostics if requested
-  if (args["no-diagnostics"] == "") {
-    for (unsigned int N = tu.numDiagnostics(),
-           i = 0 ; i < N ; ++i) {
-      std::cerr << tu.diagnostic (i) << std::endl << std::endl;
+    std::cerr << "\t" << timer.get() << "s." << std::endl;
+    timer.reset();
+
+    // Print clang diagnostics if requested
+    if (diagnostics) {
+      for (unsigned int N = tu.numDiagnostics(),
+             i = 0 ; i < N ; ++i) {
+        std::cerr << tu.diagnostic (i) << std::endl << std::endl;
+      }
     }
+
+    std::cerr << "  indexing..." << std::flush;
+    LibClang::Cursor top (tu);
+    Indexer indexer (fileName, exclude, storage);
+    indexer.visitChildren (top);
+    std::cerr << "\t" << timer.get() << std::endl;
   }
+  std::cerr << totalTimer.get() << "s." << std::endl;
 
-  Indexer indexer (args);
-  indexer.visitChildren (top);
-
-  return EXIT_SUCCESS;
+  storage.endIndex();
 }

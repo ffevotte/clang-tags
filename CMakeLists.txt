@@ -32,19 +32,27 @@ include_directories ("${PROJECT_BINARY_DIR}")
 add_library (getopt++
   getopt++/getopt.cxx)
 
-add_library (libclang++
+add_library (clang++
   libclang++/index.cxx
   libclang++/translationUnit.cxx
   libclang++/sourceLocation.cxx
   libclang++/cursor.cxx)
 
+add_library (sqlite++
+  sqlite++/database.cxx)
+
 add_executable(clang-tags-def
   findDefinition.cxx)
-target_link_libraries(clang-tags-def clang getopt++ libclang++)
+target_link_libraries(clang-tags-def clang getopt++ clang++)
 
-add_executable(clang-tags-index
+# add_executable(clang-tags-index
+#   index.cxx)
+# target_link_libraries(clang-tags-index clang getopt++ clang++)
+
+add_executable(cdde
+  main.cxx
   index.cxx)
-target_link_libraries(clang-tags-index clang getopt++ libclang++)
+target_link_libraries(cdde sqlite3 sqlite++ clang clang++ jsoncpp)
 
 
 configure_file (
@@ -55,7 +63,7 @@ configure_file (
   "${PROJECT_BINARY_DIR}/env.el")
 
 install (
-  TARGETS      clang-tags-def clang-tags-index
+  TARGETS      clang-tags-def #clang-tags-index
   DESTINATION  bin
 )
 

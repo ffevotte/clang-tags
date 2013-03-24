@@ -11,7 +11,6 @@ namespace LibClang {
   class TranslationUnit {
   public:
     TranslationUnit (CXTranslationUnit tu);
-    ~TranslationUnit ();
 
     SourceLocation getLocation (const char* fileName, unsigned int offset);
     Cursor cursor () const;
@@ -22,6 +21,11 @@ namespace LibClang {
     const CXTranslationUnit & raw () const;
 
   private:
-    std::shared_ptr<CXTranslationUnit> translationUnit_;
+    struct TranslationUnit_ {
+      CXTranslationUnit translationUnit_;
+      TranslationUnit_ (CXTranslationUnit tu) : translationUnit_ (tu) {}
+      ~TranslationUnit_ () { clang_disposeTranslationUnit (translationUnit_); }
+    };
+    std::shared_ptr<TranslationUnit_> translationUnit_;
   };
 }

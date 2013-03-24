@@ -5,12 +5,8 @@
 
 namespace LibClang {
   TranslationUnit::TranslationUnit (CXTranslationUnit tu)
-    : translationUnit_ (new CXTranslationUnit (tu))
+    : translationUnit_ (new TranslationUnit_ (tu))
   { }
-
-  TranslationUnit::~TranslationUnit () {
-    clang_disposeTranslationUnit (raw());
-  }
 
   SourceLocation TranslationUnit::getLocation (const char* fileName, unsigned int offset) {
     CXFile topFile = clang_getFile (raw(), fileName);
@@ -39,6 +35,6 @@ namespace LibClang {
   }
 
   const CXTranslationUnit & TranslationUnit::raw () const {
-    return *translationUnit_;
+    return translationUnit_->translationUnit_;
   }
 }

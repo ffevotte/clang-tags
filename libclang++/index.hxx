@@ -11,12 +11,17 @@ namespace LibClang {
   class Index {
   public:
     Index ();
-    ~Index ();
     TranslationUnit parse (int argc, char const *const *const argv) const;
     TranslationUnit parse (const std::vector<std::string> & args) const;
     const CXIndex & raw() const;
 
   private:
-    std::shared_ptr<CXIndex> index_;
+    struct Index_ {
+      CXIndex index_;
+      Index_ (CXIndex index) : index_ (index) {}
+      ~Index_ () { clang_disposeIndex (index_); }
+    };
+
+    std::shared_ptr<Index_> index_;
   };
 }

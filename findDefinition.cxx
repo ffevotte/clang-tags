@@ -74,65 +74,57 @@ private:
   const LibClang::SourceLocation & targetLocation_;
 };
 
-int main (int argc, char **argv) {
-  // Command-line arguments handling
-  Getopt args (argc, argv,
-               "Usage: %c FILE OFFSET [options] -- COMPILER ARGUMENTS\n\n"
-               "  Find the place of definition of an identifier in a C++ source file.\n\n"
-               "  FILE      \t Source file to examine\n"
-               "  OFFSET    \t Position in the file (in bytes)\n"
-               "  CLANG ARGS\t Clang command-line arguments\n"
-               "            \t   (e.g. '-I . -std=c++11 main.cxx')\n\n");
-  args.add ("help",           'h', 0, "Show this help");
-  args.add ("most-specific",  's', 0, "Show only the most specific reference");
-  args.add ("no-diagnostics", 'D', 0, "Don't print compiler diagnostics");
-
-  // Get optional arguments
-  try {
-    args.get ();
-  }
-  catch (...) {
-    std::cerr << std::endl << args.usage();
-    return (EXIT_FAILURE);
-  }
-
-  if (args["help"] == "true") {
-    std::cerr << args.usage();
-    return (EXIT_SUCCESS);
-  }
-
-  // Get first argument: FILE
-  std::string fileName = args.shift();
-  if (fileName == "") {
-    std::cerr << "Missing required argument FILE."
-              << std::endl << std::endl
-              << args.usage();
-    return (EXIT_FAILURE);
-  }
-
-  // Get second argument: OFFSET
+bool findDefinition () {
+  std::string fileName;
   int offset;
-  {
-    std::string offsetStr = args.shift();
-    if (offsetStr == "") {
-      std::cerr << "Missing required argument OFFSET."
-                << std::endl << std::endl
-                << args.usage();
-      return (EXIT_FAILURE);
+  std::vector<std::string> args;
+  bool printDiagnostics = true;
+  bool mostSpecific = false;
+
+  while (true) {
+    std::cout << "find-def> " << std::flush;
+
+    std::string line;
+    std::getline (std::cin, line);
+
+    if (std::cin.eof()) {
+      std::cerr << "Exiting..." << std::endl;
+      return false;
     }
-    if (! fromString (offset, offsetStr)) {
-      std::cerr << "Invalid offset: " << offsetStr
-                << std::endl << std::endl
-                << args.usage();
-      return (EXIT_FAILURE);
+
+    std::istringstream input (line);
+    std::string key;
+    input >> key;
+
+    if (key == "") {
+      break;
     }
+
+    if (key == "fileName") {
+      input >> fileName;
+      continue;
+    }
+
+    if (key == "offset") {
+      input >> offset;
+      continue;
+    }
+
+    if (key == "arg") {
+      std::string arg;
+      input >> arg;
+      args.push_back (arg);
+      continue;
+    }
+
+    std::cerr << "Unknown key: '" << key << "'" << std::endl;
   }
 
   LibClang::Index index;
-  LibClang::TranslationUnit tu = index.parse (args.argc(), args.argv());
+  LibClang::TranslationUnit tu = index.parse (args);
 
   // Print clang diagnostics if requested
-  if (args["no-diagnostics"] == "") {
+  if (printDiagnostics) {
     for (unsigned int N = tu.numDiagnostics(),
            i = 0 ; i < N ; ++i) {
       std::cerr << tu.diagnostic (i) << std::endl << std::endl;
@@ -141,13 +133,43 @@ int main (int argc, char **argv) {
 
   // Print cursor definition
   LibClang::Cursor cursor (tu, fileName.c_str(), offset);
-  if (args["most-specific"] == "true") {
+  if (mostSpecific) {
     displayCursor (cursor);
   }
   else {
     LibClang::SourceLocation target = cursor.location();
     FindDefinition findDef (target);
     findDef.visitChildren (tu.cursor());
+  }
+
+  return true;
+}
+
+int main () {
+  while (true) {
+    std::cout << "clang-tags> " << std::flush;
+
+    std::string line;
+    std::getline (std::cin, line);
+    std::istringstream input (line);
+
+    std::string command;
+    input >> command;
+
+    bool ok = true;
+    if (command == "") {
+      /* do nothing */
+    }
+    else if (command == "find-definition") {
+      ok = findDefinition ();
+    } else {
+      std::cerr << "Unknown command: '" << command << "'" << std::endl;
+    }
+
+    if (!ok || std::cin.eof()) {
+      std::cout << "\nExiting..." << std::endl;
+      break;
+    }
   }
 
   return EXIT_SUCCESS;
