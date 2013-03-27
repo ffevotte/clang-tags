@@ -8,64 +8,55 @@
 
 #include <jsoncpp/json/json.h>
 
-void compilationDatabase (Storage & storage) {
-  Json::Value root;
-  Json::Reader reader;
-
-  std::ifstream json ("compile_commands.json");
-  bool ret = reader.parse (json, root);
-  if ( !ret ) {
-    std::cerr  << "Failed to parse configuration\n"
-               << reader.getFormattedErrorMessages();
+class CompilationDatabaseCommand : public Request::CommandParser
+{
+public:
+  CompilationDatabaseCommand (const std::string & name, Storage & storage)
+    : Request::CommandParser (name, "Create a compilation database"),
+      storage_ (storage)
+  {
+    prompt_ = "compilationDB> ";
   }
 
-  for (unsigned int i=0 ; i<root.size() ; ++i) {
-    std::string fileName = root[i]["file"].asString();
-    std::string directory = root[i]["directory"].asString();
+  void run () {
+    Json::Value root;
+    Json::Reader reader;
 
-    std::vector<std::string> clArgs;
-    std::istringstream command (root[i]["command"].asString());
-    std::string arg;
-    std::getline (command, arg, ' ');
-    do {
+    std::ifstream json ("compile_commands.json");
+    bool ret = reader.parse (json, root);
+    if ( !ret ) {
+      std::cerr  << "Failed to parse configuration\n"
+                 << reader.getFormattedErrorMessages();
+    }
+
+    for (unsigned int i=0 ; i<root.size() ; ++i) {
+      std::string fileName = root[i]["file"].asString();
+      std::string directory = root[i]["directory"].asString();
+
+      std::vector<std::string> clArgs;
+      std::istringstream command (root[i]["command"].asString());
+      std::string arg;
       std::getline (command, arg, ' ');
-      clArgs.push_back (arg);
-    } while (! command.eof());
+      do {
+        std::getline (command, arg, ' ');
+        clArgs.push_back (arg);
+      } while (! command.eof());
 
-    storage.setCompileCommand (fileName, directory, clArgs);
+      storage_.setCompileCommand (fileName, directory, clArgs);
+    }
   }
-}
+
+private:
+  Storage & storage_;
+};
 
 int main () {
   Storage storage;
-
-  do {
-    std::cout << "clang-dde> " << std::flush;
-
-    std::string inputLine;
-    std::getline (std::cin, inputLine);
-
-    if (inputLine == "") {
-      continue;
-    }
-
-    std::istringstream line (inputLine);
-    std::string command;
-    line >> command;
-
-    if (command == "compilationDatabase") {
-      compilationDatabase (storage);
-      continue;
-    }
-
-    if (command == "index") {
-      index (storage);
-      continue;
-    }
-
-    std::cerr << "Unknown command: '" << command << "'" << std::endl;
-
-  } while (! std::cin.eof());
+  Request::Parser p;
+  p .prompt ("clang-dde> ")
+    .add (new CompilationDatabaseCommand ("compilationDatabase", storage))
+    .add (new IndexCommand ("index", storage))
+    .parse (std::cin);
 
   return EXIT_SUCCESS;
 }

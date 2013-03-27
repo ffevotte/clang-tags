@@ -2,138 +2,292 @@
 
 #include <iostream>
 #include <sstream>
+#include <iomanip>
+#include <list>
 #include <vector>
 
 namespace Request {
-  template <typename REQUEST_READER, typename KEY_READER>
-  class Composite;
-
-  template <typename VAL>
-  class KeyReader;
-
-  struct Input {
-    Input (std::istream & stream)
-      : stream (stream)
-    { }
-
-    std::istream & stream;
-  };
-
-  template <typename REQUEST_READER>
-  struct RequestReader {
-    REQUEST_READER & getVR () {
-      return static_cast<REQUEST_READER&> (*this);
-    }
-
-    REQUEST_READER & operator>> (Input input) {
-      do {
-        std::string inputLine;
-        std::getline (input.stream, inputLine);
-
-        if (inputLine == "") {
-          break;
-        }
-
-        std::istringstream line (inputLine);
-        std::string key;
-        line >> key;
-
-        getVR().set (key, line);
-      } while (!input.stream.eof());
-
-      return getVR();
-    }
-
-    template <typename VAL>
-    Composite<REQUEST_READER, KeyReader<VAL> > operator>> (KeyReader<VAL> kr) {
-      return Composite<REQUEST_READER, KeyReader<VAL> > (getVR(), kr);
-    }
-  };
-
-
-  struct Empty : RequestReader<Empty> {
-    void set (std::string key, std::istream & stream) {
-      std::cerr << "Error: unknown key '" << key << "'" << std::endl;
-    }
-  };
-
-  template <typename REQUEST_READER, typename KEY_READER>
-  class Composite
-    : public RequestReader<Composite<REQUEST_READER, KEY_READER> >
-  {
+  class KeyParserBase {
   public:
-    Composite (REQUEST_READER rr, KEY_READER kr)
-      : rr_ (rr), kr_ (kr)
-    { }
+    KeyParserBase (std::string name)
+      : name_ (name)
+    {}
 
-    virtual void set (std::string key, std::istream & stream) {
-      if (key == kr_.key()) {
-        kr_.read(stream);
-      } else {
-        rr_.set (key, stream);
-      }
+    virtual ~KeyParserBase () {}
+
+    const std::string & name () const {
+      return name_;
+    }
+
+    std::string display () const {
+      std::ostringstream oss;
+
+      std::string keyDesc = name_;
+      if (metavar_ != "")
+        keyDesc += " " + metavar_;
+
+      oss << std::setw(20) << std::left << keyDesc;
+
+      if (description_ != "")
+        oss << " " << description_;
+
+      if (default_ != "")
+        oss << " (default: " << default_ << ")";
+
+      return oss.str();
+    }
+
+    KeyParserBase * metavar (std::string metavar) {
+      metavar_ = metavar;
+      return this;
+    }
+
+    KeyParserBase * description (std::string description) {
+      description_ = description;
+      return this;
+    }
+
+    virtual void parse (std::istream & stream) = 0;
+
+  private:
+    const std::string name_;
+    std::string description_;
+    std::string metavar_;
+
+  protected:
+    std::string default_;
+  };
+
+  template <typename T>
+  class Key : public KeyParserBase {
+  public:
+    Key (std::string name, T & destination)
+      : KeyParserBase (name),
+        destination_ (destination)
+    {
+      std::ostringstream defaultStr;
+      defaultStr << std::boolalpha << destination;
+      default_ = defaultStr.str();
+    }
+
+    virtual void parse (std::istream & stream) {
+      stream >> std::boolalpha >> destination_;
     }
 
   private:
-    REQUEST_READER rr_;
-    KEY_READER     kr_;
+    T & destination_;
   };
 
-
-  template <typename VAL>
-  class KeyReaderBase {
+  template <typename T>
+  class Key<std::vector<T> > : public KeyParserBase {
   public:
-    KeyReaderBase (const std::string & key, VAL & val)
-      : key_ (key),
-        val_ (val)
+    typedef std::vector<T>  Vector;
+
+    Key (std::string name, Vector & destination)
+      : KeyParserBase (name),
+        destination_ (destination)
+    {
+      std::ostringstream defaultStr;
+      defaultStr << "[";
+      auto it = destination.begin();
+      auto end = destination.end();
+      for ( ; it != end ; ++it) {
+        defaultStr << " " << *it;
+      }
+      defaultStr << " ]";
+      default_ = defaultStr.str();
+    }
+
+    virtual void parse (std::istream & stream) {
+      T val;
+      stream >> std::boolalpha >> val;
+      destination_.push_back (val);
+    }
+
+  private:
+    Vector & destination_;
+  };
+
+  class CommandParser {
+  public:
+    typedef std::list<KeyParserBase*> KeyList;
+
+    CommandParser (std::string name, std::string description = "")
+      : name_ (name),
+        description_ (description)
     { }
 
-    std::string & key () { return key_; }
+    virtual ~CommandParser () {
+      auto it = keys_.begin();
+      auto end = keys_.end();
+      for ( ; it != end ; ++it) {
+        delete (*it);
+      }
+    }
+
+    virtual void run () = 0;
+    virtual void defaults () {}
+
+    const std::string & name () {
+      return name_;
+    }
+
+    void help () const {
+      std::cerr << description_ << std::endl;
+
+      std::cerr << "Keys:" << std::endl;
+      auto it = keys_.begin();
+      auto end = keys_.end();
+      for ( ; it != end ; ++it) {
+        std::cerr << "  " << (*it)->display() << std::endl;
+      }
+    }
+
+    std::string display () {
+      std::ostringstream oss;
+      oss << std::setw(20) << std::left << name_
+          << " " << description_;
+      return oss.str();
+    }
+
+    void parse (std::istream & stream) {
+      defaults ();
+      do {
+        std::cout << prompt_ << std::flush;
+        std::string line;
+        std::getline (stream, line);
+
+        if (line == "") {
+          break;
+        }
+
+        std::istringstream input (line);
+        std::string key;
+        input >> key;
+
+        if (key == "help") {
+          help();
+          continue;
+        }
+
+        auto it = keys_.begin();
+        auto end = keys_.end();
+        bool found = false;
+        for ( ; it != end ; ++it) {
+          KeyParserBase & keyParser = **it;
+          if (key == keyParser.name()) {
+            keyParser.parse (input);
+            found = true;
+            break;
+          }
+        }
+
+        if (! found)
+          std::cerr << "Unknown key: `" << key << "'" << std::endl;
+
+      } while (! stream.eof());
+      run ();
+    }
+
+    CommandParser & add (KeyParserBase * key) {
+      keys_.push_back (key);
+      return *this;
+    }
+
+  private:
+    const std::string name_;
+    KeyList keys_;
+    std::string description_;
 
   protected:
-    std::string key_;
-    VAL & val_;
+    std::string prompt_;
   };
 
-  template <typename VAL>
-  struct KeyReader : public KeyReaderBase<VAL>
-  {
-    KeyReader (const std::string & key, VAL & val)
-      : KeyReaderBase<VAL> (key, val)
+  class Parser {
+  public:
+    typedef std::list<CommandParser*> CommandList;
+
+    Parser (std::string description = "")
+      : description_ (description)
     { }
 
-    void read (std::istream & stream) {
-      stream >> this->val_;
+    ~Parser () {
+      auto it = commands_.begin();
+      auto end = commands_.end();
+      for ( ; it != end ; ++it) {
+        delete *it;
+      }
     }
+
+    Parser & prompt (std::string p) {
+      prompt_ = p;
+      return *this;
+    }
+
+    Parser & add (CommandParser * command) {
+      commands_.push_back (command);
+      return *this;
+    }
+
+    void help () {
+      std::cerr << description_ << std::endl;
+
+      std::cerr << "Commands:" << std::endl;
+      auto it = commands_.begin();
+      auto end = commands_.end();
+      for ( ; it != end ; ++it) {
+        std::cerr << "  " << (*it)->display() << std::endl;
+      }
+    }
+
+    void parse (std::istream & stream) {
+      do {
+        std::cout << prompt_ << std::flush;
+
+        std::string line;
+        std::getline (stream, line);
+
+        if (line == "") {
+          break;
+        }
+
+        std::istringstream input (line);
+        std::string command;
+        input >> command;
+
+        if (command == "help") {
+          input >> command;
+          help();
+          continue;
+        }
+
+        auto it = commands_.begin();
+        auto end = commands_.end();
+        bool found = false;
+        for ( ; it != end ; ++it) {
+          CommandParser & commandParser = **it;
+          if (command == commandParser.name()) {
+            commandParser.parse (stream);
+            found = true;
+            continue;
+          }
+        }
+
+        if (! found) {
+          std::cerr << "Unknown command: `" << command << "'" << std::endl;
+        }
+
+      } while (! stream.eof());
+    }
+
+  private:
+    CommandList commands_;
+    std::string description_;
+    std::string prompt_;
   };
 
-  template <>
-  struct KeyReader<std::vector<std::string> >
-    : public KeyReaderBase<std::vector<std::string> >
-  {
-    typedef std::vector<std::string>  VAL;
-
-    KeyReader (const std::string & key, VAL & val)
-      : KeyReaderBase<VAL> (key, val)
-    { }
-
-    void read (std::istream & stream) {
-      std::string item;
-      stream >> item;
-      val_.push_back (item);
-    }
-  };
-
-
-
-  inline Empty reader () { return Empty(); }
-
-  template <typename VAL>
-  KeyReader<VAL> key (const std::string & key, VAL & val) {
-    return KeyReader<VAL> (key, val);
-  }
-
-  inline Input read (std::istream & stream) {
-    return Input (stream);
+  template <typename T>
+  Key<T>* key (std::string name, T & destination) {
+    return new Key<T> (name, destination);
   }
 }

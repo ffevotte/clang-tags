@@ -1,23 +1,14 @@
-#include "libclang++/index.hxx"
-#include "libclang++/translationUnit.hxx"
-#include "libclang++/cursor.hxx"
-#include "libclang++/sourceLocation.hxx"
-#include "libclang++/visitor.hxx"
-
+#include "libclang++/libclang++.h"
 #include "getopt++/getopt.hxx"
 
 #include "request.hxx"
-
 #include "util.hxx"
-
 #include "index.hxx"
 
 #include <cstdlib>
 #include <string>
 #include <iostream>
 #include <fstream>
-
-
 
 class Indexer : public LibClang::Visitor<Indexer> {
 public:
@@ -87,29 +78,44 @@ private:
 };
 
 
-void index (Storage & storage) {
-  std::vector<std::string> exclude;
-  bool diagnostics (true);
-  Request::reader () >> Request::key ("exclude", exclude)
-                     >> Request::key ("diagnostics", diagnostics)
-                     >> Request::read (std::cin);
+IndexCommand::IndexCommand (const std::string & name, Storage & storage)
+  : Request::CommandParser (name, "Index the source code base"),
+    storage_ (storage)
+{
+  prompt_ = "index> ";
 
-  storage.cleanIndex();
-  storage.beginIndex();
+  defaults ();
+  using Request::key;
+  add (key ("exclude", exclude_)
+       ->metavar ("PATH")
+       ->description ("Exclude path"));
+  add (key ("diagnostics", diagnostics_)
+       ->metavar ("true|false")
+       ->description ("Print compilation diagnostics"));
+}
+
+void IndexCommand::defaults () {
+  diagnostics_ = true;
+  exclude_ = {"/usr"};
+}
+
+void IndexCommand::run () {
+  storage_.cleanIndex();
+  storage_.beginIndex();
 
   std::cerr << std::endl
             << "-- Indexing project" << std::endl;
   Timer totalTimer;
 
   std::string fileName;
-  while ((fileName = storage.nextFile()) != "") {
+  while ((fileName = storage_.nextFile()) != "") {
     std::cerr << fileName << ":" << std::endl
               << "  parsing..." << std::flush;
     Timer timer;
 
     std::string directory;
     std::vector<std::string> args;
-    storage.getCompileCommand (fileName, directory, args);
+    storage_.getCompileCommand (fileName, directory, args);
 
     LibClang::Index index;
     LibClang::TranslationUnit tu = index.parse (args);
@@ -118,7 +124,7 @@ void index (Storage & storage) {
     timer.reset();
 
     // Print clang diagnostics if requested
-    if (diagnostics) {
+    if (diagnostics_) {
       for (unsigned int N = tu.numDiagnostics(),
              i = 0 ; i < N ; ++i) {
         std::cerr << tu.diagnostic (i) << std::endl << std::endl;
@@ -127,11 +133,11 @@ void index (Storage & storage) {
 
     std::cerr << "  indexing..." << std::flush;
     LibClang::Cursor top (tu);
-    Indexer indexer (fileName, exclude, storage);
+    Indexer indexer (fileName, exclude_, storage_);
     indexer.visitChildren (top);
     std::cerr << "\t" << timer.get() << std::endl;
   }
   std::cerr << totalTimer.get() << "s." << std::endl;
 
-  storage.endIndex();
+  storage_.endIndex();
 }
