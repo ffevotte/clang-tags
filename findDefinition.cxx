@@ -1,12 +1,8 @@
 #include "sourceFile.hxx"
 
-#include "libclang++/index.hxx"
-#include "libclang++/translationUnit.hxx"
-#include "libclang++/sourceLocation.hxx"
-#include "libclang++/cursor.hxx"
-#include "libclang++/visitor.hxx"
+#include "libclang++/libclang++.hxx"
 
-#include "getopt++/getopt.hxx"
+#include "application.hxx"
 
 #include <iostream>
 #include <cstdlib>
@@ -74,57 +70,16 @@ private:
   const LibClang::SourceLocation & targetLocation_;
 };
 
-bool findDefinition () {
-  std::string fileName;
-  int offset;
-  std::vector<std::string> args;
-  bool printDiagnostics = true;
-  bool mostSpecific = false;
-
-  while (true) {
-    std::cout << "find-def> " << std::flush;
-
-    std::string line;
-    std::getline (std::cin, line);
-
-    if (std::cin.eof()) {
-      std::cerr << "Exiting..." << std::endl;
-      return false;
-    }
-
-    std::istringstream input (line);
-    std::string key;
-    input >> key;
-
-    if (key == "") {
-      break;
-    }
-
-    if (key == "fileName") {
-      input >> fileName;
-      continue;
-    }
-
-    if (key == "offset") {
-      input >> offset;
-      continue;
-    }
-
-    if (key == "arg") {
-      std::string arg;
-      input >> arg;
-      args.push_back (arg);
-      continue;
-    }
-
-    std::cerr << "Unknown key: '" << key << "'" << std::endl;
-  }
+void Application::findDefinition (FindDefinitionArgs & args) {
+  std::string directory;
+  std::vector<std::string> clArgs;
+  storage_.getCompileCommand (args.fileName, directory, clArgs);
 
   LibClang::Index index;
-  LibClang::TranslationUnit tu = index.parse (args);
+  LibClang::TranslationUnit tu = index.parse (clArgs);
 
   // Print clang diagnostics if requested
-  if (printDiagnostics) {
+  if (args.printDiagnostics) {
     for (unsigned int N = tu.numDiagnostics(),
            i = 0 ; i < N ; ++i) {
       std::cerr << tu.diagnostic (i) << std::endl << std::endl;
@@ -132,8 +87,8 @@ bool findDefinition () {
   }
 
   // Print cursor definition
-  LibClang::Cursor cursor (tu, fileName.c_str(), offset);
-  if (mostSpecific) {
+  LibClang::Cursor cursor (tu, args.fileName.c_str(), args.offset);
+  if (args.mostSpecific) {
     displayCursor (cursor);
   }
   else {
@@ -141,36 +96,4 @@ bool findDefinition () {
     FindDefinition findDef (target);
     findDef.visitChildren (tu.cursor());
   }
-
-  return true;
-}
-
-int main () {
-  while (true) {
-    std::cout << "clang-tags> " << std::flush;
-
-    std::string line;
-    std::getline (std::cin, line);
-    std::istringstream input (line);
-
-    std::string command;
-    input >> command;
-
-    bool ok = true;
-    if (command == "") {
-      /* do nothing */
-    }
-    else if (command == "find-definition") {
-      ok = findDefinition ();
-    } else {
-      std::cerr << "Unknown command: '" << command << "'" << std::endl;
-    }
-
-    if (!ok || std::cin.eof()) {
-      std::cout << "\nExiting..." << std::endl;
-      break;
-    }
-  }
-
-  return EXIT_SUCCESS;
 }

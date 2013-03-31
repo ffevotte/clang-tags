@@ -1,61 +1,108 @@
+#include "application.hxx"
 #include "request.hxx"
-#include "storage.hxx"
-#include "index.hxx"
 
-#include <iostream>
-#include <fstream>
-#include <vector>
-
-#include <jsoncpp/json/json.h>
-
-class CompilationDatabaseCommand : public Request::CommandParser
-{
+class CompilationDatabaseCommand : public Request::CommandParser {
 public:
-  CompilationDatabaseCommand (const std::string & name, Storage & storage)
+  CompilationDatabaseCommand (const std::string & name, Application & application)
     : Request::CommandParser (name, "Create a compilation database"),
-      storage_ (storage)
+      application_ (application)
   {
     prompt_ = "compilationDB> ";
   }
 
+  void defaults () {
+    args_.fileName = "compile_commands.json";
+  }
+
   void run () {
-    Json::Value root;
-    Json::Reader reader;
-
-    std::ifstream json ("compile_commands.json");
-    bool ret = reader.parse (json, root);
-    if ( !ret ) {
-      std::cerr  << "Failed to parse configuration\n"
-                 << reader.getFormattedErrorMessages();
-    }
-
-    for (unsigned int i=0 ; i<root.size() ; ++i) {
-      std::string fileName = root[i]["file"].asString();
-      std::string directory = root[i]["directory"].asString();
-
-      std::vector<std::string> clArgs;
-      std::istringstream command (root[i]["command"].asString());
-      std::string arg;
-      std::getline (command, arg, ' ');
-      do {
-        std::getline (command, arg, ' ');
-        clArgs.push_back (arg);
-      } while (! command.eof());
-
-      storage_.setCompileCommand (fileName, directory, clArgs);
-    }
+    application_.compilationDatabase (args_);
   }
 
 private:
-  Storage & storage_;
+  Application & application_;
+  Application::CompilationDatabaseArgs args_;
 };
+
+class IndexCommand : public Request::CommandParser {
+public:
+  IndexCommand (const std::string & name, Application & application)
+    : Request::CommandParser (name, "Index the source code base"),
+      application_ (application)
+  {
+    prompt_ = "index> ";
+
+    defaults ();
+    using Request::key;
+    add (key ("exclude", args_.exclude)
+         ->metavar ("PATH")
+         ->description ("Exclude path"));
+    add (key ("diagnostics", args_.diagnostics)
+         ->metavar ("true|false")
+         ->description ("Print compilation diagnostics"));
+  }
+
+  void defaults () {
+    args_.diagnostics = true;
+    args_.exclude = {"/usr"};
+  }
+
+  void run () {
+    application_.index (args_);
+  }
+
+private:
+  Application & application_;
+  Application::IndexArgs args_;
+};
+
+
+class FindCommand : public Request::CommandParser {
+public:
+  FindCommand (const std::string & name, Application & application)
+    : Request::CommandParser (name, "Find the definition of a symbol"),
+      application_ (application)
+  {
+    prompt_ = "find> ";
+
+    defaults ();
+
+    using Request::key;
+    add (key ("file", args_.fileName)
+         ->metavar ("FILENAME")
+         ->description ("Source file name"));
+    add (key ("offset", args_.offset)
+         ->metavar ("OFFSET")
+         ->description ("Offset in bytes"));
+  }
+
+  void defaults () {
+    args_.fileName = "";
+    args_.offset = 0;
+    args_.mostSpecific = false;
+    args_.printDiagnostics = true;
+  }
+
+  void run () {
+    application_.findDefinition (args_);
+  }
+
+private:
+  Application & application_;
+  Application::FindDefinitionArgs args_;
+};
+
 
 int main () {
   Storage storage;
-  Request::Parser p;
-  p .prompt ("clang-dde> ")
-    .add (new CompilationDatabaseCommand ("compilationDatabase", storage))
-    .add (new IndexCommand ("index", storage))
+
+  Application app (storage);
+
+  Request::Parser p ("DRUIDE\n"
+                     "DRuide is an Un-Integrated Development Environment\n");
+  p .add (new CompilationDatabaseCommand ("compilationDatabase", app))
+    .add (new IndexCommand ("index", app))
+    .add (new FindCommand ("find", app))
+    .prompt ("clang-dde> ")
     .parse (std::cin);
 
   return EXIT_SUCCESS;

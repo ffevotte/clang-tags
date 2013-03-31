@@ -28,10 +28,6 @@ configure_file (
   "${PROJECT_BINARY_DIR}/config.h")
 include_directories ("${PROJECT_BINARY_DIR}")
 
-
-add_library (getopt++
-  getopt++/getopt.cxx)
-
 add_library (clang++
   libclang++/index.cxx
   libclang++/translationUnit.cxx
@@ -41,18 +37,12 @@ add_library (clang++
 add_library (sqlite++
   sqlite++/database.cxx)
 
-add_executable(clang-tags-def
-  findDefinition.cxx)
-target_link_libraries(clang-tags-def clang getopt++ clang++)
-
-# add_executable(clang-tags-index
-#   index.cxx)
-# target_link_libraries(clang-tags-index clang getopt++ clang++)
-
-add_executable(cdde
+add_executable(druide
   main.cxx
-  index.cxx)
-target_link_libraries(cdde sqlite3 sqlite++ clang clang++ jsoncpp)
+  compilationDatabase.cxx
+  index.cxx
+  findDefinition.cxx)
+target_link_libraries(druide sqlite3 sqlite++ clang clang++ jsoncpp)
 
 
 configure_file (
@@ -61,11 +51,6 @@ configure_file (
 configure_file (
   "${PROJECT_SOURCE_DIR}/env.el.in"
   "${PROJECT_BINARY_DIR}/env.el")
-
-install (
-  TARGETS      clang-tags-def #clang-tags-index
-  DESTINATION  bin
-)
 
 install (
   PROGRAMS     clang-tags

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-#include <list>
+#include <map>
 #include <vector>
 
 namespace Request {
@@ -110,7 +110,7 @@ namespace Request {
 
   class CommandParser {
   public:
-    typedef std::list<KeyParserBase*> KeyList;
+    typedef std::map<std::string, KeyParserBase*> KeyMap;
 
     CommandParser (std::string name, std::string description = "")
       : name_ (name),
@@ -121,7 +121,7 @@ namespace Request {
       auto it = keys_.begin();
       auto end = keys_.end();
       for ( ; it != end ; ++it) {
-        delete (*it);
+        delete (it->second);
       }
     }
 
@@ -139,7 +139,7 @@ namespace Request {
       auto it = keys_.begin();
       auto end = keys_.end();
       for ( ; it != end ; ++it) {
-        std::cerr << "  " << (*it)->display() << std::endl;
+        std::cerr << "  " << it->second->display() << std::endl;
       }
     }
 
@@ -165,38 +165,25 @@ namespace Request {
         std::string key;
         input >> key;
 
-        if (key == "help") {
-          help();
-          continue;
-        }
-
-        auto it = keys_.begin();
-        auto end = keys_.end();
-        bool found = false;
-        for ( ; it != end ; ++it) {
-          KeyParserBase & keyParser = **it;
-          if (key == keyParser.name()) {
-            keyParser.parse (input);
-            found = true;
-            break;
-          }
-        }
-
-        if (! found)
+        KeyMap::const_iterator it = keys_.find(key);
+        if (it != keys_.end()) {
+          it->second->parse (input);
+        } else {
           std::cerr << "Unknown key: `" << key << "'" << std::endl;
+        }
 
       } while (! stream.eof());
       run ();
     }
 
     CommandParser & add (KeyParserBase * key) {
-      keys_.push_back (key);
+      keys_[key->name()] = (key);
       return *this;
     }
 
   private:
     const std::string name_;
-    KeyList keys_;
+    KeyMap keys_;
     std::string description_;
 
   protected:
@@ -205,7 +192,7 @@ namespace Request {
 
   class Parser {
   public:
-    typedef std::list<CommandParser*> CommandList;
+    typedef std::map<std::string, CommandParser*> CommandMap;
 
     Parser (std::string description = "")
       : description_ (description)
@@ -215,7 +202,7 @@ namespace Request {
       auto it = commands_.begin();
       auto end = commands_.end();
       for ( ; it != end ; ++it) {
-        delete *it;
+        delete it->second;
       }
     }
 
@@ -225,7 +212,7 @@ namespace Request {
     }
 
     Parser & add (CommandParser * command) {
-      commands_.push_back (command);
+      commands_[command->name()] = command;
       return *this;
     }
 
@@ -233,10 +220,13 @@ namespace Request {
       std::cerr << description_ << std::endl;
 
       std::cerr << "Commands:" << std::endl;
+      std::cerr << "  "
+                << std::setw(20) << std::left << "help [COMMAND]"
+                << " Display help" << std::endl;
       auto it = commands_.begin();
       auto end = commands_.end();
       for ( ; it != end ; ++it) {
-        std::cerr << "  " << (*it)->display() << std::endl;
+        std::cerr << "  " << it->second->display() << std::endl;
       }
     }
 
@@ -248,32 +238,31 @@ namespace Request {
         std::getline (stream, line);
 
         if (line == "") {
-          break;
+          continue;
         }
 
         std::istringstream input (line);
         std::string command;
         input >> command;
 
+        bool helpRequested = false;
         if (command == "help") {
           input >> command;
-          help();
-          continue;
-        }
-
-        auto it = commands_.begin();
-        auto end = commands_.end();
-        bool found = false;
-        for ( ; it != end ; ++it) {
-          CommandParser & commandParser = **it;
-          if (command == commandParser.name()) {
-            commandParser.parse (stream);
-            found = true;
+          if (command == "help") {
+            help();
             continue;
+          } else {
+            helpRequested = true;
           }
         }
 
-        if (! found) {
+        CommandMap::const_iterator it = commands_.find (command);
+        if (it != commands_.end()) {
+          if (helpRequested)
+            it->second->help ();
+          else
+            it->second->parse (stream);
+        } else {
           std::cerr << "Unknown command: `" << command << "'" << std::endl;
         }
 
@@ -281,7 +270,7 @@ namespace Request {
     }
 
   private:
-    CommandList commands_;
+    CommandMap  commands_;
     std::string description_;
     std::string prompt_;
   };

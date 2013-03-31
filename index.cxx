@@ -1,9 +1,9 @@
-#include "libclang++/libclang++.h"
+#include "libclang++/libclang++.hxx"
 #include "getopt++/getopt.hxx"
 
 #include "request.hxx"
 #include "util.hxx"
-#include "index.hxx"
+#include "application.hxx"
 
 #include <cstdlib>
 #include <string>
@@ -78,28 +78,8 @@ private:
 };
 
 
-IndexCommand::IndexCommand (const std::string & name, Storage & storage)
-  : Request::CommandParser (name, "Index the source code base"),
-    storage_ (storage)
-{
-  prompt_ = "index> ";
 
-  defaults ();
-  using Request::key;
-  add (key ("exclude", exclude_)
-       ->metavar ("PATH")
-       ->description ("Exclude path"));
-  add (key ("diagnostics", diagnostics_)
-       ->metavar ("true|false")
-       ->description ("Print compilation diagnostics"));
-}
-
-void IndexCommand::defaults () {
-  diagnostics_ = true;
-  exclude_ = {"/usr"};
-}
-
-void IndexCommand::run () {
+void Application::index (IndexArgs & args) {
   storage_.cleanIndex();
   storage_.beginIndex();
 
@@ -114,17 +94,17 @@ void IndexCommand::run () {
     Timer timer;
 
     std::string directory;
-    std::vector<std::string> args;
-    storage_.getCompileCommand (fileName, directory, args);
+    std::vector<std::string> clArgs;
+    storage_.getCompileCommand (fileName, directory, clArgs);
 
     LibClang::Index index;
-    LibClang::TranslationUnit tu = index.parse (args);
+    LibClang::TranslationUnit tu = index.parse (clArgs);
 
     std::cerr << "\t" << timer.get() << "s." << std::endl;
     timer.reset();
 
     // Print clang diagnostics if requested
-    if (diagnostics_) {
+    if (args.diagnostics) {
       for (unsigned int N = tu.numDiagnostics(),
              i = 0 ; i < N ; ++i) {
         std::cerr << tu.diagnostic (i) << std::endl << std::endl;
@@ -133,7 +113,7 @@ void IndexCommand::run () {
 
     std::cerr << "  indexing..." << std::flush;
     LibClang::Cursor top (tu);
-    Indexer indexer (fileName, exclude_, storage_);
+    Indexer indexer (fileName, args.exclude, storage_);
     indexer.visitChildren (top);
     std::cerr << "\t" << timer.get() << std::endl;
   }

@@ -2,8 +2,11 @@
 
 #include "sqlite++/database.hxx"
 #include "sqlite++/statement.hxx"
+
 #include <sys/stat.h>
 #include <unistd.h>
+#include <vector>
+#include <sstream>
 
 class Storage {
 public:
@@ -79,7 +82,8 @@ public:
 
     switch (stmt.step()) {
     case SQLITE_DONE:
-      throw std::runtime_error ("no compilation command for this file");
+      throw std::runtime_error ("no compilation command for file `"
+                                + fileName + "'");
       break;
     default:
       std::string serializedArgs;
@@ -198,6 +202,46 @@ public:
         .bind(isDeclaration)
         .step();
     }
+  }
+
+  struct Reference {
+    std::string usr;
+    int offset1;
+    int offset2;
+    std::string kind;
+    std::string defFile;
+    int defLine1;
+    int defLine2;
+    int defCol1;
+    int defCol2;
+  };
+  std::vector<Reference> findDefinition (const std::string fileName,
+                       int offset) {
+    int fileId = fileId_ (fileName);
+    Sqlite::Statement stmt =
+      db_.prepare ("SELECT ref.usr, ref.offset1, ref.offset2, ref.kind, "
+                   "       files.name, def.line1, def.line2, def.col1, def.col2 "
+                   "FROM tags AS ref "
+                   "INNER JOIN tags AS def ON def.usr = ref.usr "
+                   "INNER JOIN files ON def.fileId = files.id "
+                   "WHERE def.isDecl = 1 "
+                   "  AND ref.fileId = ?  "
+                   "  AND ref.offset1 <= ? "
+                   "  AND ref.offset2 >= ? "
+                   "ORDER BY (ref.offset2 - ref.offset1)")
+      .bind (fileId)
+      .bind (offset)
+      .bind (offset);
+
+    std::vector<Reference> ret;
+    while (stmt.step() == SQLITE_ROW) {
+      Reference ref;
+      stmt >> ref.usr >> ref.offset1 >> ref.offset2 >> ref.kind
+           >> ref.defFile >> ref.defLine1 >> ref.defLine2
+           >> ref.defCol1 >> ref.defCol2;
+      ret.push_back(ref);
+    }
+    return ret;
   }
 
 private:
