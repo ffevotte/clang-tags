@@ -107,12 +107,7 @@ void Application::updateIndex (IndexArgs & args) {
               << "  parsing..." << std::flush;
     Timer timer;
 
-    std::string directory;
-    std::vector<std::string> clArgs;
-    storage_.getCompileCommand (fileName, directory, clArgs);
-
-    LibClang::Index index;
-    LibClang::TranslationUnit tu = index.parse (clArgs);
+    LibClang::TranslationUnit tu = translationUnit_(fileName);
 
     std::cerr << "\t" << timer.get() << "s." << std::endl;
     timer.reset();

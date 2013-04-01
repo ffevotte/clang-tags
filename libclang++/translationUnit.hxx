@@ -12,6 +12,8 @@ namespace LibClang {
   public:
     TranslationUnit (CXTranslationUnit tu);
 
+    void reparse ();
+
     SourceLocation getLocation (const char* fileName, unsigned int offset);
     Cursor cursor () const;
 

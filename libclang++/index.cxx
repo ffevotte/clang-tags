@@ -7,10 +7,9 @@ namespace LibClang {
   { }
 
   TranslationUnit Index::parse (int argc, char const *const *const argv) const {
-    return clang_parseTranslationUnit (raw(), 0,
-                                       argv, argc,
-                                       0, 0,
-                                       CXTranslationUnit_None);
+    return clang_createTranslationUnitFromSourceFile (raw(), 0,
+                                                      argc, argv,
+                                                      0, 0);
   }
 
   TranslationUnit Index::parse (const std::vector<std::string> & args) const {
