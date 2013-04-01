@@ -19,6 +19,8 @@ public:
     bool                     diagnostics;
   };
   void index (IndexArgs & args);
+  void update (IndexArgs &args);
+  void updateIndex (IndexArgs & args);
 
   struct FindDefinitionArgs {
     std::string fileName;

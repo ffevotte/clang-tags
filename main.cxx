@@ -23,19 +23,18 @@ private:
   Application::CompilationDatabaseArgs args_;
 };
 
-class IndexCommand : public Request::CommandParser {
+
+class UpdateCommand : public Request::CommandParser {
 public:
-  IndexCommand (const std::string & name, Application & application)
-    : Request::CommandParser (name, "Index the source code base"),
+  UpdateCommand (const std::string & name, Application & application)
+    : Request::CommandParser (name, "Update the source code index"),
       application_ (application)
   {
-    prompt_ = "index> ";
+    prompt_ = "update> ";
 
-    defaults ();
+    defaults();
+
     using Request::key;
-    add (key ("exclude", args_.exclude)
-         ->metavar ("PATH")
-         ->description ("Exclude path"));
     add (key ("diagnostics", args_.diagnostics)
          ->metavar ("true|false")
          ->description ("Print compilation diagnostics"));
@@ -43,16 +42,43 @@ public:
 
   void defaults () {
     args_.diagnostics = true;
+  }
+
+  void run () {
+    application_.update (args_);
+  }
+protected:
+  Application & application_;
+  Application::IndexArgs args_;
+};
+
+
+class IndexCommand : public UpdateCommand {
+public:
+  IndexCommand (const std::string & name, Application & application)
+    : UpdateCommand (name, application)
+  {
+    description_ = "Index the source code base";
+    prompt_ = "index> ";
+
+    defaults ();
+    using Request::key;
+    add (key ("diagnostics", args_.diagnostics)
+         ->metavar ("true|false")
+         ->description ("Print compilation diagnostics"));
+    add (key ("exclude", args_.exclude)
+         ->metavar ("PATH")
+         ->description ("Exclude path"));
+  }
+
+  void defaults () {
+    UpdateCommand::defaults();
     args_.exclude = {"/usr"};
   }
 
   void run () {
     application_.index (args_);
   }
-
-private:
-  Application & application_;
-  Application::IndexArgs args_;
 };
 
 
@@ -101,6 +127,7 @@ int main () {
                      "DRuide is an Un-Integrated Development Environment\n");
   p .add (new CompilationDatabaseCommand ("compilationDatabase", app))
     .add (new IndexCommand ("index", app))
+    .add (new UpdateCommand ("update", app))
     .add (new FindCommand ("find", app))
     .prompt ("clang-dde> ")
     .parse (std::cin);

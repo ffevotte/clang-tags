@@ -20,7 +20,7 @@ public:
     std::string res (buffer);
     delete[] buffer;
 
-    return shorten (res, 42);
+    return shorten_ (res, 42);
   }
 
   std::string line (const unsigned int lineno) {
@@ -34,7 +34,7 @@ public:
   }
 
 private:
-  static std::string shorten (const std::string & s, const unsigned int sizeMax) {
+  static std::string shorten_ (const std::string & s, const unsigned int sizeMax) {
     std::istringstream iss (s);
 
     std::string word;

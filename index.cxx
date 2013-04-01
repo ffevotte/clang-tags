@@ -20,6 +20,7 @@ public:
       storage_    (storage)
   {
     needsUpdate_[fileName] = storage.beginFile (fileName);
+    storage_.addInclude (fileName, fileName);
   }
 
   CXChildVisitResult visit (LibClang::Cursor cursor,
@@ -80,13 +81,26 @@ private:
 
 
 void Application::index (IndexArgs & args) {
-  storage_.cleanIndex();
-  storage_.beginIndex();
-
   std::cerr << std::endl
             << "-- Indexing project" << std::endl;
+  storage_.setOption ("exclude", args.exclude);
+  storage_.cleanIndex();
+
+  updateIndex (args);
+}
+
+void Application::update (IndexArgs & args) {
+  std::cerr << std::endl
+            << "-- Updating index" << std::endl;
+  args.exclude = storage_.getOption ("exclude", Storage::Vector());
+
+  updateIndex (args);
+}
+
+void Application::updateIndex (IndexArgs & args) {
   Timer totalTimer;
 
+  storage_.beginIndex();
   std::string fileName;
   while ((fileName = storage_.nextFile()) != "") {
     std::cerr << fileName << ":" << std::endl
@@ -117,7 +131,6 @@ void Application::index (IndexArgs & args) {
     indexer.visitChildren (top);
     std::cerr << "\t" << timer.get() << std::endl;
   }
-  std::cerr << totalTimer.get() << "s." << std::endl;
-
   storage_.endIndex();
+  std::cerr << totalTimer.get() << "s." << std::endl;
 }

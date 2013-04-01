@@ -184,10 +184,10 @@ namespace Request {
   private:
     const std::string name_;
     KeyMap keys_;
-    std::string description_;
 
   protected:
     std::string prompt_;
+    std::string description_;
   };
 
   class Parser {

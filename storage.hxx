@@ -39,34 +39,28 @@ public:
                  "  offset2  INTEGER,"
                  "  isDecl   BOOLEAN"
                  ")");
+    db_.execute ("CREATE TABLE IF NOT EXISTS options ( "
+                 "  name   TEXT, "
+                 "  value  TEXT "
+                 ")");
   }
 
   int setCompileCommand (const std::string & fileName,
                          const std::string & directory,
                          const std::vector<std::string> & args) {
     int fileId = addFile_ (fileName);
+    addInclude (fileName, fileName);
 
-    {
-      Sqlite::Statement stmt = db_.prepare ("DELETE FROM commands "
-                                            "WHERE fileId=?");
-      stmt << fileId;
-      stmt.step();
-    }
+    db_.prepare ("DELETE FROM commands "
+                 "WHERE fileId=?")
+      .bind (fileId)
+      .step();
 
-    {
-      auto it = args.begin();
-      auto end = args.end();
-      std::ostringstream serialized;
-      for ( ; it != end ; ++it) {
-        serialized << *it << std::endl;
-      }
-
-      db_.prepare ("INSERT INTO commands VALUES (?,?,?)")
-        .bind (fileId)
-        .bind (directory)
-        .bind (serialized.str())
-        .step();
-    }
+    db_.prepare ("INSERT INTO commands VALUES (?,?,?)")
+      .bind (fileId)
+      .bind (directory)
+      .bind (serialize_ (args))
+      .step();
 
     return fileId;
   }
@@ -76,8 +70,10 @@ public:
                           std::vector<std::string> & args) {
     int fileId = fileId_ (fileName);
     Sqlite::Statement stmt
-      = db_.prepare ("SELECT directory, args FROM commands "
-                     "WHERE fileId=?")
+      = db_.prepare ("SELECT commands.directory, commands.args "
+                     "FROM includes "
+                     "INNER JOIN commands ON includes.sourceId = commands.fileId "
+                     "WHERE includes.includedId = ?")
       << fileId;
 
     switch (stmt.step()) {
@@ -88,31 +84,31 @@ public:
     default:
       std::string serializedArgs;
       stmt >> directory >> serializedArgs;
-      std::istringstream serialized (serializedArgs);
-      while (true) {
-        std::string arg;
-        std::getline (serialized, arg);
-        if (serialized.eof())
-          break;
-        args.push_back (arg);
-      }
+      deserialize_ (serializedArgs, args);
     }
   }
 
   std::string nextFile () {
     Sqlite::Statement stmt
-      = db_.prepare ("SELECT name, indexed FROM files ORDER BY indexed");
+      = db_.prepare ("SELECT included.name, included.indexed, source.name, "
+                     "       count(source.name) AS sourceCount "
+                     "FROM includes "
+                     "INNER JOIN files AS source ON source.id = includes.sourceId "
+                     "INNER JOIN files AS included ON included.id = includes.includedId "
+                     "GROUP BY included.id "
+                     "ORDER BY sourceCount ");
     while (stmt.step() == SQLITE_ROW) {
-      std::string fileName;
+      std::string includedName;
       int indexed;
-      stmt >> fileName >> indexed;
+      std::string sourceName;
+      stmt >> includedName >> indexed >> sourceName;
 
       struct stat fileStat;
-      stat (fileName.c_str(), &fileStat);
+      stat (includedName.c_str(), &fileStat);
       int modified = fileStat.st_mtime;
 
       if (modified > indexed) {
-        return fileName;
+        return sourceName;
       }
     }
 
@@ -244,6 +240,47 @@ public:
     return ret;
   }
 
+  void setOption (const std::string & name, const std::string & value) {
+    db_.prepare ("DELETE FROM options "
+                 "WHERE name = ?")
+      .bind (name)
+      .step();
+
+    db_.prepare ("INSERT INTO options "
+                 "VALUES (?, ?)")
+      .bind (name)
+      .bind (value)
+      .step();
+  }
+
+  void setOption (const std::string & name, const std::vector<std::string> & value) {
+    setOption (name, serialize_(value));
+  }
+
+
+  std::string getOption (const std::string & name) {
+    Sqlite::Statement stmt =
+      db_.prepare ("SELECT value FROM options "
+                   "WHERE name = ?")
+      .bind (name);
+
+    std::string ret;
+    if (stmt.step() == SQLITE_ROW) {
+      stmt >> ret;
+    } else {
+      throw std::runtime_error ("No stored value for option: `" + name + "'");
+    }
+
+    return ret;
+  }
+
+  struct Vector {};
+  std::vector<std::string> getOption (const std::string & name, const Vector & v) {
+    std::vector<std::string> ret;
+    deserialize_ (getOption (name), ret);
+    return ret;
+  }
+
 private:
   int fileId_ (const std::string & fileName) {
     Sqlite::Statement stmt
@@ -268,6 +305,27 @@ private:
       id = db_.lastInsertRowId();
     }
     return id;
+  }
+
+  std::string serialize_ (const std::vector<std::string> & v) {
+    auto it = v.begin();
+    auto end = v.end();
+    std::ostringstream serialized;
+    for ( ; it != end ; ++it) {
+      serialized << *it << std::endl;
+    }
+    return serialized.str();
+  }
+
+  void deserialize_ (const std::string & s, std::vector<std::string> & v) {
+    std::istringstream serialized (s);
+    while (true) {
+      std::string item;
+      std::getline (serialized, item);
+      if (serialized.eof())
+        break;
+      v.push_back (item);
+    }
   }
 
   Sqlite::Database db_;
