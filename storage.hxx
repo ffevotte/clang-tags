@@ -8,6 +8,8 @@
 #include <vector>
 #include <sstream>
 
+#include <jsoncpp/json/json.h>
+
 class Storage {
 public:
   Storage ()
@@ -308,23 +310,26 @@ private:
   }
 
   std::string serialize_ (const std::vector<std::string> & v) {
+    Json::Value json;
     auto it = v.begin();
     auto end = v.end();
-    std::ostringstream serialized;
     for ( ; it != end ; ++it) {
-      serialized << *it << std::endl;
+      json.append (*it);
     }
-    return serialized.str();
+
+    Json::FastWriter writer;
+    return writer.write (json);
   }
 
   void deserialize_ (const std::string & s, std::vector<std::string> & v) {
-    std::istringstream serialized (s);
-    while (true) {
-      std::string item;
-      std::getline (serialized, item);
-      if (serialized.eof())
-        break;
-      v.push_back (item);
+    Json::Value json;
+    Json::Reader reader;
+    if (! reader.parse (s, json)) {
+      throw std::runtime_error (reader.getFormattedErrorMessages());
+    }
+
+    for (int i=0 ; i<json.size() ; ++i) {
+      v.push_back (json[i].asString());
     }
   }
 
