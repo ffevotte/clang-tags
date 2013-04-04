@@ -47,6 +47,7 @@ public:
   void run () {
     application_.update (args_);
   }
+
 protected:
   Application & application_;
   Application::IndexArgs args_;
@@ -63,9 +64,6 @@ public:
 
     defaults ();
     using Request::key;
-    add (key ("diagnostics", args_.diagnostics)
-         ->metavar ("true|false")
-         ->description ("Print compilation diagnostics"));
     add (key ("exclude", args_.exclude)
          ->metavar ("PATH")
          ->description ("Exclude path"));
