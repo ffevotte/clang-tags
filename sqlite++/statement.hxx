@@ -19,17 +19,12 @@ namespace Sqlite {
       }
     }
 
-    Statement & operator<< (const std::string s) {
+    Statement & bind (const std::string s) {
       return bind_ (sqlite3_bind_text (raw(), bindI_, s.c_str(), -1, NULL));
     }
 
-    Statement & operator<< (int i) {
+    Statement & bind (int i) {
       return bind_ (sqlite3_bind_int (raw(), bindI_, i));
-    }
-
-    template <typename T>
-    Statement & bind (T t) {
-      return operator<< (t);
     }
 
     Statement & operator>> (int & i) {

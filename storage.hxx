@@ -76,7 +76,7 @@ public:
                      "FROM includes "
                      "INNER JOIN commands ON includes.sourceId = commands.fileId "
                      "WHERE includes.includedId = ?")
-      << fileId;
+      .bind (fileId);
 
     switch (stmt.step()) {
     case SQLITE_DONE:
@@ -137,7 +137,7 @@ public:
     {
       Sqlite::Statement stmt
         = db_.prepare ("SELECT indexed FROM files WHERE id = ?")
-        << fileId;
+        .bind (fileId);
       stmt.step();
       stmt >> indexed;
     }
@@ -147,11 +147,14 @@ public:
     int modified = fileStat.st_mtime;
 
     if (modified > indexed) {
-      (db_.prepare ("DELETE FROM tags WHERE fileId=?") << fileId).step();
-      (db_.prepare ("DELETE FROM includes WHERE sourceId=?") << fileId).step();
-      (db_.prepare ("UPDATE files "
-                    "SET indexed=? "
-                    "WHERE id=?") << modified << fileId).step();
+      db_.prepare ("DELETE FROM tags WHERE fileId=?").bind (fileId).step();
+      db_.prepare ("DELETE FROM includes WHERE sourceId=?").bind (fileId).step();
+      db_.prepare ("UPDATE files "
+                   "SET indexed=? "
+                   "WHERE id=?")
+        .bind (modified)
+        .bind (fileId)
+        .step();
       return true;
     } else {
       return false;
@@ -191,7 +194,7 @@ public:
                    "  AND usr=?"
                    "  AND offset1=?"
                    "  AND offset2=?")
-      << fileId << usr << offset1 << offset2;
+      .bind (fileId).bind (usr).bind (offset1).bind (offset2);
     if (stmt.step() == SQLITE_DONE) { // no matching row
       db_.prepare ("INSERT INTO tags VALUES (?,?,?,?,?,?,?,?,?,?)")
         .bind(fileId) .bind(usr)  .bind(kind)
@@ -286,8 +289,8 @@ public:
 private:
   int fileId_ (const std::string & fileName) {
     Sqlite::Statement stmt
-      = db_.prepare ("SELECT id FROM files WHERE name=?");
-    stmt << fileName;
+      = db_.prepare ("SELECT id FROM files WHERE name=?")
+      .bind (fileName);
 
     int id = -1;
     if (stmt.step() == SQLITE_ROW) {
@@ -300,10 +303,10 @@ private:
   int addFile_ (const std::string & fileName) {
     int id = fileId_ (fileName);
     if (id == -1) {
-      Sqlite::Statement stmt
-        = db_.prepare ("INSERT INTO files VALUES (NULL, ?, 0)");
-      stmt << fileName;
-      stmt.step();
+      db_.prepare ("INSERT INTO files VALUES (NULL, ?, 0)")
+        .bind (fileName)
+        .step();
+
       id = db_.lastInsertRowId();
     }
     return id;
