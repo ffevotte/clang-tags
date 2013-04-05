@@ -13,6 +13,12 @@ namespace LibClang {
                                   clang_defaultReparseOptions(raw()));
   }
 
+  void TranslationUnit::reparse (UnsavedFiles & unsaved) {
+    clang_reparseTranslationUnit (raw(),
+                                  unsaved.size(), unsaved.begin(),
+                                  clang_defaultReparseOptions(raw()));
+  }
+
   SourceLocation TranslationUnit::getLocation (const char* fileName, unsigned int offset) {
     CXFile topFile = clang_getFile (raw(), fileName);
     CXSourceLocation target = clang_getLocationForOffset (raw(),

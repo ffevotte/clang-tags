@@ -3,6 +3,8 @@
 #include <clang-c/Index.h>
 #include <memory>
 
+#include "unsavedFiles.hxx"
+
 namespace LibClang {
   class Index;
   class SourceLocation;
@@ -13,6 +15,7 @@ namespace LibClang {
     TranslationUnit (CXTranslationUnit tu);
 
     void reparse ();
+    void reparse (UnsavedFiles & unsaved);
 
     SourceLocation getLocation (const char* fileName, unsigned int offset);
     Cursor cursor () const;
