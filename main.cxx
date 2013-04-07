@@ -116,6 +116,41 @@ private:
 };
 
 
+class CompleteCommand : public Request::CommandParser {
+public:
+  CompleteCommand (const std::string & name, Application & application)
+    : Request::CommandParser (name, "Complete the code at point"),
+      application_ (application)
+  {
+    prompt_ = "complete> ";
+
+    defaults();
+
+    using Request::key;
+    add (key ("file", args_.fileName)
+         ->metavar ("FILENAME"));
+    add (key ("line", args_.line)
+         ->metavar ("LINE_NO"));
+    add (key ("column", args_.column)
+         ->metavar ("COLUMN_NO"));
+  }
+
+  void defaults () {
+    args_.fileName = "";
+    args_.line = 0;
+    args_.column = 0;
+  }
+
+  void run () {
+    application_.complete (args_);
+  }
+
+private:
+  Application & application_;
+  Application::CompleteArgs args_;
+};
+
+
 int main () {
   Storage storage;
 
@@ -127,6 +162,7 @@ int main () {
     .add (new IndexCommand ("index", app))
     .add (new UpdateCommand ("update", app))
     .add (new FindCommand ("find", app))
+    .add (new CompleteCommand ("complete", app))
     .prompt ("clang-dde> ")
     .parse (std::cin);
 

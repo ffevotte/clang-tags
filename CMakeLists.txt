@@ -41,7 +41,8 @@ add_executable(druide
   main.cxx
   compilationDatabase.cxx
   index.cxx
-  findDefinition.cxx)
+  findDefinition.cxx
+  complete.cxx)
 target_link_libraries(druide sqlite3 sqlite++ clang clang++ jsoncpp)
 
 

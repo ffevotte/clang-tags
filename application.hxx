@@ -32,6 +32,13 @@ public:
   };
   void findDefinition (FindDefinitionArgs & args);
 
+  struct CompleteArgs {
+    std::string fileName;
+    int         line;
+    int         column;
+  };
+  void complete (CompleteArgs & args);
+
 private:
   LibClang::TranslationUnit & translationUnit_ (std::string fileName) {
     auto it = tu_.find (fileName);
