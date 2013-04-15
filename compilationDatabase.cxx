@@ -1,6 +1,6 @@
 #include "application.hxx"
+#include "json/json.h"
 #include <fstream>
-#include <jsoncpp/json/json.h>
 
 void Application::compilationDatabase (CompilationDatabaseArgs & args) {
   Json::Value root;

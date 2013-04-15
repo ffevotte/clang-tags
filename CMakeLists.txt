@@ -28,14 +28,22 @@ configure_file (
   "${PROJECT_BINARY_DIR}/config.h")
 include_directories ("${PROJECT_BINARY_DIR}")
 
+
+add_library (jsoncpp
+  dist/json-cpp/jsoncpp.cpp)
+include_directories ("${PROJECT_SOURCE_DIR}/dist/json-cpp")
+
+
 add_library (clang++
   libclang++/index.cxx
   libclang++/translationUnit.cxx
   libclang++/sourceLocation.cxx
   libclang++/cursor.cxx)
 
+
 add_library (sqlite++
   sqlite++/database.cxx)
+
 
 add_executable(druide
   main.cxx
