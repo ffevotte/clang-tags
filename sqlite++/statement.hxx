@@ -19,8 +19,8 @@ namespace Sqlite {
       }
     }
 
-    Statement & bind (const std::string s) {
-      return bind_ (sqlite3_bind_text (raw(), bindI_, s.c_str(), -1, NULL));
+    Statement & bind (const std::string & s) {
+      return bind_ (sqlite3_bind_text (raw(), bindI_, s.c_str(), s.size(), NULL));
     }
 
     Statement & bind (int i) {

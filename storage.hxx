@@ -51,7 +51,7 @@ public:
                          const std::string & directory,
                          const std::vector<std::string> & args) {
     int fileId = addFile_ (fileName);
-    addInclude (fileName, fileName);
+    addInclude (fileId, fileId);
 
     db_.prepare ("DELETE FROM commands "
                  "WHERE fileId=?")
@@ -161,10 +161,9 @@ public:
     }
   }
 
-  void addInclude (const std::string & includedFile,
-                   const std::string & sourceFile) {
-    int sourceId   = fileId_ (sourceFile);
-    int includedId = fileId_ (includedFile);
+  void addInclude (const int includedId,
+                   const int sourceId)
+  {
     int res = db_.prepare ("SELECT * FROM includes "
                            "WHERE sourceId=? "
                            "  AND includedId=?")
@@ -175,6 +174,16 @@ public:
         .bind (sourceId) . bind (includedId)
         .step();
     }
+  }
+
+  void addInclude (const std::string & includedFile,
+                   const std::string & sourceFile) {
+    int includedId = fileId_ (includedFile);
+    int sourceId   = fileId_ (sourceFile);
+    if (includedId == -1 || sourceId == -1)
+      throw std::runtime_error ("Cannot add inclusion for unknown files `"
+                                + includedFile + "' and `" + sourceFile + "'");
+    addInclude (includedId, sourceId);
   }
 
   void addTag (const std::string & usr,
