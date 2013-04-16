@@ -9,6 +9,9 @@ add_definitions (-Wall -std=c++11)
 #add_definitions (-g -O1)
 add_definitions (-O3)
 
+
+# Check for libclang
+
 check_include_file (clang-c/Index.h LIBCLANG_DEV)
 if (NOT LIBCLANG_DEV)
   message (FATAL_ERROR "Unable to find libclang headers")
@@ -22,6 +25,22 @@ endif (NOT LIBCLANG)
 
 check_function_exists (clang_getExpansionLocation
   HAVE_CLANG_GETEXPANSIONLOCATION)
+
+
+# Check for libsqlite3
+
+check_include_file (sqlite3.h LIBSQLITE3_DEV)
+if (NOT LIBSQLITE3_DEV)
+  message (FATAL_ERROR "Unable to find libsqlite3 headers")
+endif (NOT LIBSQLITE3_DEV)
+
+set (CMAKE_REQUIRED_LIBRARIES -lsqlite3)
+check_function_exists (sqlite3_open LIBSQLITE3)
+if (NOT LIBSQLITE3)
+  message (FATAL_ERROR "Unable to find libsqlite3")
+endif (NOT LIBSQLITE3)
+
+
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/config.h.in"
