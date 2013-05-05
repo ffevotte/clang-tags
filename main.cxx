@@ -1,5 +1,7 @@
 #include "application.hxx"
 #include "request.hxx"
+#include <asio.hpp>
+#include "util.hxx"
 
 class CompilationDatabaseCommand : public Request::CommandParser {
 public:
@@ -14,8 +16,8 @@ public:
     args_.fileName = "compile_commands.json";
   }
 
-  void run () {
-    application_.compilationDatabase (args_);
+  void run (std::ostream & cout) {
+    application_.compilationDatabase (args_, cout);
   }
 
 private:
@@ -44,8 +46,8 @@ public:
     args_.diagnostics = true;
   }
 
-  void run () {
-    application_.update (args_);
+  void run (std::ostream & cout) {
+    application_.update (args_, cout);
   }
 
 protected:
@@ -74,8 +76,8 @@ public:
     args_.exclude = {"/usr"};
   }
 
-  void run () {
-    application_.index (args_);
+  void run (std::ostream & cout) {
+    application_.index (args_, cout);
   }
 };
 
@@ -106,8 +108,8 @@ public:
     args_.printDiagnostics = true;
   }
 
-  void run () {
-    application_.findDefinition (args_);
+  void run (std::ostream & cout) {
+    application_.findDefinition (args_, cout);
   }
 
 private:
@@ -141,13 +143,23 @@ public:
     args_.column = 0;
   }
 
-  void run () {
-    application_.complete (args_);
+  void run (std::ostream & cout) {
+    application_.complete (args_, cout);
   }
 
 private:
   Application & application_;
   Application::CompleteArgs args_;
+};
+
+struct ExitCommand : public Request::CommandParser {
+  ExitCommand (const std::string & name)
+    : Request::CommandParser (name)
+  { }
+
+  void run (std::ostream & cout) {
+    throw std::runtime_error ("Exiting...");
+  }
 };
 
 
@@ -163,8 +175,53 @@ int main () {
     .add (new UpdateCommand ("update", app))
     .add (new FindCommand ("find", app))
     .add (new CompleteCommand ("complete", app))
-    .prompt ("clang-dde> ")
-    .parse (std::cin);
+    .add (new ExitCommand ("exit"))
+    .prompt ("clang-dde> ");
+
+  //p .parse (std::cin);
+
+  using asio::ip::tcp;
+
+  try
+  {
+    asio::io_service io_service;
+
+    tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 1313));
+    for (;;)
+    {
+      tcp::socket socket(io_service);
+      acceptor.accept(socket);
+      std::cerr << "New client request..." << std::endl;
+
+      asio::streambuf request;
+      asio::error_code error;
+      asio::read_until(socket, request, "\n\n", error);
+
+      if (error
+          && error != asio::error::eof)  // Connection closed cleanly by peer.
+        throw asio::system_error(error); // Some other error.
+
+      std::stringbuf requestStr;
+      std::istream (&request).get (requestStr, 0);
+
+      std::cerr << requestStr.str();
+      std::istringstream input (requestStr.str());
+
+      Json::Value json;
+      input >> json;
+
+      std::ostringstream output;
+      output << "Server response:" << std::endl;
+      p.parseJson (json, output);
+
+      asio::write (socket, asio::buffer (output.str()));
+    }
+  }
+  catch (std::exception& e)
+  {
+    std::cerr << e.what() << std::endl;
+  }
+
 
   return EXIT_SUCCESS;
 }

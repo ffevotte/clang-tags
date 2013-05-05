@@ -1,6 +1,5 @@
-#pragma once
+#include <json/json.h>
 
-#include <iostream>
 #include <sstream>
 #include <iomanip>
 #include <map>
@@ -10,7 +9,8 @@ namespace Request {
   class KeyParserBase {
   public:
     KeyParserBase (std::string name)
-      : name_ (name)
+      : name_ (name),
+        required_ (false)
     {}
 
     virtual ~KeyParserBase () {}
@@ -19,22 +19,22 @@ namespace Request {
       return name_;
     }
 
-    std::string display () const {
-      std::ostringstream oss;
-
-      std::string keyDesc = name_;
-      if (metavar_ != "")
-        keyDesc += " " + metavar_;
-
-      oss << std::setw(20) << std::left << keyDesc;
+    void display (std::ostream & cout) const {
+      cout << "  " << name_ << " " << metavar_ << std::endl;
 
       if (description_ != "")
-        oss << " " << description_;
+        cout << "      " << description_ << std::endl;
+
+      if (isVector())
+        cout << "      multiple values allowed" << std::endl;
 
       if (default_ != "")
-        oss << " (default: " << default_ << ")";
+        cout << "      default: " << default_ << std::endl;
 
-      return oss.str();
+      if (required_)
+        cout << "      required" << std::endl;
+
+      cout << std::endl;
     }
 
     KeyParserBase * metavar (std::string metavar) {
@@ -47,16 +47,42 @@ namespace Request {
       return this;
     }
 
-    virtual void parse (std::istream & stream) = 0;
+    KeyParserBase * required (bool req = true) {
+      required_ = req;
+      return this;
+    }
+
+    virtual bool isVector () const {
+      return false;
+    }
+
+    virtual void parse (std::istream & cin) = 0;
+
+    virtual void set (const Json::Value & json) = 0;
 
   private:
     const std::string name_;
     std::string description_;
     std::string metavar_;
+    bool required_;
 
   protected:
     std::string default_;
   };
+
+  template <typename T>
+  void setValue (const Json::Value & json, T & destination) {
+    std::istringstream iss (json.asString());
+    iss >> destination;
+  }
+
+  template <>
+  void setValue<bool> (const Json::Value & json, bool & destination);
+
+  template <>
+  void setValue<std::string> (const Json::Value & json,
+                              std::string & destination);
+
 
   template <typename T>
   class Key : public KeyParserBase {
@@ -70,8 +96,12 @@ namespace Request {
       default_ = defaultStr.str();
     }
 
-    virtual void parse (std::istream & stream) {
-      stream >> std::boolalpha >> destination_;
+    virtual void parse (std::istream & cin) {
+      cin >> std::boolalpha >> destination_;
+    }
+
+    virtual void set (const Json::Value & json) {
+      setValue (json, destination_);
     }
 
   private:
@@ -87,21 +117,32 @@ namespace Request {
       : KeyParserBase (name),
         destination_ (destination)
     {
-      std::ostringstream defaultStr;
-      defaultStr << "[";
+      Json::Value defaults;
+
       auto it = destination.begin();
       auto end = destination.end();
       for ( ; it != end ; ++it) {
-        defaultStr << " " << *it;
+        defaults.append (*it);
       }
-      defaultStr << " ]";
-      default_ = defaultStr.str();
+
+      default_ = Json::FastWriter().write (defaults);
     }
 
-    virtual void parse (std::istream & stream) {
+    virtual bool isVector () const {
+      return true;
+    }
+
+    virtual void parse (std::istream & cin) {
       T val;
-      stream >> std::boolalpha >> val;
+      cin >> std::boolalpha >> val;
       destination_.push_back (val);
+    }
+
+    virtual void set (const Json::Value & json) {
+      destination_.resize (json.size());
+      for (int i = 0 ; i<json.size() ; ++i) {
+        setValue (json[i], destination_[i]);
+      }
     }
 
   private:
@@ -125,37 +166,35 @@ namespace Request {
       }
     }
 
-    virtual void run () = 0;
+    virtual void run (std::ostream & cout) = 0;
     virtual void defaults () {}
 
     const std::string & name () {
       return name_;
     }
 
-    void help () const {
-      std::cerr << description_ << std::endl;
-
-      std::cerr << "Keys:" << std::endl;
+    void help (std::ostream & cout) const {
+      cout << description_ << std::endl
+           << std::endl
+           << "Arguments:" << std::endl;
       auto it = keys_.begin();
       auto end = keys_.end();
       for ( ; it != end ; ++it) {
-        std::cerr << "  " << it->second->display() << std::endl;
+        it->second->display(cout);
       }
     }
 
-    std::string display () {
-      std::ostringstream oss;
-      oss << std::setw(20) << std::left << name_
-          << " " << description_;
-      return oss.str();
+    void display (std::ostream & cout) {
+      cout << std::setw(20) << std::left << name_
+           << " " << description_ << std::endl;
     }
 
-    void parse (std::istream & stream) {
-      defaults ();
+    void parse (std::istream & cin, std::ostream & cout) {
+      defaults();
       do {
-        std::cout << prompt_ << std::flush;
+        cout << prompt_ << std::flush;
         std::string line;
-        std::getline (stream, line);
+        std::getline (cin, line);
 
         if (line == "") {
           break;
@@ -169,11 +208,26 @@ namespace Request {
         if (it != keys_.end()) {
           it->second->parse (input);
         } else {
-          std::cerr << "Unknown key: `" << key << "'" << std::endl;
+          cout << "Unknown key: `" << key << "'" << std::endl;
         }
 
-      } while (! stream.eof());
-      run ();
+      } while (! cin.eof());
+      run (cout);
+    }
+
+    void parseJson (const Json::Value & request, std::ostream & cout) {
+      defaults();
+
+      auto it = keys_.begin();
+      auto end = keys_.end();
+      for ( ; it != end ; ++it){
+        Json::Value arg = request[it->first];
+        if (! arg.isNull()) {
+          it->second->set (arg);
+        }
+      }
+
+      run(cout);
     }
 
     CommandParser & add (KeyParserBase * key) {
@@ -216,26 +270,28 @@ namespace Request {
       return *this;
     }
 
-    void help () {
-      std::cerr << description_ << std::endl;
+    void help (std::ostream & cout) {
+      cout << description_ << std::endl
+           << "Commands:" << std::endl
+           << "  " << std::setw(20) << std::left << "help"
+           << " Display this help" << std::endl
+           << "  " << std::setw(20) << std::left << "help COMMAND"
+           << " Display help about COMMAND" << std::endl;
 
-      std::cerr << "Commands:" << std::endl;
-      std::cerr << "  "
-                << std::setw(20) << std::left << "help [COMMAND]"
-                << " Display help" << std::endl;
       auto it = commands_.begin();
       auto end = commands_.end();
       for ( ; it != end ; ++it) {
-        std::cerr << "  " << it->second->display() << std::endl;
+        cout << "  ";
+        it->second->display(cout);
       }
     }
 
-    void parse (std::istream & stream) {
+    void parse (std::istream & cin, std::ostream & cout) {
       do {
-        std::cout << prompt_ << std::flush;
+        cout << prompt_ << std::flush;
 
         std::string line;
-        std::getline (stream, line);
+        std::getline (cin, line);
 
         if (line == "") {
           continue;
@@ -249,7 +305,7 @@ namespace Request {
         if (command == "help") {
           input >> command;
           if (command == "help") {
-            help();
+            help(cout);
             continue;
           } else {
             helpRequested = true;
@@ -259,14 +315,24 @@ namespace Request {
         CommandMap::const_iterator it = commands_.find (command);
         if (it != commands_.end()) {
           if (helpRequested)
-            it->second->help ();
+            it->second->help (cout);
           else
-            it->second->parse (stream);
+            it->second->parse (cin, cout);
         } else {
-          std::cerr << "Unknown command: `" << command << "'" << std::endl;
+          cout << "Unknown command: `" << command << "'" << std::endl;
         }
 
-      } while (! stream.eof());
+      } while (! cin.eof());
+    }
+
+    void parseJson (const Json::Value & request, std::ostream & cout) {
+      std::string command = request["command"].asString();
+      CommandMap::const_iterator it = commands_.find (command);
+      if (it != commands_.end()) {
+        it->second->parseJson (request, cout);
+      } else {
+        cout << "Unknown command: `" << command << "'" << std::endl;
+      }
     }
 
   private:

@@ -80,52 +80,52 @@ private:
 
 
 
-void Application::index (IndexArgs & args) {
-  std::cerr << std::endl
-            << "-- Indexing project" << std::endl;
+void Application::index (IndexArgs & args, std::ostream & cout) {
+  cout << std::endl
+       << "-- Indexing project" << std::endl;
   storage_.setOption ("exclude", args.exclude);
   storage_.cleanIndex();
 
-  updateIndex (args);
+  updateIndex_ (args, cout);
 }
 
-void Application::update (IndexArgs & args) {
-  std::cerr << std::endl
-            << "-- Updating index" << std::endl;
+void Application::update (IndexArgs & args, std::ostream & cout) {
+  cout << std::endl
+       << "-- Updating index" << std::endl;
   args.exclude = storage_.getOption ("exclude", Storage::Vector());
 
-  updateIndex (args);
+  updateIndex_ (args, cout);
 }
 
-void Application::updateIndex (IndexArgs & args) {
+void Application::updateIndex_ (IndexArgs & args, std::ostream & cout) {
   Timer totalTimer;
 
   storage_.beginIndex();
   std::string fileName;
   while ((fileName = storage_.nextFile()) != "") {
-    std::cerr << fileName << ":" << std::endl
-              << "  parsing..." << std::flush;
+    cout << fileName << ":" << std::endl
+         << "  parsing..." << std::flush;
     Timer timer;
 
     LibClang::TranslationUnit tu = translationUnit_(fileName);
 
-    std::cerr << "\t" << timer.get() << "s." << std::endl;
+    cout << "\t" << timer.get() << "s." << std::endl;
     timer.reset();
 
     // Print clang diagnostics if requested
     if (args.diagnostics) {
       for (unsigned int N = tu.numDiagnostics(),
              i = 0 ; i < N ; ++i) {
-        std::cerr << tu.diagnostic (i) << std::endl << std::endl;
+        cout << tu.diagnostic (i) << std::endl << std::endl;
       }
     }
 
-    std::cerr << "  indexing..." << std::flush;
+    cout << "  indexing..." << std::flush;
     LibClang::Cursor top (tu);
     Indexer indexer (fileName, args.exclude, storage_);
     indexer.visitChildren (top);
-    std::cerr << "\t" << timer.get() << std::endl;
+    cout << "\t" << timer.get() << std::endl;
   }
   storage_.endIndex();
-  std::cerr << totalTimer.get() << "s." << std::endl;
+  cout << totalTimer.get() << "s." << std::endl;
 }

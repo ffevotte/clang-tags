@@ -215,7 +215,7 @@ void printCompletionResult(LibClang::CompletionResult completionResult,
   stream << std::endl;
 }
 
-void Application::complete (CompleteArgs & args) {
+void Application::complete (CompleteArgs & args, std::ostream & cout) {
   LibClang::TranslationUnit & tu = translationUnit_ (args.fileName);
 
   CXCodeCompleteResults * results
@@ -226,7 +226,9 @@ void Application::complete (CompleteArgs & args) {
   LibClang::CodeCompletions completions (results);
   completions.sort();
 
+  cout << std::endl;
+
   int n = completions.size();
   for (int i = 0 ; i != n ; ++i)
-    printCompletionResult (completions[i], std::cout);
+    printCompletionResult (completions[i], cout);
 }

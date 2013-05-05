@@ -7,7 +7,7 @@
 #include <iostream>
 #include <cstdlib>
 
-void displayCursor (LibClang::Cursor cursor)
+void displayCursor (LibClang::Cursor cursor, std::ostream & cout)
 {
   const LibClang::SourceLocation location (cursor.location());
   const LibClang::Cursor cursorDef = cursor.referenced();
@@ -22,9 +22,9 @@ void displayCursor (LibClang::Cursor cursor)
     const LibClang::SourceLocation::Position end = cursor.end().expansionLocation();
     SourceFile sourceFile (begin.file);
 
-    std::cout << "-- " << sourceFile.substring (begin.offset, end.offset) << " -- "
-              << cursor.kindStr() << " " << cursor.spelling()
-              << std::endl;
+    cout << "-- " << sourceFile.substring (begin.offset, end.offset) << " -- "
+         << cursor.kindStr() << " " << cursor.spelling()
+         << std::endl;
   }
 
   // Display referenced cursor
@@ -32,21 +32,23 @@ void displayCursor (LibClang::Cursor cursor)
     const LibClang::SourceLocation::Position begin = cursorDef.location().expansionLocation();
     const LibClang::SourceLocation::Position end = cursorDef.end().expansionLocation();
 
-    std::cout << "   "
-              << begin.file << ":"
-              << begin.line << "-" << end.line << ":"
-              << begin.column << "-" << end.column-1 << ": "
-              << cursorDef.kindStr() << " " << cursorDef.spelling()
-              << std::endl << "   USR: " << cursorDef.USR()
-              << std::endl << std::endl;
+    cout << "   "
+         << begin.file << ":"
+         << begin.line << "-" << end.line << ":"
+         << begin.column << "-" << end.column-1 << ": "
+         << cursorDef.kindStr() << " " << cursorDef.spelling()
+         << std::endl << "   USR: " << cursorDef.USR()
+         << std::endl << std::endl;
   }
 }
 
 class FindDefinition : public LibClang::Visitor<FindDefinition>
 {
 public:
-  FindDefinition (const LibClang::SourceLocation & targetLocation)
-    : targetLocation_ (targetLocation)
+  FindDefinition (const LibClang::SourceLocation & targetLocation,
+                  std::ostream & cout)
+    : targetLocation_ (targetLocation),
+      cout_ (cout)
   {}
 
   CXChildVisitResult visit (LibClang::Cursor cursor,
@@ -60,7 +62,7 @@ public:
     }
 
     if (location == targetLocation_) {
-      displayCursor (cursor);
+      displayCursor (cursor, cout_);
     }
 
     return CXChildVisit_Recurse;
@@ -68,9 +70,10 @@ public:
 
 private:
   const LibClang::SourceLocation & targetLocation_;
+  std::ostream & cout_;
 };
 
-void Application::findDefinition (FindDefinitionArgs & args) {
+void Application::findDefinition (FindDefinitionArgs & args, std::ostream & cout) {
   std::string directory;
   std::vector<std::string> clArgs;
   storage_.getCompileCommand (args.fileName, directory, clArgs);
@@ -82,18 +85,18 @@ void Application::findDefinition (FindDefinitionArgs & args) {
   if (args.printDiagnostics) {
     for (unsigned int N = tu.numDiagnostics(),
            i = 0 ; i < N ; ++i) {
-      std::cerr << tu.diagnostic (i) << std::endl << std::endl;
+      cout << tu.diagnostic (i) << std::endl << std::endl;
     }
   }
 
   // Print cursor definition
   LibClang::Cursor cursor (tu, args.fileName.c_str(), args.offset);
   if (args.mostSpecific) {
-    displayCursor (cursor);
+    displayCursor (cursor, cout);
   }
   else {
     LibClang::SourceLocation target = cursor.location();
-    FindDefinition findDef (target);
+    FindDefinition findDef (target, cout);
     findDef.visitChildren (tu.cursor());
   }
 }

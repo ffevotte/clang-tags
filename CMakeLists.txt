@@ -66,6 +66,7 @@ add_library (sqlite++
 
 add_executable(druide
   main.cxx
+  request.cxx
   compilationDatabase.cxx
   index.cxx
   findDefinition.cxx

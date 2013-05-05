@@ -2,13 +2,13 @@
 
 #include "sqlite++/database.hxx"
 #include "sqlite++/statement.hxx"
+#include "json/json.h"
 
 #include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
 #include <sstream>
-
-#include "json/json.h"
+#include <iostream>
 
 class Storage {
 public:

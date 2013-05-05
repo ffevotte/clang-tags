@@ -33,3 +33,31 @@ struct String : public std::string {
     return compare(0, prefix.size(), prefix) == 0;
   }
 };
+
+
+class Tee : public std::ostream {
+public:
+  Tee (std::ostream & stream1,
+       std::ostream & stream2)
+    : stream1_ (stream1),
+      stream2_ (stream2)
+  { }
+
+  template <typename T>
+  Tee & operator<< (T x) {
+    stream1_ << x;
+    stream2_ << x;
+    return *this;
+  }
+
+  Tee & operator<< (std::ostream & (*x) (std::ostream&)) {
+    stream1_ << x;
+    stream2_ << x;
+    return *this;
+  }
+
+
+private:
+  std::ostream & stream1_;
+  std::ostream & stream2_;
+};

@@ -2,15 +2,16 @@
 #include "json/json.h"
 #include <fstream>
 
-void Application::compilationDatabase (CompilationDatabaseArgs & args) {
+void Application::compilationDatabase (CompilationDatabaseArgs & args,
+                                       std::ostream & cout) {
   Json::Value root;
   Json::Reader reader;
 
   std::ifstream json (args.fileName);
   bool ret = reader.parse (json, root);
   if ( !ret ) {
-    std::cerr  << "Failed to parse configuration\n"
-               << reader.getFormattedErrorMessages();
+    cout  << "Failed to parse compilation database `" << args.fileName << "'\n"
+          << reader.getFormattedErrorMessages();
   }
 
   for (unsigned int i=0 ; i<root.size() ; ++i) {

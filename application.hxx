@@ -3,6 +3,7 @@
 #include "storage.hxx"
 #include "libclang++/libclang++.hxx"
 #include <map>
+#include <iostream>
 
 class Application {
 public:
@@ -10,19 +11,17 @@ public:
     : storage_ (storage)
   { }
 
-
   struct CompilationDatabaseArgs {
     std::string fileName;
   };
-  void compilationDatabase (CompilationDatabaseArgs & args);
+  void compilationDatabase (CompilationDatabaseArgs & args, std::ostream & cout);
 
   struct IndexArgs {
     std::vector<std::string> exclude;
     bool                     diagnostics;
   };
-  void index (IndexArgs & args);
-  void update (IndexArgs &args);
-  void updateIndex (IndexArgs & args);
+  void index (IndexArgs & args, std::ostream & cout);
+  void update (IndexArgs & args, std::ostream & cout);
 
   struct FindDefinitionArgs {
     std::string fileName;
@@ -30,16 +29,18 @@ public:
     bool        printDiagnostics;
     bool        mostSpecific;
   };
-  void findDefinition (FindDefinitionArgs & args);
+  void findDefinition (FindDefinitionArgs & args, std::ostream & cout);
 
   struct CompleteArgs {
     std::string fileName;
     int         line;
     int         column;
   };
-  void complete (CompleteArgs & args);
+  void complete (CompleteArgs & args, std::ostream & cout);
 
 private:
+  void updateIndex_ (IndexArgs & args, std::ostream & cout);
+
   LibClang::TranslationUnit & translationUnit_ (std::string fileName) {
     auto it = tu_.find (fileName);
     if (it == tu_.end()) {
