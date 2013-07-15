@@ -146,6 +146,14 @@ def findDefinition (args):
     sendRequest (request)
 
 
+def grep (args):
+    "Entry point for finding the uses of a definition"
+
+    request = {"command": "grep",
+               "usr": args.usr}
+    sendRequest (request)
+
+
 def complete (args):
     "Entry point for automatic completion"
 
@@ -161,11 +169,6 @@ def shutdown (args):
 
     request = {"command": "exit"}
     sendRequest (request)
-
-
-def grep (args):
-    "Entry point for finding the uses of a definition"
-    raise NotImplementedError ("The grep feature is not implemented yet :'(")
 
 
 def main_argparse ():

@@ -6,7 +6,7 @@
 class CompilationDatabaseCommand : public Request::CommandParser {
 public:
   CompilationDatabaseCommand (const std::string & name, Application & application)
-    : Request::CommandParser (name, "Create a compilation database"),
+    : Request::CommandParser (name, "Read a compilation database"),
       application_ (application)
   {
     prompt_ = "compilationDB> ";
@@ -118,6 +118,33 @@ private:
 };
 
 
+class GrepCommand : public Request::CommandParser {
+public:
+  GrepCommand (const std::string & name, Application & application)
+    : Request::CommandParser (name, "Find all references to a definition"),
+      application_ (application)
+  {
+    defaults();
+
+    using Request::key;
+    add (key ("usr", args_.usr)
+         ->metavar ("USR"));
+  }
+
+  void defaults () {
+    args_.usr = "c:@F@main";
+  }
+
+  void run (std::ostream & cout) {
+    application_.grep (args_, cout);
+  }
+
+private:
+  Application & application_;
+  Application::GrepArgs args_;
+};
+
+
 class CompleteCommand : public Request::CommandParser {
 public:
   CompleteCommand (const std::string & name, Application & application)
@@ -170,10 +197,11 @@ int main () {
 
   Request::Parser p ("DRUIDE\n"
                      "DRuide is an Un-Integrated Development Environment\n");
-  p .add (new CompilationDatabaseCommand ("compilationDatabase", app))
+  p .add (new CompilationDatabaseCommand ("load", app))
     .add (new IndexCommand ("index", app))
     .add (new UpdateCommand ("update", app))
     .add (new FindCommand ("find", app))
+    .add (new GrepCommand ("grep", app))
     .add (new CompleteCommand ("complete", app))
     .add (new ExitCommand ("exit"))
     .prompt ("clang-dde> ");

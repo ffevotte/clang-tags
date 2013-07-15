@@ -13,7 +13,7 @@
 class Storage {
 public:
   Storage ()
-    : db_ (".ct.sqlite2")
+    : db_ (".ct.sqlite")
   {
     db_.execute ("CREATE TABLE IF NOT EXISTS files ("
                  "  id      INTEGER PRIMARY KEY,"
@@ -215,21 +215,35 @@ public:
   }
 
   struct Reference {
-    std::string usr;
+    std::string file;
+    int line1;
+    int line2;
+    int col1;
+    int col2;
     int offset1;
     int offset2;
     std::string kind;
-    std::string defFile;
-    int defLine1;
-    int defLine2;
-    int defCol1;
-    int defCol2;
   };
-  std::vector<Reference> findDefinition (const std::string fileName,
+
+  struct Definition {
+    std::string usr;
+    std::string file;
+    int line1;
+    int line2;
+    int col1;
+    int col2;
+  };
+
+  struct RefDef {
+    Reference ref;
+    Definition def;
+  };
+
+  std::vector<RefDef> findDefinition (const std::string fileName,
                        int offset) {
     int fileId = fileId_ (fileName);
     Sqlite::Statement stmt =
-      db_.prepare ("SELECT ref.usr, ref.offset1, ref.offset2, ref.kind, "
+      db_.prepare ("SELECT def.usr, ref.offset1, ref.offset2, ref.kind, "
                    "       files.name, def.line1, def.line2, def.col1, def.col2 "
                    "FROM tags AS ref "
                    "INNER JOIN tags AS def ON def.usr = ref.usr "
@@ -243,13 +257,34 @@ public:
       .bind (offset)
       .bind (offset);
 
+    std::vector<RefDef> ret;
+    while (stmt.step() == SQLITE_ROW) {
+      RefDef refDef;
+      Reference & ref = refDef.ref;
+      Definition & def = refDef.def;
+
+      stmt >> def.usr >> ref.offset1 >> ref.offset2 >> ref.kind
+           >> def.file >> def.line1 >> def.line2 >> def.col1 >> def.col2;
+      ret.push_back(refDef);
+    }
+    return ret;
+  }
+
+  std::vector<Reference> grep (const std::string usr) {
+    Sqlite::Statement stmt =
+      db_.prepare("SELECT ref.line1, ref.line2, ref.col1, ref.col2, "
+                  "       ref.offset1, ref.offset2, refFile.name, ref.kind "
+                  "FROM tags AS ref "
+                  "INNER JOIN files AS refFile ON ref.fileId = refFile.id "
+                  "WHERE ref.usr = ?")
+      .bind (usr);
+
     std::vector<Reference> ret;
     while (stmt.step() == SQLITE_ROW) {
       Reference ref;
-      stmt >> ref.usr >> ref.offset1 >> ref.offset2 >> ref.kind
-           >> ref.defFile >> ref.defLine1 >> ref.defLine2
-           >> ref.defCol1 >> ref.defCol2;
-      ret.push_back(ref);
+      stmt >> ref.line1 >> ref.line2 >> ref.col1 >> ref.col2
+           >> ref.offset1 >> ref.offset2 >> ref.file >> ref.kind;
+      ret.push_back (ref);
     }
     return ret;
   }

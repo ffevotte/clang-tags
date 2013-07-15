@@ -11,10 +11,12 @@ public:
     : storage_ (storage)
   { }
 
+
   struct CompilationDatabaseArgs {
     std::string fileName;
   };
   void compilationDatabase (CompilationDatabaseArgs & args, std::ostream & cout);
+
 
   struct IndexArgs {
     std::vector<std::string> exclude;
@@ -22,6 +24,7 @@ public:
   };
   void index (IndexArgs & args, std::ostream & cout);
   void update (IndexArgs & args, std::ostream & cout);
+
 
   struct FindDefinitionArgs {
     std::string fileName;
@@ -31,12 +34,20 @@ public:
   };
   void findDefinition (FindDefinitionArgs & args, std::ostream & cout);
 
+
+  struct GrepArgs {
+    std::string usr;
+  };
+  void grep (const GrepArgs & args, std::ostream & cout);
+
+
   struct CompleteArgs {
     std::string fileName;
     int         line;
     int         column;
   };
   void complete (CompleteArgs & args, std::ostream & cout);
+
 
 private:
   void updateIndex_ (IndexArgs & args, std::ostream & cout);

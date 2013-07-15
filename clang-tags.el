@@ -89,8 +89,8 @@ operations."
   (message "%s" usr)
   (switch-to-buffer (get-buffer-create "*ct/grep*"))
   (compilation-start (format "clang-tags grep '%s' | sort -u" usr)
-                       'grep-mode
-                       (lambda (mode) "" "*ct/grep*")))
+                     'grep-mode
+                     (lambda (mode) "" "*ct/grep*")))
 
 
 
