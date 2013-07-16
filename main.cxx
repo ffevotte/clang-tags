@@ -208,48 +208,44 @@ int main () {
 
   //p .parse (std::cin);
 
-  using asio::ip::tcp;
-
   try
   {
     asio::io_service io_service;
-
-    tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 1313));
+    asio::local::stream_protocol::endpoint endpoint ("/tmp/clang-tags");
+    asio::local::stream_protocol::acceptor acceptor (io_service, endpoint);
     for (;;)
     {
-      tcp::socket socket(io_service);
-      acceptor.accept(socket);
-      std::cerr << "New client request..." << std::endl;
+      asio::local::stream_protocol::iostream socket;
+      asio::error_code err;
+      acceptor.accept(*socket.rdbuf(), err);
+      if (!err) {
+        std::cerr << "Receiving client request:" << std::endl;
 
-      asio::streambuf request;
-      asio::error_code error;
-      asio::read_until(socket, request, "\n\n", error);
+        std::stringstream request;
+        while (true) {
+          std::string line;
+          std::getline (socket, line);
+          if (line == "")
+            break;
 
-      if (error
-          && error != asio::error::eof)  // Connection closed cleanly by peer.
-        throw asio::system_error(error); // Some other error.
+          std::cerr << line << std::endl;
+          request << line << std::endl;
+        }
 
-      std::stringbuf requestStr;
-      std::istream (&request).get (requestStr, 0);
+        Json::Value json;
+        request >> json;
 
-      std::cerr << requestStr.str();
-      std::istringstream input (requestStr.str());
-
-      Json::Value json;
-      input >> json;
-
-      std::ostringstream output;
-      output << "Server response:" << std::endl;
-      p.parseJson (json, output);
-
-      asio::write (socket, asio::buffer (output.str()));
+        std::cerr << "Processing request... ";
+        socket << "Server response:" << std::endl << std::flush;
+        p.parseJson (json, socket);
+        std::cerr << "done." << std::endl << std::endl;
+      }
     }
   }
   catch (std::exception& e)
   {
     std::cerr << e.what() << std::endl;
   }
-
 
   return EXIT_SUCCESS;
 }

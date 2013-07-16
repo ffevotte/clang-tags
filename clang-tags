@@ -22,17 +22,15 @@ def endsWithOne (string, suffixes):
 
 def sendRequest (request):
     "Send a JSON request to the clang-tags daemon on port 1313."
-    #TODO: implement this in python rather than calling `netcat`
+    #TODO: implement this in python rather than calling `socat`
     request = json.dumps (request)
 
-    cmd = ["netcat", "localhost", "1313"]
+    cmd = ["socat", "-", "UNIX-CONNECT:/tmp/clang-tags"]
     process = subprocess.Popen (cmd,
                                 stdin  = subprocess.PIPE,
-                                stdout = subprocess.PIPE)
+                                stdout = sys.stdout)
     process.stdin.write (request + "\n\n")
-
-    for line in process.stdout:
-        print line,
+    process.wait()
 
 
 ### Entry points for the subcommands
