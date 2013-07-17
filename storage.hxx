@@ -33,6 +33,7 @@ public:
                  "  fileId   INTEGER REFERENCES files(id),"
                  "  usr      TEXT,"
                  "  kind     TEXT,"
+                 "  spelling TEXT,"
                  "  line1    INTEGER,"
                  "  col1     INTEGER,"
                  "  offset1  INTEGER,"
@@ -188,6 +189,7 @@ public:
 
   void addTag (const std::string & usr,
                const std::string & kind,
+               const std::string & spelling,
                const std::string & fileName,
                const int line1, const int col1, const int offset1,
                const int line2, const int col2, const int offset2,
@@ -205,8 +207,8 @@ public:
                    "  AND offset2=?")
       .bind (fileId).bind (usr).bind (offset1).bind (offset2);
     if (stmt.step() == SQLITE_DONE) { // no matching row
-      db_.prepare ("INSERT INTO tags VALUES (?,?,?,?,?,?,?,?,?,?)")
-        .bind(fileId) .bind(usr)  .bind(kind)
+      db_.prepare ("INSERT INTO tags VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+        .bind(fileId) .bind(usr)  .bind(kind)    .bind(spelling)
         .bind(line1)  .bind(col1) .bind(offset1)
         .bind(line2)  .bind(col2) .bind(offset2)
         .bind(isDeclaration)
@@ -223,6 +225,7 @@ public:
     int offset1;
     int offset2;
     std::string kind;
+    std::string spelling;
   };
 
   struct Definition {
@@ -232,6 +235,8 @@ public:
     int line2;
     int col1;
     int col2;
+    std::string kind;
+    std::string spelling;
   };
 
   struct RefDef {
@@ -243,11 +248,13 @@ public:
                        int offset) {
     int fileId = fileId_ (fileName);
     Sqlite::Statement stmt =
-      db_.prepare ("SELECT def.usr, ref.offset1, ref.offset2, ref.kind, "
-                   "       files.name, def.line1, def.line2, def.col1, def.col2 "
+      db_.prepare ("SELECT ref.offset1, ref.offset2, ref.kind, ref.spelling,"
+                   "       def.usr, defFile.name,"
+                   "       def.line1, def.line2, def.col1, def.col2, "
+                   "       def.kind, def.spelling "
                    "FROM tags AS ref "
                    "INNER JOIN tags AS def ON def.usr = ref.usr "
-                   "INNER JOIN files ON def.fileId = files.id "
+                   "INNER JOIN files AS defFile ON def.fileId = defFile.id "
                    "WHERE def.isDecl = 1 "
                    "  AND ref.fileId = ?  "
                    "  AND ref.offset1 <= ? "
@@ -263,8 +270,11 @@ public:
       Reference & ref = refDef.ref;
       Definition & def = refDef.def;
 
-      stmt >> def.usr >> ref.offset1 >> ref.offset2 >> ref.kind
-           >> def.file >> def.line1 >> def.line2 >> def.col1 >> def.col2;
+      stmt >> ref.offset1 >> ref.offset2 >> ref.kind >> ref.spelling
+           >> def.usr >> def.file
+           >> def.line1 >> def.line2 >> def.col1 >> def.col2
+           >> def.kind >> def.spelling;
+      ref.file = fileName;
       ret.push_back(refDef);
     }
     return ret;

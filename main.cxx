@@ -109,6 +109,9 @@ public:
     add (key ("diagnostics", args_.diagnostics)
          ->metavar ("true|false")
          ->description ("Print compilation diagnostics"));
+    add (key ("fromIndex", args_.fromIndex)
+         ->metavar ("true|false")
+         ->description ("Search in the index (faster but potentially out-of-date)"));
   }
 
   void defaults () {
@@ -116,6 +119,7 @@ public:
     args_.offset = 0;
     args_.mostSpecific = false;
     args_.diagnostics = true;
+    args_.fromIndex = true;
   }
 
   void run (std::ostream & cout) {

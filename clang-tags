@@ -136,11 +136,11 @@ def update (args):
 def findDefinition (args):
     "Entry point for finding the definition of an identifier"
     fileName = os.path.realpath (args.fileName)
-    offset   = args.offset
 
-    request = {"command": "find",
-               "file":   fileName,
-               "offset": offset}
+    request = {"command":   "find",
+               "file":      fileName,
+               "offset":    args.offset,
+               "fromIndex": args.fromIndex}
     sendRequest (request)
 
 

@@ -31,6 +31,7 @@ public:
     int         offset;
     bool        diagnostics;
     bool        mostSpecific;
+    bool        fromIndex;
   };
   void findDefinition (FindDefinitionArgs & args, std::ostream & cout);
 
@@ -51,6 +52,8 @@ public:
 
 private:
   void updateIndex_ (IndexArgs & args, std::ostream & cout);
+  void findDefinitionFromIndex_  (FindDefinitionArgs & args, std::ostream & cout);
+  void findDefinitionFromSource_ (FindDefinitionArgs & args, std::ostream & cout);
 
   LibClang::TranslationUnit & translationUnit_ (std::string fileName) {
     auto it = tu_.find (fileName);

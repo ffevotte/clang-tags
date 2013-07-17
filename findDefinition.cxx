@@ -7,6 +7,32 @@
 #include <iostream>
 #include <cstdlib>
 
+void displayRefDef (const Storage::RefDef & refDef, std::ostream & cout)
+{
+  const Storage::Reference  & ref = refDef.ref;
+  const Storage::Definition & def = refDef.def;
+
+  // Display reference
+  {
+    SourceFile sourceFile (ref.file);
+
+    cout << "-- " << sourceFile.substring (ref.offset1, ref.offset2) << " -- "
+         << ref.kind << " " << ref.spelling
+         << std::endl;
+  }
+
+  // Display definition
+  {
+    cout << "   "
+         << def.file  << ":"
+         << def.line1 << "-" << def.line2 << ":"
+         << def.col1  << "-" << def.col2-1 << ": "
+         << def.kind  << " " << def.spelling
+         << std::endl << "   USR: " << def.usr
+         << std::endl << std::endl;
+  }
+}
+
 void displayCursor (LibClang::Cursor cursor, std::ostream & cout)
 {
   const LibClang::SourceLocation location (cursor.location());
@@ -16,30 +42,36 @@ void displayCursor (LibClang::Cursor cursor, std::ostream & cout)
     return;
   }
 
-  // Display cursor
+  Storage::RefDef refDef;
+  Storage::Reference & ref = refDef.ref;
+  Storage::Definition & def = refDef.def;
+
+  // Get cursor information
   {
     const LibClang::SourceLocation::Position begin = location.expansionLocation();
     const LibClang::SourceLocation::Position end = cursor.end().expansionLocation();
-    SourceFile sourceFile (begin.file);
-
-    cout << "-- " << sourceFile.substring (begin.offset, end.offset) << " -- "
-         << cursor.kindStr() << " " << cursor.spelling()
-         << std::endl;
+    ref.file = begin.file;
+    ref.offset1 = begin.offset;
+    ref.offset2 = end.offset;
+    ref.kind = cursor.kindStr();
+    ref.spelling = cursor.spelling();
   }
 
-  // Display referenced cursor
+  // Get referenced cursor information
   {
     const LibClang::SourceLocation::Position begin = cursorDef.location().expansionLocation();
     const LibClang::SourceLocation::Position end = cursorDef.end().expansionLocation();
-
-    cout << "   "
-         << begin.file << ":"
-         << begin.line << "-" << end.line << ":"
-         << begin.column << "-" << end.column-1 << ": "
-         << cursorDef.kindStr() << " " << cursorDef.spelling()
-         << std::endl << "   USR: " << cursorDef.USR()
-         << std::endl << std::endl;
+    def.file = begin.file;
+    def.line1 = begin.line;
+    def.line2 = end.line;
+    def.col1 = begin.column;
+    def.col2 = end.column;
+    def.kind = cursorDef.kindStr();
+    def.spelling = cursorDef.spelling();
+    def.usr = cursorDef.USR();
   }
+
+  displayRefDef (refDef, cout);
 }
 
 class FindDefinition : public LibClang::Visitor<FindDefinition>
@@ -73,7 +105,18 @@ private:
   std::ostream & cout_;
 };
 
-void Application::findDefinition (FindDefinitionArgs & args, std::ostream & cout) {
+void Application::findDefinitionFromIndex_ (FindDefinitionArgs & args, std::ostream & cout) {
+  const auto refDefs = storage_.findDefinition (args.fileName, args.offset);
+  auto refDef = refDefs.begin();
+  const auto end = args.mostSpecific
+    ? refDef + 1
+    : refDefs.end();
+  for ( ; refDef != end ; ++refDef ) {
+    displayRefDef (*refDef, cout);
+  }
+}
+
+void Application::findDefinitionFromSource_ (FindDefinitionArgs & args, std::ostream & cout) {
   std::string directory;
   std::vector<std::string> clArgs;
   storage_.getCompileCommand (args.fileName, directory, clArgs);
@@ -98,5 +141,16 @@ void Application::findDefinition (FindDefinitionArgs & args, std::ostream & cout
     LibClang::SourceLocation target = cursor.location();
     FindDefinition findDef (target, cout);
     findDef.visitChildren (tu.cursor());
+  }
+}
+
+void Application::findDefinition (FindDefinitionArgs & args, std::ostream & cout) {
+  if (args.fromIndex) {
+    // Request references from the index database
+    findDefinitionFromIndex_ (args, cout);
+  }
+  else {
+    // Parse the source file and analyse it
+    findDefinitionFromSource_ (args, cout);
   }
 }
