@@ -64,7 +64,7 @@ add_library (sqlite++
   sqlite++/database.cxx)
 
 
-add_executable(druide
+add_executable(clang-tags-server
   main.cxx
   request.cxx
   compilationDatabase.cxx
@@ -72,7 +72,7 @@ add_executable(druide
   findDefinition.cxx
   grep.cxx
   complete.cxx)
-target_link_libraries(druide sqlite3 sqlite++ clang clang++ jsoncpp)
+target_link_libraries(clang-tags-server sqlite3 sqlite++ clang clang++ jsoncpp)
 
 
 configure_file (

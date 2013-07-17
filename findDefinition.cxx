@@ -82,7 +82,7 @@ void Application::findDefinition (FindDefinitionArgs & args, std::ostream & cout
   LibClang::TranslationUnit tu = index.parse (clArgs);
 
   // Print clang diagnostics if requested
-  if (args.printDiagnostics) {
+  if (args.diagnostics) {
     for (unsigned int N = tu.numDiagnostics(),
            i = 0 ; i < N ; ++i) {
       cout << tu.diagnostic (i) << std::endl << std::endl;

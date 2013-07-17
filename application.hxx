@@ -29,7 +29,7 @@ public:
   struct FindDefinitionArgs {
     std::string fileName;
     int         offset;
-    bool        printDiagnostics;
+    bool        diagnostics;
     bool        mostSpecific;
   };
   void findDefinition (FindDefinitionArgs & args, std::ostream & cout);

@@ -9,7 +9,13 @@ public:
     : Request::CommandParser (name, "Read a compilation database"),
       application_ (application)
   {
-    prompt_ = "compilationDB> ";
+    prompt_ = "load> ";
+    defaults();
+
+    using Request::key;
+    add (key ("database", args_.fileName)
+         ->metavar ("FILENAME")
+         ->description ("Load compilation commands from a JSON compilation database"));
   }
 
   void defaults () {
@@ -33,7 +39,6 @@ public:
       application_ (application)
   {
     prompt_ = "update> ";
-
     defaults();
 
     using Request::key;
@@ -89,7 +94,6 @@ public:
       application_ (application)
   {
     prompt_ = "find> ";
-
     defaults ();
 
     using Request::key;
@@ -99,13 +103,19 @@ public:
     add (key ("offset", args_.offset)
          ->metavar ("OFFSET")
          ->description ("Offset in bytes"));
+    add (key ("mostSpecific", args_.mostSpecific)
+         ->metavar ("true|false")
+         ->description ("Display only the most specific identifier at this location"));
+    add (key ("diagnostics", args_.diagnostics)
+         ->metavar ("true|false")
+         ->description ("Print compilation diagnostics"));
   }
 
   void defaults () {
     args_.fileName = "";
     args_.offset = 0;
     args_.mostSpecific = false;
-    args_.printDiagnostics = true;
+    args_.diagnostics = true;
   }
 
   void run (std::ostream & cout) {
@@ -124,11 +134,13 @@ public:
     : Request::CommandParser (name, "Find all references to a definition"),
       application_ (application)
   {
+    prompt_ = "grep> ";
     defaults();
 
     using Request::key;
     add (key ("usr", args_.usr)
-         ->metavar ("USR"));
+         ->metavar ("USR")
+         ->description ("Unified Symbol Resolution for the symbol"));
   }
 
   void defaults () {
@@ -152,16 +164,18 @@ public:
       application_ (application)
   {
     prompt_ = "complete> ";
-
     defaults();
 
     using Request::key;
     add (key ("file", args_.fileName)
-         ->metavar ("FILENAME"));
+         ->metavar ("FILENAME")
+         ->description ("Source file name"));
     add (key ("line", args_.line)
-         ->metavar ("LINE_NO"));
+         ->metavar ("LINE_NO")
+         ->description ("Line number (counting from 0)"));
     add (key ("column", args_.column)
-         ->metavar ("COLUMN_NO"));
+         ->metavar ("COLUMN_NO")
+         ->description ("Column number (counting from 0)"));
   }
 
   void defaults () {
@@ -181,8 +195,10 @@ private:
 
 struct ExitCommand : public Request::CommandParser {
   ExitCommand (const std::string & name)
-    : Request::CommandParser (name)
-  { }
+    : Request::CommandParser (name, "Shutdown server")
+  {
+    prompt_ = "exit> ";
+  }
 
   void run (std::ostream & cout) {
     throw std::runtime_error ("Exiting...");
@@ -195,8 +211,7 @@ int main () {
 
   Application app (storage);
 
-  Request::Parser p ("DRUIDE\n"
-                     "DRuide is an Un-Integrated Development Environment\n");
+  Request::Parser p ("Clang-tags server\n");
   p .add (new CompilationDatabaseCommand ("load", app))
     .add (new IndexCommand ("index", app))
     .add (new UpdateCommand ("update", app))
@@ -206,7 +221,7 @@ int main () {
     .add (new ExitCommand ("exit"))
     .prompt ("clang-dde> ");
 
-  //p .parse (std::cin);
+  // p.parse (std::cin, std::cout);
 
   try
   {
