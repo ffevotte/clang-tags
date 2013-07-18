@@ -233,12 +233,6 @@ def main_argparse ():
         dest="exclude",
         action="store_const", const=[],
         help = "reset exclude list")
-    parserIndex.add_argument (
-        "--emacs-conf",
-        metavar = "SRCDIR",
-        dest = "emacsConf",
-        help = "create an emacs configuration file in the top source files"
-        " directory")
     parserIndex.set_defaults (exclude = ["/usr"])
     parserIndex.set_defaults (fun = index)
 
@@ -249,10 +243,6 @@ def main_argparse ():
         description =
         "Update the source code base index, using the same arguments as "
         "previous call to `index'")
-    parserUpdate.add_argument (
-        "--all", "-a",
-        action = "store_true",
-        help = "also update the compilation database")
     parserUpdate.set_defaults (fun = update)
 
 
@@ -339,9 +329,12 @@ def main_optparse ():
         options.fun = scan
         scan (options)
 
+    elif subcommand == "load":
+        (options, args) = parser.parse_args (sys.argv[2:])
+        options.fun = scan
+        load (options)
+
     elif subcommand == "index":
-        parser.add_option ("--emacs-conf", dest="emacsConf")
-        parser.add_option ("--input", "-i", default = "compile_commands.json")
         parser.add_option ("--exclude-clear", "-E", dest="exclude",
                            action="store_const", const=[])
         parser.add_option ("--exclude", "-e", action="append")
@@ -350,7 +343,6 @@ def main_optparse ():
         index (options)
 
     elif subcommand == "update":
-        parser.add_option ("--all", "-a", action = "store_true")
         (options, args) = parser.parse_args (sys.argv[2:])
         update (options)
 
@@ -372,12 +364,16 @@ def main_optparse ():
         options.usr = args[0]
         grep (options)
 
-    elif subcommand == "debug":
-        subcommand = sys.argv[2]
-        if subcommand == "dump":
-            dump(None)
-        else:
-            sys.stderr.write ("invalid command line\n")
+    elif subcommand == "complete":
+        (options, args) = parser.parse_args (sys.argv[2:])
+        options.fileName = args[0]
+        options.line = args[1]
+        options.column = args[2]
+        complete (options)
+
+    elif subcommand == "exit":
+        (options, args) = parser.parse_args (sys.argv[2:])
+        shutdown (options)
 
     else:
         sys.stderr.write ("unknown subcommand: %s\n" % subcommand)
