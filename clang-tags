@@ -122,7 +122,10 @@ def load (args):
 def index (args):
     "Entry point for indexing the source code base."
 
-    request = {"command": "index"}
+    exclude = [os.path.realpath(d) for d in args.exclude]
+
+    request = {"command": "index",
+               "exclude": exclude}
     sendRequest (request)
 
 
