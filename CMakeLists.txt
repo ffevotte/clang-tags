@@ -72,7 +72,7 @@ add_executable(clang-tags-server
   findDefinition.cxx
   grep.cxx
   complete.cxx)
-target_link_libraries(clang-tags-server sqlite3 sqlite++ clang clang++ jsoncpp)
+target_link_libraries(clang-tags-server sqlite3 sqlite++ clang clang++ jsoncpp boost_system)
 
 
 configure_file (

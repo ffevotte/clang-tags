@@ -1,6 +1,6 @@
 #include "application.hxx"
 #include "request.hxx"
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include "util.hxx"
 
 class CompilationDatabaseCommand : public Request::CommandParser {
@@ -229,13 +229,13 @@ int main () {
 
   try
   {
-    asio::io_service io_service;
-    asio::local::stream_protocol::endpoint endpoint ("/tmp/clang-tags");
-    asio::local::stream_protocol::acceptor acceptor (io_service, endpoint);
+    boost::asio::io_service io_service;
+    boost::asio::local::stream_protocol::endpoint endpoint ("/tmp/clang-tags");
+    boost::asio::local::stream_protocol::acceptor acceptor (io_service, endpoint);
     for (;;)
     {
-      asio::local::stream_protocol::iostream socket;
-      asio::error_code err;
+      boost::asio::local::stream_protocol::iostream socket;
+      boost::system::error_code err;
       acceptor.accept(*socket.rdbuf(), err);
       if (!err) {
         std::cerr << "Receiving client request:" << std::endl;
