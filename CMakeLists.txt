@@ -1,44 +1,54 @@
 cmake_minimum_required(VERSION 2.6)
 project(clang-tags)
 
-include (CheckIncludeFile)
 include (CheckFunctionExists)
-include (CheckLibraryExists)
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 add_definitions (-Wall -std=c++11)
-#add_definitions (-g -O1)
-add_definitions (-O3)
+if ("${CMAKE_BUILD_TYPE}" STREQUAL Release)
+  add_definitions (-O3)
+else ("${CMAKE_BUILD_TYPE}" STREQUAL Release)
+  add_definitions (-g -O1)
+endif ("${CMAKE_BUILD_TYPE}" STREQUAL Release)
+
+
+# Check for Boost (system + asio)
+find_package (Boost
+  REQUIRED
+  COMPONENTS system
+)
+include_directories (${Boost_INCLUDE_DIRS})
+link_directories (${Boost_LIBRARY_DIRS})
+set(LIBS ${LIBS} ${Boost_LIBRARIES})
+
+
+# Check for jsoncpp
+find_package (Libjsoncpp REQUIRED)
+include_directories (${LIBJSONCPP_INCLUDE_DIRS})
+link_directories (${LIBJSONCPP_LIBRARY_DIRS})
+set(LIBS ${LIBS} ${LIBJSONCPP_LIBRARIES})
 
 
 # Check for libclang
-
-check_include_file (clang-c/Index.h LIBCLANG_DEV)
-if (NOT LIBCLANG_DEV)
-  message (FATAL_ERROR "Unable to find libclang headers")
-endif (NOT LIBCLANG_DEV)
+find_package (Libclang REQUIRED)
+include_directories (${Libclang_INCLUDE_DIRS})
+link_directories (${Libclang_LIBRARY_DIRS})
+set(LIBS ${LIBS} ${Libclang_LIBRARIES})
 
 set (CMAKE_REQUIRED_LIBRARIES -lclang)
-check_function_exists (clang_disposeString LIBCLANG)
-if (NOT LIBCLANG)
-  message (FATAL_ERROR "Unable to find libclang")
-endif (NOT LIBCLANG)
-
 check_function_exists (clang_getExpansionLocation
   HAVE_CLANG_GETEXPANSIONLOCATION)
 
 
 # Check for libsqlite3
+find_package (Libsqlite3 REQUIRED)
+include_directories (${Libsqlite3_INCLUDE_DIRS})
+link_directories (${Libsqlite3_LIBRARY_DIRS})
+set(LIBS ${LIBS} ${Libsqlite3_LIBRARIES})
 
-check_include_file (sqlite3.h LIBSQLITE3_DEV)
-if (NOT LIBSQLITE3_DEV)
-  message (FATAL_ERROR "Unable to find libsqlite3 headers")
-endif (NOT LIBSQLITE3_DEV)
 
-set (CMAKE_REQUIRED_LIBRARIES -lsqlite3)
-check_function_exists (sqlite3_open LIBSQLITE3)
-if (NOT LIBSQLITE3)
-  message (FATAL_ERROR "Unable to find libsqlite3")
-endif (NOT LIBSQLITE3)
+# Check for socat
+find_package (Socat REQUIRED)
 
 
 
@@ -48,20 +58,17 @@ configure_file (
 include_directories ("${PROJECT_BINARY_DIR}")
 
 
-add_library (jsoncpp
-  dist/json-cpp/jsoncpp.cpp)
-include_directories ("${PROJECT_SOURCE_DIR}/dist/json-cpp")
-
-
 add_library (clang++
   libclang++/index.cxx
   libclang++/translationUnit.cxx
   libclang++/sourceLocation.cxx
   libclang++/cursor.cxx)
+set(LIBS ${LIBS} clang++)
 
 
 add_library (sqlite++
   sqlite++/database.cxx)
+set(LIBS ${LIBS} sqlite++)
 
 
 add_executable(clang-tags-server
@@ -72,7 +79,7 @@ add_executable(clang-tags-server
   findDefinition.cxx
   grep.cxx
   complete.cxx)
-target_link_libraries(clang-tags-server sqlite3 sqlite++ clang clang++ jsoncpp boost_system)
+target_link_libraries(clang-tags-server ${LIBS})
 
 
 configure_file (
