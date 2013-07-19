@@ -53,17 +53,19 @@ inherited from `compilation-mode':
 
 ;;; Front-end for `clang-tags find-def'
 
-(defun ct/find-def ()
+(defun ct/find-def (argp)
   "Find the definition of the symbol under point
 
 This function uses `clang-tags' to find the location of the
 definition(s) of the symbol under point. Results are presented in a
 buffer which allows quickly navigating to those locations."
-  (interactive)
+  (interactive "P")
   (let* ((offset (- (position-bytes (point)) 1))
          (default-directory ct/default-directory)
-         (command (format "cd %s;\ntime clang-tags find-def %s %d %s\n"
+         (fromIndex (if argp "-r" "-i"))
+         (command (format "cd %s;\ntime clang-tags find-def %s %s %d %s\n"
                           ct/default-directory
+                          fromIndex
                           buffer-file-name offset ct/options)))
 
     (switch-to-buffer (get-buffer-create "*ct/find-def*"))
