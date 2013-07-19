@@ -1,14 +1,16 @@
 # Check for jsoncpp
-find_path (LIBJSONCPP_INCLUDE_DIR json/json.h
-  PATH "/usr/include/jsoncpp")
+find_path (Libjsoncpp_INCLUDE_DIR json/json.h
+  PATH "/usr/include/jsoncpp"
+  HINTS "${LIBJSONCPP_ROOT}/include")
 
-find_library (LIBJSONCPP_LIBRARY jsoncpp)
+find_library (Libjsoncpp_LIBRARY jsoncpp
+  HINTS "${LIBJSONCPP_ROOT}/lib")
 
-set (LIBJSONCPP_LIBRARIES    ${LIBJSONCPP_LIBRARY} )
-set (LIBJSONCPP_INCLUDE_DIRS ${LIBJSONCPP_INCLUDE_DIR} )
+set (Libjsoncpp_LIBRARIES    ${Libjsoncpp_LIBRARY} )
+set (Libjsoncpp_INCLUDE_DIRS ${Libjsoncpp_INCLUDE_DIR} )
 
 include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args (LibJsoncpp  DEFAULT_MSG
-  LIBJSONCPP_LIBRARY LIBJSONCPP_INCLUDE_DIR)
+  Libjsoncpp_LIBRARY Libjsoncpp_INCLUDE_DIR)
 
-mark_as_advanced (LIBJSONCPP_INCLUDE_DIR LIBJSONCPP_LIBRARY)
+mark_as_advanced (Libjsoncpp_INCLUDE_DIR Libjsoncpp_LIBRARY)

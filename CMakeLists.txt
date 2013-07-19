@@ -24,9 +24,9 @@ set(LIBS ${LIBS} ${Boost_LIBRARIES})
 
 # Check for jsoncpp
 find_package (Libjsoncpp REQUIRED)
-include_directories (${LIBJSONCPP_INCLUDE_DIRS})
-link_directories (${LIBJSONCPP_LIBRARY_DIRS})
-set(LIBS ${LIBS} ${LIBJSONCPP_LIBRARIES})
+include_directories (${Libjsoncpp_INCLUDE_DIRS})
+link_directories (${Libjsoncpp_LIBRARY_DIRS})
+set(LIBS ${LIBS} ${Libjsoncpp_LIBRARIES})
 
 
 # Check for libclang
