@@ -325,14 +325,40 @@ namespace Request {
       } while (! cin.eof());
     }
 
-    void parseJson (const Json::Value & request, std::ostream & cout) {
-      std::string command = request["command"].asString();
+    void parseJson (std::istream & cin, std::ostream & cout, bool verbose=false) {
+      if (verbose)
+        std::cerr << "Receiving client request:" << std::endl;
+
+      std::stringstream request;
+      while (true) {
+        std::string line;
+        std::getline (cin, line);
+        if (line == "")
+          break;
+
+        if (verbose)
+          std::cerr << line << std::endl;
+
+        request << line << std::endl;
+      }
+
+      Json::Value json;
+      request >> json;
+
+      if (verbose)
+        std::cerr << "Processing request... ";
+      cout << "Server response:" << std::endl << std::flush;
+
+      std::string command = json["command"].asString();
       CommandMap::const_iterator it = commands_.find (command);
       if (it != commands_.end()) {
-        it->second->parseJson (request, cout);
+        it->second->parseJson (json, cout);
       } else {
         cout << "Unknown command: `" << command << "'" << std::endl;
       }
+
+      if (verbose)
+        std::cerr << "done." << std::endl << std::endl;
     }
 
   private:

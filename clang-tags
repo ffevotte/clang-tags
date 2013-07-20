@@ -25,12 +25,17 @@ def sendRequest (request):
     #TODO: implement this in python rather than calling `socat`
     request = json.dumps (request)
 
-    cmd = ["socat", "-", "UNIX-CONNECT:/tmp/clang-tags"]
+    if os.getenv ("CLANG_TAGS_TEST") is None:
+        cmd = ["socat", "-", "UNIX-CONNECT:/tmp/clang-tags"]
+    else:
+        cmd = ["clang-tags-server", "--stdin"]
+
     process = subprocess.Popen (cmd,
                                 stdin  = subprocess.PIPE,
                                 stdout = sys.stdout)
     process.stdin.write (request + "\n\n")
     process.wait()
+    sys.exit (process.returncode)
 
 
 ### Entry points for the subcommands

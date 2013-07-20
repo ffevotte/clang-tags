@@ -63,12 +63,17 @@ add_library (clang++
   libclang++/translationUnit.cxx
   libclang++/sourceLocation.cxx
   libclang++/cursor.cxx)
-set(LIBS ${LIBS} clang++)
+set (LIBS ${LIBS} clang++)
 
 
 add_library (sqlite++
   sqlite++/database.cxx)
-set(LIBS ${LIBS} sqlite++)
+set (LIBS ${LIBS} sqlite++)
+
+
+add_library (getopt++
+  getopt++/getopt.cxx)
+set (LIBS ${LIBS} getopt++)
 
 
 add_executable(clang-tags-server

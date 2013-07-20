@@ -1,7 +1,8 @@
 #include "application.hxx"
 #include "request.hxx"
-#include <boost/asio.hpp>
 #include "util.hxx"
+#include "getopt++/getopt.hxx"
+#include <boost/asio.hpp>
 
 class CompilationDatabaseCommand : public Request::CommandParser {
 public:
@@ -210,11 +211,28 @@ struct ExitCommand : public Request::CommandParser {
 };
 
 
-int main () {
+int main (int argc, char **argv) {
+  Getopt options (argc, argv);
+  options.add ("help", 'h', 0,
+               "print this help message and exit");
+  options.add ("stdin", 's', 0,
+               "read a request from the standard input and exit");
+
+  try {
+    options.get();
+  } catch (...) {
+    std::cerr << options.usage();
+    return 1;
+  }
+
+  if (options.getCount ("help") > 0) {
+    std::cerr << options.usage();
+    return 0;
+  }
+
+
   Storage storage;
-
   Application app (storage);
-
   Request::Parser p ("Clang-tags server\n");
   p .add (new CompilationDatabaseCommand ("load", app))
     .add (new IndexCommand ("index", app))
@@ -225,45 +243,30 @@ int main () {
     .add (new ExitCommand ("exit"))
     .prompt ("clang-dde> ");
 
-  // p.parse (std::cin, std::cout);
 
-  try
-  {
-    boost::asio::io_service io_service;
-    boost::asio::local::stream_protocol::endpoint endpoint ("/tmp/clang-tags");
-    boost::asio::local::stream_protocol::acceptor acceptor (io_service, endpoint);
-    for (;;)
-    {
-      boost::asio::local::stream_protocol::iostream socket;
-      boost::system::error_code err;
-      acceptor.accept(*socket.rdbuf(), err);
-      if (!err) {
-        std::cerr << "Receiving client request:" << std::endl;
-
-        std::stringstream request;
-        while (true) {
-          std::string line;
-          std::getline (socket, line);
-          if (line == "")
-            break;
-
-          std::cerr << line << std::endl;
-          request << line << std::endl;
-        }
-
-        Json::Value json;
-        request >> json;
-
-        std::cerr << "Processing request... ";
-        socket << "Server response:" << std::endl << std::flush;
-        p.parseJson (json, socket);
-        std::cerr << "done." << std::endl << std::endl;
-      }
-    }
+  if (options.getCount ("stdin") > 0) {
+    p.parseJson (std::cin, std::cout);
   }
-  catch (std::exception& e)
-  {
-    std::cerr << e.what() << std::endl;
+  else {
+    try
+      {
+        boost::asio::io_service io_service;
+        boost::asio::local::stream_protocol::endpoint endpoint ("/tmp/clang-tags");
+        boost::asio::local::stream_protocol::acceptor acceptor (io_service, endpoint);
+        for (;;)
+          {
+            boost::asio::local::stream_protocol::iostream socket;
+            boost::system::error_code err;
+            acceptor.accept(*socket.rdbuf(), err);
+            if (!err) {
+              p.parseJson (socket, socket, /*verbose=*/true);
+            }
+          }
+      }
+    catch (std::exception& e)
+      {
+        std::cerr << e.what() << std::endl;
+      }
   }
 
   return EXIT_SUCCESS;
