@@ -187,9 +187,3 @@ PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with
 this program. If not, see <http://www.gnu.org/licenses/>.
-
-
-
-The JsonCpp library is bundled with clang-tags' sources.
-It is copyright (c) 2007-2010 Baptiste Lepilleur, and is released under the
-terms of the MIT licence, see `dist/json-cpp/LICENSE`.
