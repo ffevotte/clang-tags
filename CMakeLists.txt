@@ -99,49 +99,70 @@ install (
   DESTINATION  bin)
 
 
+function (ct_add_test name)
+  set (CMD ":")
+  set (CMD "${CMD} \\\n&& export PATH=\${PATH}:${PROJECT_SOURCE_DIR}")
+  set (CMD "${CMD} \\\n&& export PATH=\${PATH}:${PROJECT_SOURCE_DIR}/tests")
+  set (CMD "${CMD} \\\n&& export PATH=\${PATH}:${PROJECT_BINARY_DIR}")
+  set (CMD "${CMD} \\\n&& export CLANG_TAGS_TEST=1")
+  set (CMD "${CMD} \\\n&& set -e")
+  set (CMD "${CMD} \\\n&& set -o pipefail")
+  set (CMD "${CMD} \\\n&& mkdir -p ${PROJECT_BINARY_DIR}/tests")
+  set (CMD "${CMD} \\\n&& cd ${PROJECT_BINARY_DIR}/tests")
+  set (CMD "${CMD} \\\n&& exec >${name}.out")
+  foreach (command ${ARGN})
+    set (CMD "${CMD} \\\n&& ${command}")
+  endforeach (command)
+  add_test (
+    NAME ${name}
+    COMMAND bash -c "${CMD}")
+endfunction (ct_add_test)
 
 enable_testing()
 
-set (ENV env PATH=${PROJECT_SOURCE_DIR}:${PATH})
+ct_add_test (ct-trace
+  "rm -rf src build"
+  "cp -R ${PROJECT_SOURCE_DIR}/tests/src ."
+  "mkdir -p ${PROJECT_BINARY_DIR}/tests/build"
+  "(cd ${PROJECT_BINARY_DIR}/tests/build; ln -s ../src/Makefile .)"
 
-add_test (
-  NAME    clang-tags-index-runs
-  COMMAND clang-tags-index -h)
+  "cd build"
+  "ct-trace"
+  "set -x"
+  "test -r compile_commands.json"
+  "grep main.cxx compile_commands.json"
+)
 
-add_test (
-  NAME    clang-tags-def-runs
-  COMMAND clang-tags-def -h)
+ct_add_test (ct-index
+  "cd build"
+  "ct-index"
+  "set -x"
+  "test -r .ct.sqlite"
+)
+set_tests_properties (ct-index PROPERTIES DEPENDS ct-trace)
 
-add_test (
-  NAME    clang-tags-runs
-  COMMAND ${ENV} clang-tags -h)
+ct_add_test (ct-find-def-r
+  "cd build"
+  "ct-find-def-r | tee output"
+  "set -x"
+  "grep -q 'main.cxx:15-17' output"
+  "grep -q 'c:@S@MyClass>#d@F@display#' output"
+)
+set_tests_properties (ct-find-def-r PROPERTIES DEPENDS ct-trace)
 
-add_test (
-  NAME    clang-tags-scan
-  COMMAND ${ENV} clang-tags scan ${PROJECT_SOURCE_DIR} -- -I.)
+ct_add_test (ct-find-def-i
+  "cd build"
+  "ct-find-def-i | tee output"
+  "set -x"
+  "grep -q 'main.cxx:21-23' output"
+  "grep -q 'c:@S@MyClass>#I@F@display#' output"
+)
+set_tests_properties (ct-find-def-r PROPERTIES DEPENDS ct-index)
 
-add_test (
-  NAME    clang-tags-index
-  COMMAND ${ENV} clang-tags index)
-
-add_test (
-  NAME    clang-tags-update
-  COMMAND ${ENV} clang-tags update)
-
-add_test (
-  NAME    clang-tags-find-def
-  COMMAND ${ENV} clang-tags find-def ${PROJECT_SOURCE_DIR}/findDefinition.cxx 376)
-set_tests_properties (clang-tags-find-def PROPERTIES
-  PASS_REGULAR_EXPRESSION c:@N@LibClang@C@Cursor@F@location\#1)
-
-add_test (
-  NAME    clang-tags-find-def-r
-  COMMAND ${ENV} clang-tags find-def -r ${PROJECT_SOURCE_DIR}/findDefinition.cxx 376)
-set_tests_properties (clang-tags-find-def PROPERTIES
-  PASS_REGULAR_EXPRESSION c:@N@LibClang@C@Cursor@F@location\#1)
-
-add_test (
-  NAME    clang-tags-grep
-  COMMAND ${ENV} clang-tags grep c:@N@LibClang@C@Cursor@F@location\#1)
-set_tests_properties (clang-tags-grep PROPERTIES
-  PASS_REGULAR_EXPRESSION findDefinition.cxx:59:)
+ct_add_test (ct-grep
+  "cd build"
+  "ct-grep | tee output"
+  "set -x"
+  "grep -q 'main.cxx:33' output"
+)
+set_tests_properties (ct-grep PROPERTIES DEPENDS ct-index)

@@ -1,0 +1,3 @@
+#!/bin/bash -e
+
+clang-tags grep 'c:@S@MyClass>#I@F@display#'

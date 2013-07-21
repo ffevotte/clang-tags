@@ -1,0 +1,5 @@
+#!/bin/bash -e
+
+make clean
+clang-tags trace make
+clang-tags load
