@@ -1,7 +1,6 @@
 #pragma once
 
-#include "sqlite++/database.hxx"
-#include "sqlite++/statement.hxx"
+#include "sqlite++/sqlite.hxx"
 #include "json/json.h"
 
 #include <sys/stat.h>
