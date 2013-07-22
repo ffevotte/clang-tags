@@ -21,15 +21,6 @@ namespace LibClang {
    */
   class TranslationUnit {
   public:
-    /** @brief Constructor from a \c CXTranslationUnit object
-     *
-     * This constructor converts a libclang @c CXTranslationUnit into a
-     * libclang++ TranslationUnit object.
-     *
-     * @param tu  A @c CXTranslationUnit object
-     */
-    TranslationUnit (CXTranslationUnit tu);
-
     /** @brief Reparse the translation unit
      *
      * Re-parse the source files used to create the translation unit, reading
@@ -94,6 +85,8 @@ namespace LibClang {
     const CXTranslationUnit & raw () const;
 
   private:
+    TranslationUnit (CXTranslationUnit tu);
+
     struct TranslationUnit_ {
       CXTranslationUnit translationUnit_;
       TranslationUnit_ (CXTranslationUnit tu) : translationUnit_ (tu) {}
@@ -101,6 +94,8 @@ namespace LibClang {
     };
     std::shared_ptr<TranslationUnit_> translationUnit_;
 
+    // Friend declaration
+    friend class Index;
     friend class Cursor;
   };
 }
