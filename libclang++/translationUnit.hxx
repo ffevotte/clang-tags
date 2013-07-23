@@ -11,7 +11,7 @@ namespace LibClang {
   class SourceLocation;
   class Cursor;
 
-  /** @brief A translation unit
+  /** @brief Translation unit
    *
    * This class is a proxy for libclang's \c CXTranslationUnit type and should
    * provide the same features, except its lifetime should not have to be

@@ -10,7 +10,7 @@ namespace LibClang {
   class TranslationUnit;
 
 
-  /** @brief A set of translation units
+  /** @brief Set of translation units
    *
    * This is a proxy for libclang's @c CXIndex type
    */

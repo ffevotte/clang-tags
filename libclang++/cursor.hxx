@@ -6,7 +6,7 @@ namespace LibClang {
   class TranslationUnit;
   class SourceLocation;
 
-  /** @brief A cursor representing an entity in the AST
+  /** @brief Node representing an entity in the AST
    *
    * This class is a proxy for libclang's @c CXCursor type. It should provide
    * the same features.
