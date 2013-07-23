@@ -15,6 +15,10 @@ namespace LibClang {
     return visitor.visit (cursor, parent);
   }
 
+  /** @addtogroup libclang
+      @{
+  */
+
   /** @brief Base class for AST visitors
    *
    * This class provides the needed interface for visiting an Abstract Syntax
@@ -25,7 +29,7 @@ namespace LibClang {
    *
    * @code
    * // Define the visitor class
-   * class MyVisitor : public LibClang::Visitor<Indexer> {
+   * class MyVisitor : public LibClang::Visitor<MyVisitor> {
    * public:
    *   MyVisitor () { }
    *
@@ -77,4 +81,6 @@ namespace LibClang {
      */
     virtual CXChildVisitResult visit (Cursor cursor, LibClang::Cursor parent) = 0;
   };
+
+  /** @} */
 }

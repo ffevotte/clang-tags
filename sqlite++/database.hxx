@@ -9,6 +9,10 @@ namespace Sqlite {
   // Forward declarations
   class Statement;
 
+  /** @addtogroup libsqlite
+      @{
+  */
+
   /** @brief Exception for SQLite errors
    */
   struct Error : public std::runtime_error {
@@ -90,4 +94,6 @@ namespace Sqlite {
 
     friend class Statement;
   };
+
+  /** @} */
 }

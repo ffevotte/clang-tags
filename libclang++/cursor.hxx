@@ -3,6 +3,11 @@
 #include <string>
 
 namespace LibClang {
+  /** @addtogroup libclang
+      @{
+  */
+
+  // Forward declarations
   class TranslationUnit;
   class SourceLocation;
 
@@ -141,4 +146,6 @@ namespace LibClang {
     template <typename VISITOR>
     friend class Visitor;
   };
+
+  /** @} */
 }

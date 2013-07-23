@@ -3,6 +3,9 @@
 #include "database.hxx"
 
 namespace Sqlite {
+  /** @addtogroup libsqlite
+      @{
+  */
 
   /** @brief Prepared SQL statement
    *
@@ -142,4 +145,6 @@ namespace Sqlite {
     int colI_;
     std::shared_ptr<Statement_> stmt_;
   };
+
+  /** @} */
 }

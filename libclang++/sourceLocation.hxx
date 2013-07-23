@@ -3,6 +3,10 @@
 #include <string>
 
 namespace LibClang {
+  /** @addtogroup libclang
+      @{
+  */
+
   /** @brief Location in the source code
    *
    * This class is a proxy for libclang's @c CXSourceLocation type. It should
@@ -57,4 +61,6 @@ namespace LibClang {
     friend class TranslationUnit;
     friend class Cursor;
   };
+
+  /** @} */
 }

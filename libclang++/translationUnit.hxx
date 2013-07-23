@@ -6,6 +6,10 @@
 #include "unsavedFiles.hxx"
 
 namespace LibClang {
+  /** @addtogroup libclang
+      @{
+  */
+
   // Forward declarations
   class Index;
   class SourceLocation;
@@ -98,4 +102,6 @@ namespace LibClang {
     friend class Index;
     friend class Cursor;
   };
+
+  /** @} */
 }

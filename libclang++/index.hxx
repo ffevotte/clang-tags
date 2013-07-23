@@ -4,8 +4,11 @@
 #include <memory>
 #include <vector>
 #include <string>
-
 namespace LibClang {
+  /** @addtogroup libclang
+      @{
+  */
+
   // Forward declaration
   class TranslationUnit;
 
@@ -53,4 +56,6 @@ namespace LibClang {
 
     std::shared_ptr<Index_> index_;
   };
+
+  /** @} */
 }
