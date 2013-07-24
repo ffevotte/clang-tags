@@ -6,6 +6,10 @@
 #include <sstream>
 #include <getopt.h>
 
+/** @defgroup getopt GetOpt++
+ *  @brief C++ wrapper around the @c getopt library
+ */
+
 /** @brief Command-line arguments handler
  *
  *  @code
@@ -16,6 +20,8 @@
  *      std::cout << opt.usage();
  *    }
  *  @endcode
+ *
+ *  @ingroup getopt
  */
 class Getopt
 {
@@ -65,7 +71,7 @@ public:
    */
   inline int getCount (std::string opt) const;
 
-  /** @brief get all provided values for a command-line option
+  /** @brief Get all provided values for a command-line option
    *  @return a vector of values
    */
   inline const OptionValues & getAll (std::string opt) const;
