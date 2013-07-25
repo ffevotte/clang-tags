@@ -1,6 +1,6 @@
 #include "application.hxx"
-#include "request.hxx"
 #include "util.hxx"
+#include "request/request.hxx"
 #include "getopt++/getopt.hxx"
 #include <boost/asio.hpp>
 
@@ -67,7 +67,7 @@ public:
   IndexCommand (const std::string & name, Application & application)
     : UpdateCommand (name, application)
   {
-    description_ = "Index the source code base";
+    setDescription ("Index the source code base");
     prompt_ = "index> ";
 
     defaults ();

@@ -76,9 +76,16 @@ add_library (getopt++
 set (LIBS ${LIBS} getopt++)
 
 
+add_executable (test_Request
+  request/tests/test_Request.cxx)
+add_test (test_Request
+  test_Request)
+target_link_libraries (test_Request ${LIBS})
+
+
 add_executable(clang-tags-server
   main.cxx
-  request.cxx
+  request/request.cxx
   compilationDatabase.cxx
   index.cxx
   findDefinition.cxx
