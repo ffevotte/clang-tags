@@ -120,18 +120,31 @@ endfunction (ct_add_test)
 
 enable_testing()
 
-ct_add_test (ct-trace
+ct_add_test (setup
   "rm -rf src build"
   "cp -R ${PROJECT_SOURCE_DIR}/tests/src ."
   "mkdir -p ${PROJECT_BINARY_DIR}/tests/build"
   "(cd ${PROJECT_BINARY_DIR}/tests/build; ln -s ../src/Makefile .)"
+)
 
+ct_add_test (ct-trace
   "cd build"
+  "unset MAKEFLAGS"
+  "unset MAKELEVEL"
   "ct-trace"
   "set -x"
   "test -r compile_commands.json"
-  "grep main.cxx compile_commands.json"
+  "grep -q 'main.cxx' compile_commands.json"
 )
+set_tests_properties (ct-trace PROPERTIES DEPENDS setup)
+
+ct_add_test (ct-load
+  "cd build"
+  "ct-load"
+  "set -x"
+  "test -r .ct.sqlite"
+)
+set_tests_properties (ct-load PROPERTIES DEPENDS ct-trace)
 
 ct_add_test (ct-index
   "cd build"
@@ -139,7 +152,7 @@ ct_add_test (ct-index
   "set -x"
   "test -r .ct.sqlite"
 )
-set_tests_properties (ct-index PROPERTIES DEPENDS ct-trace)
+set_tests_properties (ct-index PROPERTIES DEPENDS ct-load)
 
 ct_add_test (ct-find-def-r
   "cd build"
@@ -148,7 +161,7 @@ ct_add_test (ct-find-def-r
   "grep -q 'main.cxx:15-17' output"
   "grep -q 'c:@S@MyClass>#d@F@display#' output"
 )
-set_tests_properties (ct-find-def-r PROPERTIES DEPENDS ct-trace)
+set_tests_properties (ct-find-def-r PROPERTIES DEPENDS ct-load)
 
 ct_add_test (ct-find-def-i
   "cd build"
