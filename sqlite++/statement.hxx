@@ -3,7 +3,7 @@
 #include "database.hxx"
 
 namespace Sqlite {
-  /** @addtogroup libsqlite
+  /** @addtogroup sqlite
       @{
   */
 

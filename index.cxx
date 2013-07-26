@@ -1,7 +1,7 @@
 #include "libclang++/libclang++.hxx"
 #include "getopt++/getopt.hxx"
 
-#include "util.hxx"
+#include "util/util.hxx"
 #include "application.hxx"
 
 #include <cstdlib>

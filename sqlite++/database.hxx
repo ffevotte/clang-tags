@@ -9,7 +9,7 @@ namespace Sqlite {
   // Forward declarations
   class Statement;
 
-  /** @addtogroup libsqlite
+  /** @addtogroup sqlite
       @{
   */
 

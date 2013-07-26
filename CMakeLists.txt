@@ -52,6 +52,20 @@ set(LIBS ${LIBS} ${Libsqlite3_LIBRARIES})
 find_package (Socat REQUIRED)
 
 
+# Manage a stack of source directories
+macro (ct_push_dir DIR)
+  list (INSERT CT_DIR_STACK 0 ${DIR})
+  list (GET CT_DIR_STACK 0 CT_DIR)
+  message (STATUS "Scanning directory ${CT_DIR}")
+endmacro (ct_push_dir)
+set (CT_DIR ".")
+set (CT_DIR_STACK ${CT_DIR})
+
+macro (ct_pop_dir)
+  list (REMOVE_AT CT_DIR_STACK 0)
+  list (GET CT_DIR_STACK 0 CT_DIR)
+endmacro (ct_pop_dir)
+
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/config.h.in"
@@ -59,33 +73,11 @@ configure_file (
 include_directories ("${PROJECT_BINARY_DIR}")
 
 
-add_library (clang++
-  libclang++/index.cxx
-  libclang++/translationUnit.cxx
-  libclang++/sourceLocation.cxx
-  libclang++/cursor.cxx)
-set (LIBS ${LIBS} clang++)
-
-
-add_library (sqlite++
-  sqlite++/database.cxx)
-set (LIBS ${LIBS} sqlite++)
-
-add_executable (test_sqlite++
-  sqlite++/tests/test_sqlite++.cxx)
-target_link_libraries (test_sqlite++ ${LIBS})
-add_test (sqlite++ test_sqlite++)
-
-
-add_library (getopt++
-  getopt++/getopt.cxx)
-set (LIBS ${LIBS} getopt++)
-
-
-add_executable (test_request
-  request/tests/test_request.cxx)
-target_link_libraries (test_request ${LIBS})
-add_test (request test_request)
+include ("sqlite++/CMakeLists.txt")
+include ("libclang++/CMakeLists.txt")
+include ("getopt++/CMakeLists.txt")
+include ("request/CMakeLists.txt")
+include ("util/CMakeLists.txt")
 
 
 add_executable (clang-tags-server

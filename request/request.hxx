@@ -7,38 +7,84 @@
 #include <vector>
 
 /** @defgroup request Request
-    @brief Request handler
+    @brief Requests handling library
 
- This module handles requests composed of:
- - a command, and
- - a set of named and typed arguments (refered to as @em keys in the following)
+This module handles requests composed of:
+- a command, and
+- a set of named and typed arguments (refered to as @em keys in the following)
 
- In the following, we will take @c "echo" to be a command taking two keys:
- - @c "times" of integer type, and
- - @c "input" of string type.
+In the following, we will take @c "repeat" to be a command taking two keys:
+- @c "times" of integer type, and
+- @c "input" of string type.
 
- Commands can be formatted in one of two ways:
- - plain text, e.g:
-     @verbatim
-     echo
-     times 5
-     input foo
-     @endverbatim
+Commands can be formatted in one of two ways:
+- plain text, e.g:
+  @verbatim
+  repeat
+  times 5
+  input foo
+  @endverbatim
 
- - JSON value, e.g:
-     @verbatim
-     {
-       "command": "echo",
-       "times":   5,
-       "input":   "foo"
-     }
-     @endverbatim
+- JSON value, e.g:
+  @verbatim
+  {
+    "command": "repeat",
+    "times":   5,
+    "input":   "foo"
+  }
+  @endverbatim
 
- This module helps parsing such requests and call appropriate C++ functors to
- handle commands. For example in this case, handling this request would output 5
- times the string "foo".
+This module helps parsing such requests and define appropriate C++ functors to
+handle commands. For example in this case, handling this request would output 5
+times the string "foo".
 
- See @ref test_request.cxx for an example showing how to use this module.
+Additionally, a request parser understands (only in plain-text form) an "help"
+command displaying help messages :
+- general help, listing available commands:
+  @verbatim
+  help
+  @endverbatim
+
+- help on a specific command, listing available keys:
+  @verbatim
+  help COMMAND
+  @endverbatim
+
+See @ref test_request.cxx for an example showing how to use this module. Here
+is a example interactive session for an application defining the @c "repeat" command as above:
+
+@verbatim
+Command> help
+Example application
+Commands:
+  help                 Display this help
+  help COMMAND         Display help about COMMAND
+  repeat               Repeat provided input
+
+Command> help repeat
+Repeat provided input
+
+Arguments:
+  input STRING
+      message to repeat
+      required
+
+  times N
+      number of times to repeat
+      default: 2
+
+Command> repeat
+Repeat> times 5
+Repeat> input foo
+Repeat>
+foo
+foo
+foo
+foo
+foo
+Command> ^D
+@endverbatim
+
 */
 
 namespace Request {

@@ -2,7 +2,7 @@
 #include "database.hxx"
 #include "statement.hxx"
 
-/** @addtogroup libsqlite LibSqlite++
+/** @addtogroup sqlite Sqlite++
 
 @brief Wrapper around the SQLite C API
 
