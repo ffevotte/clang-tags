@@ -11,6 +11,7 @@ else ("${CMAKE_BUILD_TYPE}" STREQUAL Release)
   add_definitions (-g -O1)
 endif ("${CMAKE_BUILD_TYPE}" STREQUAL Release)
 
+include_directories (${CMAKE_SOURCE_DIR})
 
 # Check for Boost (system + asio)
 find_package (Boost
@@ -70,20 +71,24 @@ add_library (sqlite++
   sqlite++/database.cxx)
 set (LIBS ${LIBS} sqlite++)
 
+add_executable (test_sqlite++
+  sqlite++/tests/test_sqlite++.cxx)
+target_link_libraries (test_sqlite++ ${LIBS})
+add_test (sqlite++ test_sqlite++)
+
 
 add_library (getopt++
   getopt++/getopt.cxx)
 set (LIBS ${LIBS} getopt++)
 
 
-add_executable (test_Request
-  request/tests/test_Request.cxx)
-add_test (test_Request
-  test_Request)
-target_link_libraries (test_Request ${LIBS})
+add_executable (test_request
+  request/tests/test_request.cxx)
+target_link_libraries (test_request ${LIBS})
+add_test (request test_request)
 
 
-add_executable(clang-tags-server
+add_executable (clang-tags-server
   main.cxx
   request/request.cxx
   compilationDatabase.cxx
@@ -91,7 +96,7 @@ add_executable(clang-tags-server
   findDefinition.cxx
   grep.cxx
   complete.cxx)
-target_link_libraries(clang-tags-server ${LIBS})
+target_link_libraries (clang-tags-server ${LIBS})
 
 
 configure_file (

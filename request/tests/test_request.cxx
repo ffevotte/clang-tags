@@ -1,9 +1,9 @@
-/** @example test_Request.cxx
+/** @example test_request.cxx
  *
  * This example demonstrates the use of the @ref request module to build an
  * application handling requests.
  */
-#include "../request.hxx"
+#include "request/request.hxx"
 #include <sstream>
 
 //! [CommandParser]
@@ -11,13 +11,13 @@ using Request::CommandParser;
 using Request::key;
 
 /** @brief Example custom command parser */
-class Echo : public CommandParser {
+class Repeat : public CommandParser {
 public:
   /** @brief Constructor
    *  @param name  command name
    */
-  Echo (std::string name)
-    : CommandParser (name, "repeat the provided input")
+  Repeat (std::string name)
+    : CommandParser (name, "repeat provided input")
   {
     // The constructor should set default values before keys are defined
     defaults ();
@@ -60,8 +60,9 @@ int main () {
 
   // Create the command parser
   Parser p ("Example application");
-  p .add (new Echo ("echo"))
-    .prompt ("Command> ");
+  p .add (new Repeat ("repeat"))
+    .prompt ("Command> ")
+    .echo ();
 
 
   // Print a usage message
@@ -69,11 +70,11 @@ int main () {
 
 
   // Request detailed help about command "echo"
-  requests << "help echo" << std::endl << std::endl;
+  requests << "help repeat" << std::endl << std::endl;
 
 
   // Call command "echo"
-  requests << "echo" << std::endl
+  requests << "repeat" << std::endl
            << "times 5" << std::endl
            << "input foo" << std::endl << std::endl;
 
@@ -82,6 +83,6 @@ int main () {
   p.parse (requests, std::cout);
   //![Parser]
 
-  
+
   return 0;
 }

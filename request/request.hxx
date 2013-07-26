@@ -38,7 +38,7 @@
  handle commands. For example in this case, handling this request would output 5
  times the string "foo".
 
- See @ref test_Request.cxx for an example showing how to use this module.
+ See @ref test_request.cxx for an example showing how to use this module.
 */
 
 namespace Request {
@@ -308,7 +308,7 @@ namespace Request {
    * Custom commands should be implemented through user-defined functors
    * deriving from CommandParser.
    *
-   * @snippet test_Request.cxx CommandParser
+   * @snippet test_request.cxx CommandParser
    * @ingroup request
    */
   class CommandParser {
@@ -319,7 +319,8 @@ namespace Request {
      * @param description  Command description
      */
     CommandParser (std::string name, std::string description = "")
-      : description_ (description),
+      : prompt_ (name + "> "),
+        description_ (description),
         name_ (name)
     { }
 
@@ -342,12 +343,16 @@ namespace Request {
      *
      * @sa parseJson()
      */
-    void parse (std::istream & cin, std::ostream & cout) {
+    void parse (std::istream & cin, std::ostream & cout, bool echo = false) {
       defaults();
       do {
         cout << prompt_ << std::flush;
         std::string line;
         std::getline (cin, line);
+
+        if (echo) {
+          cout << line << std::endl;
+        }
 
         if (line == "") {
           break;
@@ -492,7 +497,7 @@ namespace Request {
    *
    * Parses a request to identify the command, and run it.
    *
-   * @snippet test_Request.cxx Parser
+   * @snippet test_request.cxx Parser
    * @ingroup request
    */
   class Parser {
@@ -502,7 +507,8 @@ namespace Request {
      * @param description  global description for the request parser
      */
     Parser (std::string description = "")
-      : description_ (description)
+      : description_ (description),
+        echo_ (false)
     { }
 
     ~Parser () {
@@ -524,6 +530,21 @@ namespace Request {
      */
     Parser & prompt (std::string p) {
       prompt_ = p;
+      return *this;
+    }
+
+    /** @brief Set echo
+     *
+     * When reading an plain-text request and echo is activated, read lines are
+     * echoed after the prompt. This is moslty useful when reading a plain-text
+     * request non-interactively (for exemple for testing purposes).
+     *
+     * @param activate   @c true to activate echo
+     *
+     * @return the parser itself
+     */
+    Parser & echo (bool activate = true) {
+      echo_ = activate;
       return *this;
     }
 
@@ -574,6 +595,10 @@ namespace Request {
         std::string line;
         std::getline (cin, line);
 
+        if (echo_) {
+          cout << line << std::endl;
+        }
+
         if (line == "") {
           continue;
         }
@@ -598,7 +623,7 @@ namespace Request {
           if (helpRequested)
             it->second->help (cout);
           else
-            it->second->parse (cin, cout);
+            it->second->parse (cin, cout, echo_);
         } else {
           cout << "Unknown command: `" << command << "'" << std::endl;
         }
@@ -655,6 +680,7 @@ namespace Request {
     CommandMap  commands_;
     std::string description_;
     std::string prompt_;
+    bool        echo_;
   };
 
   /** @brief Helper function to create @ref KeyParserBase "key parsers"
