@@ -1,2 +1,4 @@
 *~
-doc/html
+doc/doxygen
+doc/index.html
+doc/quickStart.html
