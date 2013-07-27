@@ -1,63 +1,86 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<title>clang-tags</title>
-<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
-<meta name="title" content="clang-tags"/>
+<title>clang-tags &#x2013; User Manual</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-03-07T23:09+0100"/>
-<meta name="author" content="François Févotte"/>
-<meta name="description" content=""/>
-<meta name="keywords" content=""/>
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
-  html { font-family: Times, serif; font-size: 12pt; }
   .title  { text-align: center; }
-  .todo   { color: red; }
+  .todo   { font-family: monospace; color: red; }
   .done   { color: green; }
-  .tag    { background-color: #add8e6; font-weight:normal }
-  .target { }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
   .timestamp { color: #bebebe; }
   .timestamp-kwd { color: #5f9ea0; }
-  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
-  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
-  .center {margin-left:auto; margin-right:auto; text-align:center;}
-  p.verse { margin-left: 3% }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
   pre {
-	border: 1pt solid #AEBDCC;
-	background-color: #F3F5F7;
-	padding: 5pt;
-	font-family: courier, monospace;
-        font-size: 90%;
-        overflow:auto;
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
   }
-  table { border-collapse: collapse; }
-  td, th { vertical-align: top;  }
-  th.right  { text-align:center;  }
-  th.left   { text-align:center;   }
-  th.center { text-align:center; }
-  td.right  { text-align:right;  }
-  td.left   { text-align:left;   }
-  td.center { text-align:center; }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
   dt { font-weight: bold; }
-  div.figure { padding: 0.5em; }
-  div.figure p { text-align: center; }
-  div.inlinetask {
-    padding:10px;
-    border:2px solid gray;
-    margin:10px;
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
     background: #ffffcc;
   }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
   textarea { overflow-x: auto; }
-  .linenr { font-size:smaller }
-  .code-highlighted {background-color:#ffff00;}
-  .org-info-js_info-navigation { border-style:none; }
-  #org-info-js_console-label { font-size:10px; font-weight:bold;
-                               white-space:nowrap; }
-  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
-                                 font-weight:bold; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
   /*]]>*/-->
 </style>
 <link type="text/css" href="worg.css" title="Standard" rel="stylesheet">
@@ -113,508 +136,464 @@ for the JavaScript code in this tag.
  }
 /*]]>*///-->
 </script>
-
 </head>
 <body>
-
-<div id="preamble">
-
-</div>
-
 <div id="content">
-<h1 class="title">clang-tags</h1>
-
-<p><code>clang-tags</code> is a C / C++ source code indexing tool. Unlike many other indexing
-tools, <code>clang-tags</code> relies on the <a href="http://clang.llvm.org">clang</a> compiler (via
-the libclang interface) to analyse and index the source code base.
-</p>
-
-
+<h1 class="title">clang-tags &#x2013; User Manual</h1>
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1 Introduction</a>
+<li><a href="#sec-1">1. Introduction</a>
 <ul>
-<li><a href="#sec-1-1">1.1 Features</a></li>
-<li><a href="#sec-1-2">1.2 First steps for the impatient</a></li>
+<li><a href="#sec-1-1">1.1. Features</a></li>
+<li><a href="#sec-1-2">1.2. First steps for the impatient</a></li>
+<li><a href="#sec-1-3">1.3. Important notions &#x2013; Terminology</a></li>
 </ul>
 </li>
-<li><a href="#sec-2">2 Creating the compilation database</a>
+<li><a href="#sec-2">2. Command-line interface</a>
 <ul>
-<li><a href="#sec-2-1">2.1 From a <code>CMake</code> project</a></li>
-<li><a href="#sec-2-2">2.2 Tracing the standard build process</a></li>
-<li><a href="#sec-2-3">2.3 Scanning the sources directory</a></li>
+<li><a href="#sec-2-1">2.1. Creating the compilation database</a></li>
+<li><a href="#sec-2-2">2.2. Indexing the source files</a></li>
+<li><a href="#sec-2-3">2.3. Looking for symbols</a></li>
 </ul>
 </li>
-<li><a href="#sec-3">3 Indexing the source files</a>
+<li><a href="#sec-3">3. Emacs user interface</a>
 <ul>
-<li><a href="#sec-3-1">3.1 Creating the index</a></li>
-<li><a href="#sec-3-2">3.2 Updating the index</a></li>
+<li><a href="#sec-3-1">3.1. Find the definition of the symbol at point</a></li>
+<li><a href="#sec-3-2">3.2. Find all uses of a definition in the source base</a></li>
 </ul>
 </li>
-<li><a href="#sec-4">4 Using the Emacs UI</a>
-<ul>
-<li><a href="#sec-4-1">4.1 Find the definition of the symbol at point</a></li>
-<li><a href="#sec-4-2">4.2 Find all uses of a definition in the source base</a></li>
-</ul>
-</li>
-<li><a href="#sec-5">5 See also</a></li>
+<li><a href="#sec-4">4. Contributing</a></li>
+<li><a href="#sec-5">5. See also</a></li>
 </ul>
 </div>
 </div>
+<p>
+<code>clang-tags</code> is a C / C++ source code indexing tool. Unlike many other indexing tools, <code>clang-tags</code>
+relies on the <a href="http://clang.llvm.org">clang</a> compiler (via the libclang interface) to analyse and index the source code base.
+</p>
 
-<div id="outline-container-1" class="outline-2">
+
+<div id="outline-container-sec-1" class="outline-2">
 <h2 id="sec-1"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
-
-
 <p>
-  Let us consider the following C++ code:
+Let us consider the following C++ code:
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-c++"><span class="linenr"> 1:  </span><span style="color: #7a378b;">#include</span> <span style="color: #8b2252;">"config.h"</span>
-<span class="linenr"> 2:  </span><span style="color: #7a378b;">#include</span> <span style="color: #8b2252;">&lt;iostream&gt;</span>
-<span class="linenr"> 3:  </span>
-<span class="linenr"> 4:  </span><span style="color: #7a378b;">#ifdef</span> DEBUG
-<span id="coderef-debug1" class="coderef-off"><span class="linenr"> 5:  </span><span style="color: #a020f0;">inline</span> <span style="color: #228b22;">void</span> <span style="color: #0000ff;">debug</span> (<span style="color: #a020f0;">const</span> <span style="color: #228b22;">char</span>* <span style="color: #a0522d;">message</span>) {</span>
-<span class="linenr"> 6:  </span>  <span style="color: #008b8b;">std</span>::cerr &lt;&lt; message &lt;&lt; <span style="color: #008b8b;">std</span>::endl;
-<span class="linenr"> 7:  </span>}
-<span class="linenr"> 8:  </span><span style="color: #7a378b;">#else</span>
-<span id="coderef-debug2" class="coderef-off"><span class="linenr"> 9:  </span><span style="color: #a020f0;">inline</span> <span style="color: #228b22;">void</span> <span style="color: #0000ff;">debug</span> (<span style="color: #a020f0;">const</span> <span style="color: #228b22;">char</span>* <span style="color: #a0522d;">message</span>) {}</span>
-<span class="linenr">10:  </span><span style="color: #7a378b;">#endif</span>
-<span class="linenr">11:  </span>
-<span class="linenr">12:  </span><span style="color: #a020f0;">template</span> &lt;<span style="color: #a020f0;">typename</span> <span style="color: #228b22;">T</span>&gt; <span style="color: #a020f0;">struct</span> <span style="color: #228b22;">MyClass</span> {
-<span id="coderef-defCtor" class="coderef-off"><span class="linenr">13:  </span>  <span style="color: #0000ff;">MyClass</span> () { debug (<span style="color: #8b2252;">"MyClass::MyClass"</span>); }</span>
-<span class="linenr">14:  </span>
-<span id="coderef-defDisplayT" class="coderef-off"><span class="linenr">15:  </span>  <span style="color: #228b22;">void</span> <span style="color: #0000ff;">display</span> () {</span>
-<span class="linenr">16:  </span>    <span style="color: #008b8b;">std</span>::cout &lt;&lt; <span style="color: #8b2252;">"MyClass&lt;T&gt;::display()"</span> &lt;&lt; <span style="color: #008b8b;">std</span>::endl;
-<span class="linenr">17:  </span>  }
-<span class="linenr">18:  </span>};
-<span class="linenr">19:  </span>
-<span class="linenr">20:  </span><span style="color: #a020f0;">template</span> &lt;&gt; <span style="color: #a020f0;">struct</span> <span style="color: #228b22;">MyClass</span>&lt;<span style="color: #228b22;">int</span>&gt; {
-<span id="coderef-defDisplayInt" class="coderef-off"><span class="linenr">21:  </span>  <span style="color: #228b22;">void</span> <span style="color: #0000ff;">display</span> () {</span>
-<span class="linenr">22:  </span>    <span style="color: #008b8b;">std</span>::cout &lt;&lt; <span style="color: #8b2252;">"MyClass&lt;int&gt;::display()"</span> &lt;&lt; <span style="color: #008b8b;">std</span>::endl;
-<span class="linenr">23:  </span>  }
-<span class="linenr">24:  </span>};
-<span class="linenr">25:  </span>
-<span class="linenr">26:  </span><span style="color: #228b22;">int</span> <span style="color: #0000ff;">main</span> () {
-<span id="coderef-display1" class="coderef-off"><span class="linenr">27:  </span>  <span style="color: #228b22;">int</span> <span style="color: #a0522d;">display</span> = 3;</span>
-<span class="linenr">28:  </span>
-<span id="coderef-ctor" class="coderef-off"><span class="linenr">29:  </span>  <span style="color: #228b22;">MyClass</span>&lt;<span style="color: #228b22;">double</span>&gt; <span style="color: #a0522d;">a</span>;</span>
-<span id="coderef-display2" class="coderef-off"><span class="linenr">30:  </span>  a.display();</span>
-<span class="linenr">31:  </span>
-<span class="linenr">32:  </span>  <span style="color: #228b22;">MyClass</span>&lt;<span style="color: #228b22;">int</span>&gt; <span style="color: #a0522d;">b</span>;
-<span id="coderef-display3" class="coderef-off"><span class="linenr">33:  </span>  b.display();</span>
-<span class="linenr">34:  </span>}
+<pre class="src src-c++"><span class="linenr"> 1: </span><span style="color: #729fcf;">#include</span> <span style="color: #ad7fa8; font-style: italic;">"config.h"</span>
+<span class="linenr"> 2: </span><span style="color: #729fcf;">#include</span> <span style="color: #ad7fa8; font-style: italic;">&lt;iostream&gt;</span>
+<span class="linenr"> 3: </span>
+<span class="linenr"> 4: </span><span style="color: #729fcf;">#ifdef</span> DEBUG
+<span id="coderef-debug1" class="coderef-off"><span class="linenr"> 5: </span><span style="color: #729fcf; font-weight: bold;">inline</span> <span style="color: #8ae234; font-weight: bold;">void</span> <span style="color: #edd400; font-weight: bold; font-style: italic;">debug</span> (<span style="color: #729fcf; font-weight: bold;">const</span> <span style="color: #8ae234; font-weight: bold;">char</span>* <span style="color: #eeeeec;">message</span>) {                <span style="color: #888a85;">//</span></span>
+<span class="linenr"> 6: </span>  <span style="color: #8ae234;">std</span>::cerr &lt;&lt; message &lt;&lt; <span style="color: #8ae234;">std</span>::endl;
+<span class="linenr"> 7: </span>}
+<span class="linenr"> 8: </span><span style="color: #729fcf;">#else</span>
+<span id="coderef-debug2" class="coderef-off"><span class="linenr"> 9: </span><span style="color: #729fcf; font-weight: bold;">inline</span> <span style="color: #8ae234; font-weight: bold;">void</span> <span style="color: #edd400; font-weight: bold; font-style: italic;">debug</span> (<span style="color: #729fcf; font-weight: bold;">const</span> <span style="color: #8ae234; font-weight: bold;">char</span>* <span style="color: #eeeeec;">message</span>) {}               <span style="color: #888a85;">//</span></span>
+<span class="linenr">10: </span><span style="color: #729fcf;">#endif</span>
+<span class="linenr">11: </span>
+<span class="linenr">12: </span><span style="color: #729fcf; font-weight: bold;">template</span> &lt;<span style="color: #729fcf; font-weight: bold;">typename</span> <span style="color: #8ae234; font-weight: bold;">T</span>&gt; <span style="color: #729fcf; font-weight: bold;">struct</span> <span style="color: #8ae234; font-weight: bold;">MyClass</span> {
+<span id="coderef-defCtor" class="coderef-off"><span class="linenr">13: </span>  <span style="color: #edd400; font-weight: bold; font-style: italic;">MyClass</span> () { debug (<span style="color: #ad7fa8; font-style: italic;">"MyClass::MyClass"</span>); }             <span style="color: #888a85;">//</span></span>
+<span class="linenr">14: </span>
+<span id="coderef-defDisplayT" class="coderef-off"><span class="linenr">15: </span>  <span style="color: #8ae234; font-weight: bold;">void</span> <span style="color: #edd400; font-weight: bold; font-style: italic;">display</span> () {                                      <span style="color: #888a85;">//</span></span>
+<span class="linenr">16: </span>    <span style="color: #8ae234;">std</span>::cout &lt;&lt; <span style="color: #ad7fa8; font-style: italic;">"MyClass&lt;T&gt;::display()"</span> &lt;&lt; <span style="color: #8ae234;">std</span>::endl;
+<span class="linenr">17: </span>  }
+<span class="linenr">18: </span>};
+<span class="linenr">19: </span>
+<span class="linenr">20: </span><span style="color: #729fcf; font-weight: bold;">template</span> &lt;&gt; <span style="color: #729fcf; font-weight: bold;">struct</span> <span style="color: #8ae234; font-weight: bold;">MyClass</span>&lt;<span style="color: #8ae234; font-weight: bold;">int</span>&gt; {
+<span id="coderef-defDisplayInt" class="coderef-off"><span class="linenr">21: </span>  <span style="color: #8ae234; font-weight: bold;">void</span> <span style="color: #edd400; font-weight: bold; font-style: italic;">display</span> () {                                      <span style="color: #888a85;">//</span></span>
+<span class="linenr">22: </span>    <span style="color: #8ae234;">std</span>::cout &lt;&lt; <span style="color: #ad7fa8; font-style: italic;">"MyClass&lt;int&gt;::display()"</span> &lt;&lt; <span style="color: #8ae234;">std</span>::endl;
+<span class="linenr">23: </span>  }
+<span class="linenr">24: </span>};
+<span class="linenr">25: </span>
+<span class="linenr">26: </span><span style="color: #8ae234; font-weight: bold;">int</span> <span style="color: #edd400; font-weight: bold; font-style: italic;">main</span> () {
+<span id="coderef-display1" class="coderef-off"><span class="linenr">27: </span>  <span style="color: #8ae234; font-weight: bold;">int</span> <span style="color: #eeeeec;">display</span> = 3;                                       <span style="color: #888a85;">//</span></span>
+<span class="linenr">28: </span>
+<span id="coderef-ctor" class="coderef-off"><span class="linenr">29: </span>  <span style="color: #8ae234; font-weight: bold;">MyClass</span>&lt;<span style="color: #8ae234; font-weight: bold;">double</span>&gt; <span style="color: #eeeeec;">a</span>;                                     <span style="color: #888a85;">//</span></span>
+<span id="coderef-display2" class="coderef-off"><span class="linenr">30: </span>  a.display();                                           <span style="color: #888a85;">//</span></span>
+<span class="linenr">31: </span>
+<span class="linenr">32: </span>  <span style="color: #8ae234; font-weight: bold;">MyClass</span>&lt;<span style="color: #8ae234; font-weight: bold;">int</span>&gt; <span style="color: #eeeeec;">b</span>;
+<span id="coderef-display3" class="coderef-off"><span class="linenr">33: </span>  b.display();                                           <span style="color: #888a85;">//</span></span>
+<span class="linenr">34: </span>}
 </pre>
-
+</div>
 
 <p>
-  A few difficulties can be found in this file, making indexing difficult without the help of a
-  full-fledged C++ compiler:
+A few difficulties can be found in this file, making indexing difficult without the help of a
+full-fledged C++ compiler:
 </p>
-<ol>
+
+<ol class="org-ol">
 <li>Depending on the <code>DEBUG</code> preprocessor macro, the definition of the function <code>debug</code> might be found
-     at line <a href="#coderef-debug1" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-debug1');" onmouseout="CodeHighlightOff(this, 'coderef-debug1');">5</a> or <a href="#coderef-debug2" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-debug2');" onmouseout="CodeHighlightOff(this, 'coderef-debug2');">9</a>.
-
+at line <a href="#coderef-debug1"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-debug1');" onmouseout="CodeHighlightOff(this, 'coderef-debug1');">5</a> or <a href="#coderef-debug2"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-debug2');" onmouseout="CodeHighlightOff(this, 'coderef-debug2');">9</a>.
 </li>
+
 <li>The <code>display</code> identifier is used in several places to mean widely different things (for example
-     at lines <a href="#coderef-display1" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display1');" onmouseout="CodeHighlightOff(this, 'coderef-display1');">27</a> and <a href="#coderef-display2" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display2');" onmouseout="CodeHighlightOff(this, 'coderef-display2');">30</a>). Context information is necessary to disambiguate uses of
-     the same identifier.
-
+at lines <a href="#coderef-display1"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display1');" onmouseout="CodeHighlightOff(this, 'coderef-display1');">27</a> and <a href="#coderef-display2"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display2');" onmouseout="CodeHighlightOff(this, 'coderef-display2');">30</a>). Context information is necessary to disambiguate uses of
+the same identifier.
 </li>
+
 <li>Even when <code>display</code> refers to the method of template class <code>MyClass&lt;&gt;</code>, a precise knowledge of the
-     complex C++ template specialization rules is required to associate <a href="#coderef-display2" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display2');" onmouseout="CodeHighlightOff(this, 'coderef-display2');">a.display()</a> with
-     <a href="#coderef-defDisplayT" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-defDisplayT');" onmouseout="CodeHighlightOff(this, 'coderef-defDisplayT');">MyClass&lt;T&gt;::display()</a> and <a href="#coderef-display3" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display3');" onmouseout="CodeHighlightOff(this, 'coderef-display3');">b.display()</a> with <a href="#coderef-defDisplayInt" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-defDisplayInt');" onmouseout="CodeHighlightOff(this, 'coderef-defDisplayInt');">MyClass&lt;int&gt;::display()</a>.
-
+complex C++ template specialization rules is required to associate <a href="#coderef-display2"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display2');" onmouseout="CodeHighlightOff(this, 'coderef-display2');">a.display()</a> with
+<a href="#coderef-defDisplayT"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-defDisplayT');" onmouseout="CodeHighlightOff(this, 'coderef-defDisplayT');">MyClass&lt;T&gt;::display()</a> and <a href="#coderef-display3"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display3');" onmouseout="CodeHighlightOff(this, 'coderef-display3');">b.display()</a> with <a href="#coderef-defDisplayInt"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-defDisplayInt');" onmouseout="CodeHighlightOff(this, 'coderef-defDisplayInt');">MyClass&lt;int&gt;::display()</a>.
 </li>
+
 <li>Some functions such as constructors or operators can be called without explicitly appearing in
-     the code. For example, the <a href="#coderef-defCtor" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-defCtor');" onmouseout="CodeHighlightOff(this, 'coderef-defCtor');">MyClass::MyClass()</a> constructor is called at line <a href="#coderef-ctor" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-ctor');" onmouseout="CodeHighlightOff(this, 'coderef-ctor');">29</a>.
+the code. For example, the <a href="#coderef-defCtor"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-defCtor');" onmouseout="CodeHighlightOff(this, 'coderef-defCtor');">MyClass::MyClass()</a> constructor is called at line <a href="#coderef-ctor"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-ctor');" onmouseout="CodeHighlightOff(this, 'coderef-ctor');">29</a>.
 </li>
 </ol>
 
 
-
 <p>
-  On the other hand, using a C++ compiler such as <code>clang</code> to parse this code and generate an AST
-  requires information about the project configuration and its build environment:
+On the other hand, using a C++ compiler such as <code>clang</code> to parse this code and generate an AST
+requires information about the project configuration and its build environment:
 </p>
-<ol>
-<li>The <code>config.h</code> file could be automatically generated by <code>autoconf</code> or <code>CMake</code> and reside in a
-     completely different directory than other source files. The compiler will typically need to be
-     provided with <code>-I</code> command-line arguments to know where to find header files.
 
+<ol class="org-ol">
+<li>The <code>config.h</code> file could be automatically generated by <code>autoconf</code> or <code>CMake</code> and reside in a
+completely different directory than other source files. The compiler will typically need to be
+provided with <code>-I</code> command-line arguments to know where to find header files.
 </li>
+
 <li>The <code>DEBUG</code> macro could well be defined by the compilation command line (typically using a <code>-D</code>
-     switch).
+switch).
 </li>
 </ol>
 
-
 <p>
-  A compiler-based indexing tool thus needs to be aware of the full compilation commands which are
-  used to build the project, including for each source file:
-</p><ul>
+A compiler-based indexing tool thus needs to be aware of the full compilation commands which are
+used to build the project, including for each source file:
+</p>
+<ul class="org-ul">
 <li>the full list of command-line switches,
 </li>
 <li>the directory from which the file is compiled.
 </li>
 </ul>
 
-
 <p>
-  Such information, which we will refer to as a "compilation database" in the following, is usually
-  found in the build system configuration, which can take a wide variety of forms: hand-crafted
-  <code>Makefile</code>, <code>autotools</code> project, <code>CMake</code> project, <i>etc.</i>
+Such information, which we will refer to as a "compilation database" in the following, is usually
+found in the build system configuration, which can take a wide variety of forms: hand-crafted
+<code>Makefile</code>, <code>autotools</code> project, <code>CMake</code> project, <i>etc.</i>
 </p>
-
 </div>
 
-<div id="outline-container-1-1" class="outline-3">
+
+<div id="outline-container-sec-1-1" class="outline-3">
 <h3 id="sec-1-1"><span class="section-number-3">1.1</span> Features</h3>
 <div class="outline-text-3" id="text-1-1">
-
-
 <p>
-   <code>clang-tags</code> aims at providing the following features:
-</p><ol>
+<code>clang-tags</code> aims at providing the following features:
+</p>
+<ol class="org-ol">
 <li>generate a compilation database in a build-system-agnostic way,
 </li>
 <li>index the sources of the project,
 </li>
-<li>use this index to provide IDE-like features in Emacs.
+<li>use this index to provide access to IDE-like features from a command-line
+interface :
+<ul class="org-ul">
+<li>search for symbol definitions in the source code,
+</li>
+<li>search for symbol uses in the source code,
+</li>
+<li>auto-complete partially entered code,
+</li>
+</ul>
+</li>
+<li>integrate these features into Emacs.
 </li>
 </ol>
-
-
-
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-1-2" class="outline-3">
+<div id="outline-container-sec-1-2" class="outline-3">
 <h3 id="sec-1-2"><span class="section-number-3">1.2</span> First steps for the impatient</h3>
 <div class="outline-text-3" id="text-1-2">
-
-
-<p>    
-   All details are explained later, but here are a few steps to get you started if
-   you are too impatient to read. Otherwise, you may safely skip to the
-   <a href="#sec-2">following section</a>.
+<p>
+All details are explained later, but the <a href="quickStart.html">quick start guide</a> provides a few
+steps to get you started if you are too impatient to read.
 </p>
-<ol>
-<li>build the compilation database:
-
-
-
-<pre class="src src-sh">~&gt; cd path/to/your/build/directory
-build&gt; make clean
-build&gt; clang-tags trace make
-[ 33%] Building CXX object CMakeFiles/getopt++.dir/getopt/getopt.cxx.o
-Linking CXX static library libgetopt++.a
-[ 33%] Built target getopt++
-[ 66%] Building CXX object CMakeFiles/clang-tags-def.dir/findDefinition.cxx.o
-Linking CXX executable clang-tags-def
-[ 66%] Built target clang-tags-def
-[100%] Building CXX object CMakeFiles/clang-tags-index.dir/index.cxx.o
-Linking CXX executable clang-tags-index
-[100%] Built target clang-tags-index
-</pre>
-
-
-</li>
-<li>index the source files:
-
-
-
-<pre class="src src-sh">build&gt; clang-tags index --emacs-conf ../src/
-src/getopt/getopt.cxx...          1.27s.
-src/findDefinition.cxx...         0.34s.
-src/index.cxx...                  0.33s.
-</pre>
-
-
-</li>
-<li>find the definition location of the identifier located in <code>index.cxx</code> at
-      offset 902:
-
-
-
-<pre class="src src-ct/find-def">build&gt; clang-tags find-def ../src/index.cxx 902
--- <span style="color: #a020f0;">cursor.location().expansionLocation()</span> -- CallExpr expansionLocation
-   <span style="color: #ffa500; font-weight: bold; text-decoration: underline;">src/clang/sourceLocation.hxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">31</span><span style="text-decoration: underline;">-</span><span style="color: #a0522d; text-decoration: underline;">51</span><span style="text-decoration: underline;">:</span><span style="color: #228b22; text-decoration: underline;">20</span><span style="text-decoration: underline;">-</span><span style="color: #228b22; text-decoration: underline;">5</span>: CXXMethod expansionLocation
-   USR: c:@N@Clang@C@SourceLocation@F@expansionLocation#1
-
--- <span style="color: #a020f0;">cursor.location()</span> -- CallExpr location
-   <span style="color: #ffa500; font-weight: bold; text-decoration: underline;">src/clang/cursor.hxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">63</span><span style="text-decoration: underline;">-</span><span style="color: #a0522d; text-decoration: underline;">65</span><span style="text-decoration: underline;">:</span><span style="color: #228b22; text-decoration: underline;">20</span><span style="text-decoration: underline;">-</span><span style="color: #228b22; text-decoration: underline;">5</span>: CXXMethod location
-   USR: c:@N@Clang@C@Cursor@F@location#1
-
--- <span style="color: #a020f0;">cursor</span> -- DeclRefExpr cursor
-   <span style="color: #ffa500; font-weight: bold; text-decoration: underline;">src/index.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">21</span><span style="text-decoration: underline;">-</span><span style="color: #a0522d; text-decoration: underline;">21</span><span style="text-decoration: underline;">:</span><span style="color: #228b22; text-decoration: underline;">23</span><span style="text-decoration: underline;">-</span><span style="color: #228b22; text-decoration: underline;">40</span>: VarDecl cursor
-   USR: c:index.cxx@557@F@indexFile#$@SA@CXCursor#S0_#*v#@cursor
-</pre>
-
-
-</li>
-<li>find all uses of the <code>Cursor::location()</code> method (identified by its USR, as
-      given in the second result of <code>clang-tags find-def</code> above):
-
-
-
-<pre class="src src-grep">build&gt; clang-tags grep 'c:@N@Clang@C@Cursor@F@location#1'
-<span style="color: #00cd00; font-weight: bold; text-decoration: underline;">src/findDefinition.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">13</span><span style="text-decoration: underline;">:</span>  const Clang::SourceLocation location(cursor.location());
-<span style="color: #00cd00; font-weight: bold; text-decoration: underline;">src/findDefinition.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>    const Clang::SourceLocation::Position begin = cursorDef.location().expansionLocation();
-<span style="color: #00cd00; font-weight: bold; text-decoration: underline;">src/findDefinition.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">52</span><span style="text-decoration: underline;">:</span>  const Clang::SourceLocation location (cursor.location());
-<span style="color: #00cd00; font-weight: bold; text-decoration: underline;">src/findDefinition.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">131</span><span style="text-decoration: underline;">:</span>    Clang::SourceLocation target = cursor.location();
-<span style="color: #00cd00; font-weight: bold; text-decoration: underline;">src/clang/cursor.hxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">63</span><span style="text-decoration: underline;">:</span>    SourceLocation location () const {
-<span style="color: #00cd00; font-weight: bold; text-decoration: underline;">src/index.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">34</span><span style="text-decoration: underline;">:</span>  const Clang::SourceLocation::Position begin = cursor.location().expansionLocation();
-</pre>
-
-</li>
-</ol>
-
-
-
-
 </div>
 </div>
 
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Important notions &#x2013; Terminology</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+The following terms are used throughout this guide:
+</p>
+
+<dl class="org-dl">
+<dt> Translation Unit </dt><dd>        A set of source code which is compiled together. Ordinarily, a translation units consists in
+a preprocessed source file, in which all header files have been included, macros have been
+expanded, and so on. In clang-tags a translation unit is identified by the set of
+command-line arguments which would be needed to compile it into an object file.
+</dd>
+
+<dt> Definition       </dt><dd>        The place in the source code where a symbol is declared and/or defined. For each translation
+unit, a given symbol only has one definition location. However, different definition
+locations can be found for the same symbol across all translation units.  For example, the
+definition of local variable <code>a</code> in function <code>main</code> of <code>main.cxx</code> appears at line <a href="#coderef-ctor"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-ctor');" onmouseout="CodeHighlightOff(this, 'coderef-ctor');">29</a>.
+</dd>
+
+<dt> Reference        </dt><dd>        Each occurrence of a symbol name in the source code is seen as a reference to its
+definition. For example, the symbol <code>a</code> in expression <code>a.display()</code> on line <a href="#coderef-display2"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display2');" onmouseout="CodeHighlightOff(this, 'coderef-display2');">30</a> is a
+reference to the definition at line <a href="#coderef-ctor"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-ctor');" onmouseout="CodeHighlightOff(this, 'coderef-ctor');">29</a>.
+</dd>
+
+<dt> Spelling         </dt><dd>        In clang terminology, the name of a symbol as it appears in the source code is referred to
+as its spelling. For example, the spelling of the symbol defined at line <a href="#coderef-ctor"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-ctor');" onmouseout="CodeHighlightOff(this, 'coderef-ctor');">29</a> is the
+string "a".
+</dd>
+
+<dt> Unified Symbol Resolution (USR) </dt><dd>        A symbol can not be identified by its spelling only: context information is needed to
+disambiguate uses of the same spelling in different scopes. In order to uniquely identify a
+symbol across all translation units in a project, clang defines Unified Symbol
+Resolutions. For example the USR of the <code>display</code> symbol referred to on line <a href="#coderef-display2"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display2');" onmouseout="CodeHighlightOff(this, 'coderef-display2');">30</a> is
+<code>c:@S@MyClass&gt;#d@F@display#</code> whereas line <a href="#coderef-display3"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display3');" onmouseout="CodeHighlightOff(this, 'coderef-display3');">33</a> refers to the symbol with USR
+<code>c:@S@MyClass&gt;#I@F@display#</code>
+</dd>
+</dl>
+</div>
+</div>
 </div>
 
-<div id="outline-container-2" class="outline-2">
-<h2 id="sec-2"><span class="section-number-2">2</span> Creating the compilation database</h2>
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Command-line interface</h2>
 <div class="outline-text-2" id="text-2">
-
-
+</div><div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Creating the compilation database</h3>
+<div class="outline-text-3" id="text-2-1">
 <p>
-  <code>clang-tags</code> uses a <a href="http://clang.llvm.org/docs/JSONCompilationDatabase.html">JSON compilation database</a> to get the information needed to correctly build the
-  project: compile directories and command-line switches. There are different ways to collect this
-  information.
+<code>clang-tags</code> uses a <a href="http://clang.llvm.org/docs/JSONCompilationDatabase.html">JSON compilation database</a> to get the information needed to correctly build the
+project: compile directories and command-line switches. There are different ways to collect this
+information.
 </p>
-
 </div>
 
-<div id="outline-container-2-1" class="outline-3">
-<h3 id="sec-2-1"><span class="section-number-3">2.1</span> From a <code>CMake</code> project</h3>
-<div class="outline-text-3" id="text-2-1">
-
-
+<div id="outline-container-sec-2-1-1" class="outline-4">
+<h4 id="sec-2-1-1"><span class="section-number-4">2.1.1</span> From a <code>CMake</code> project</h4>
+<div class="outline-text-4" id="text-2-1-1">
 <p>
-   <code>CMake</code> (since version 2.8.5) supports the generation of a compilation database with the option
-   <code>CMAKE_EXPORT_COMPILE_COMMANDS</code>. For a <code>CMake</code>-managed project, creating the compilation database is
-   thus as simple as:
+<code>CMake</code> (since version 2.8.5) supports the generation of a compilation database with the option
+<code>CMAKE_EXPORT_COMPILE_COMMANDS</code>. For a <code>CMake</code>-managed project, creating the compilation database is
+thus as simple as:
 </p>
-
+<div class="org-src-container">
 
 <pre class="src src-sh">cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ../src
 </pre>
-
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-2-2" class="outline-3">
-<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Tracing the standard build process</h3>
-<div class="outline-text-3" id="text-2-2">
-
-
-
-
+<div id="outline-container-sec-2-1-2" class="outline-4">
+<h4 id="sec-2-1-2"><span class="section-number-4">2.1.2</span> Tracing the standard build process</h4>
+<div class="outline-text-4" id="text-2-1-2">
+<div class="org-src-container">
 
 <pre class="src src-sh">clang-tags trace -- BUILD COMMAND
 </pre>
-
+</div>
 
 <p>
-   For non <code>CMake</code>-managed projects, there is no "free" way to build the compilation database. One
-   way to get the necessary information consists in inspecting the build process as a black box
-   using <a href="http://linux.die.net/man/1/strace"><code>strace(1)</code></a> (also see <a href="https://github.com/rizsotto/Bear"><code>Bear</code></a> for a tool using <code>LD_PRELOAD</code> to implement the same kind of
-   strategy).
-</p>
-<p>
-   Such a method is inherently independent of the build process: Makefile (possibly
-   autotools-generated), shell or python script, &hellip; However, the downside with this approach is
-   that <code>make</code> and other build systems traditionally only rebuild what's needed, and the generated
-   compilation database can thus be incomplete.
-</p>
-<p>
-   Example usage:
+For non <code>CMake</code>-managed projects, there is no "free" way to build the compilation database. One
+way to get the necessary information consists in inspecting the build process as a black box
+using <a href="http://linux.die.net/man/1/strace"><code>strace(1)</code></a> (also see <a href="https://github.com/rizsotto/Bear"><code>Bear</code></a> for a tool using <code>LD_PRELOAD</code> to implement the same kind of
+strategy).
 </p>
 
+<p>
+Such a method is inherently independent of the build process: Makefile (possibly
+autotools-generated), shell or python script, &#x2026; However, the downside with this approach is
+that <code>make</code> and other build systems traditionally only rebuild what's needed, and the generated
+compilation database can thus be incomplete. Such methods also depend on platform-specific
+features to inspect the build process.
+</p>
 
-<pre class="src src-sh">make clean                 <span style="color: #b22222;"># </span><span style="color: #b22222;">Ensure that the whole project will be rebuilt</span>
-clang-tags trace -- make   <span style="color: #b22222;"># </span><span style="color: #b22222;">Generate the compilation database</span>
+<p>
+Example usage:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-sh">make clean                 <span style="color: #888a85;"># </span><span style="color: #888a85;">Ensure that the whole project will be rebuilt</span>
+clang-tags trace -- make   <span style="color: #888a85;"># </span><span style="color: #888a85;">Generate the compilation database</span>
 </pre>
-
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-2-3" class="outline-3">
-<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Scanning the sources directory</h3>
-<div class="outline-text-3" id="text-2-3">
-
-
-
-
+<div id="outline-container-sec-2-1-3" class="outline-4">
+<h4 id="sec-2-1-3"><span class="section-number-4">2.1.3</span> Scanning the sources directory</h4>
+<div class="outline-text-4" id="text-2-1-3">
+<div class="org-src-container">
 
 <pre class="src src-sh">clang-tags scan SRC_DIR -- CLANG ARGS
 </pre>
-
+</div>
 
 <p>
-   For relatively simple projects, it can be sufficient to simply scan the top sources directory to
-   find all <code>*.c</code> or <code>*.cxx</code> files, and additionally provide <code>clang-tags</code> with a set of command-line
-   arguments necessary for <code>clang</code> to parse these files.
-</p>
-<p>
-   Example usage:
+For relatively simple projects, it can be sufficient to simply scan the top sources directory to
+find all <code>*.c</code> or <code>*.cxx</code> files, and additionally provide <code>clang-tags</code> with a set of command-line
+arguments necessary for <code>clang</code> to parse these files.
 </p>
 
+<p>
+Example usage:
+</p>
+<div class="org-src-container">
 
 <pre class="src src-sh">clang-tags scan ../src -- -I.
 </pre>
-
-
-
+</div>
+</div>
 </div>
 </div>
 
-</div>
-
-<div id="outline-container-3" class="outline-2">
-<h2 id="sec-3"><span class="section-number-2">3</span> Indexing the source files</h2>
-<div class="outline-text-2" id="text-3">
-
-
-
-</div>
-
-<div id="outline-container-3-1" class="outline-3">
-<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Creating the index</h3>
-<div class="outline-text-3" id="text-3-1">
-
-
-
-
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Indexing the source files</h3>
+<div class="outline-text-3" id="text-2-2">
+</div><div id="outline-container-sec-2-2-1" class="outline-4">
+<h4 id="sec-2-2-1"><span class="section-number-4">2.2.1</span> Creating the index</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<div class="org-src-container">
 
 <pre class="src src-sh">clang-tags index [--emacs-conf SRC_DIR]
 </pre>
-
+</div>
 
 <p>
-   This command uses the compilation database to index all source files. An
-   optional argument <code>--emacs-conf</code> allows generating a suitable <code>.dir-local.el</code>
-   emacs configuration file in the sources directory.
+This command uses the compilation database to index all source files. An
+optional argument <code>--emacs-conf</code> allows generating a suitable <code>.dir-local.el</code>
+emacs configuration file in the sources directory.
 </p>
 </div>
-
 </div>
-
-<div id="outline-container-3-2" class="outline-3">
-<h3 id="sec-3-2"><span class="section-number-3">3.2</span> Updating the index</h3>
-<div class="outline-text-3" id="text-3-2">
-
-
-
-
+<div id="outline-container-sec-2-2-2" class="outline-4">
+<h4 id="sec-2-2-2"><span class="section-number-4">2.2.2</span> Updating the index</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<div class="org-src-container">
 
 <pre class="src src-sh">clang-tags update [--all]
 </pre>
-
+</div>
 
 <p>
-   This command updates the index. With the optional <code>--all</code> switch, the
-   compilation database is also rebuilt using the same subcommand <code>trace</code> or
-   <code>build</code> as previously.
+This command updates the index. With the optional <code>--all</code> switch, the
+compilation database is also rebuilt using the same sub-command <code>trace</code> or
+<code>build</code> as previously.
 </p>
-
 </div>
 </div>
-
 </div>
 
-<div id="outline-container-4" class="outline-2">
-<h2 id="sec-4"><span class="section-number-2">4</span> Using the Emacs UI</h2>
-<div class="outline-text-2" id="text-4">
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Looking for symbols</h3>
+<div class="outline-text-3" id="text-2-3">
+</div><div id="outline-container-sec-2-3-1" class="outline-4">
+<h4 id="sec-2-3-1"><span class="section-number-4">2.3.1</span> Finding the definition of a symbol</h4>
+</div>
+
+<div id="outline-container-sec-2-3-2" class="outline-4">
+<h4 id="sec-2-3-2"><span class="section-number-4">2.3.2</span> Looking for all references to a symbol</h4>
+</div>
+</div>
+</div>
 
 
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Emacs user interface</h2>
+<div class="outline-text-2" id="text-3">
 <p>
 First, load the package using <code>M-x load-file RET path/to/clang-tags.el RET</code>
 </p>
+
 <p>
 With the configuration file generated by the <code>clang-tags index</code> command, all
-C/C++ source files in the indexed source directory should automatically activate
-<code>clang-tags-mode</code> and have the <code>ct/default-directory</code> variable point to the
-index directory.
-</p>
-
-
-</div>
-
-<div id="outline-container-4-1" class="outline-3">
-<h3 id="sec-4-1"><span class="section-number-3">4.1</span> Find the definition of the symbol at point</h3>
-<div class="outline-text-3" id="text-4-1">
-
-
-<p>
-While in a source buffer, you can use <code>clang-tags</code> to find the location of the definition
-of the symbol under point by pressing <code>M-&lt;dot&gt;</code>.
-</p>
-<p>
-The list of relevant definitions is presented in a buffer, where pressing <code>RET</code> will take you to the
-location of the definition.
+C/C++ source files in the indexed source directory should automatically
+activate <code>clang-tags-mode</code> and have the <code>ct/default-directory</code> variable point
+to the index directory.
 </p>
 </div>
 
-</div>
 
-<div id="outline-container-4-2" class="outline-3">
-<h3 id="sec-4-2"><span class="section-number-3">4.2</span> Find all uses of a definition in the source base</h3>
-<div class="outline-text-3" id="text-4-2">
-
+<div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Find the definition of the symbol at point</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+While in a source buffer, you can use <code>clang-tags</code> to find the location of
+the definition of the symbol under point by pressing <code>M-&lt;dot&gt;</code>.
+</p>
 
 <p>
-After having looked for a definition of the symbol under point, and while in the definitions list
-buffer, press <code>M-&lt;comma&gt;</code> to list all uses of the current definition in the source code base.
+The list of relevant definitions is presented in a buffer, where pressing
+<code>RET</code> will take you to the location of the definition.
 </p>
+</div>
+</div>
+
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> Find all uses of a definition in the source base</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+After having looked for a definition of the symbol under point, and while in
+the definitions list buffer, press <code>M-&lt;comma&gt;</code> to list all uses of the
+current definition in the source code base.
+</p>
+
 <p>
 Results are presented in a <code>grep-mode</code> buffer.
 </p>
+</div>
+</div>
+</div>
 
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Contributing</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Please do!
+</p>
+
+<p>
+If you make improvements to this code or have suggestions, please do not
+hesitate to fork the repository or submit bug reports on
+<a href="https://github.com/ffevotte/clang-tags">github</a>. The repository's URL is:
+</p>
+
+<p>
+<a href="https://github.com/ffevotte/clang-tags.el.git">https://github.com/ffevotte/clang-tags.el.git</a>
+</p>
+
+
+<p>
+A doxygen documentation targeted at developers is available <a href="doxygen/index.html">here</a>.
+</p>
 </div>
 </div>
 
-</div>
-
-<div id="outline-container-5" class="outline-2">
+<div id="outline-container-sec-5" class="outline-2">
 <h2 id="sec-5"><span class="section-number-2">5</span> See also</h2>
 <div class="outline-text-2" id="text-5">
-
-
-<ul>
+<ul class="org-ul">
 <li><a href="http://clang.llvm.org/doxygen/group__CINDEX.html">libclang API documentation</a>
 </li>
 <li><a href="http://llvm.org/devmtg/2010-11/Gregor-libclang.pdf">Doug Gregor's presentation on libclang</a>
 </li>
 <li><a href="https://github.com/drothlis/clang-ctags">clang-ctags</a>: a similar project
-  using libclang to generate <code>ctags</code> / <code>etags</code> index files.
+using libclang to generate <code>ctags</code> / <code>etags</code> index files.
 </li>
 </ul>
-
 </div>
 </div>
 </div>
-
-<div id="postamble">
-Generated by <a href="http://orgmode.org">Org</a> version 7.9.2 with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 23 using CSS stylesheets from <a href='http://www.orgmode.org/worg'>Worg</a>.
+<div id="postamble" class="status">
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 23.3.1 (<a href="http://orgmode.org">Org</a> mode 8.0.6)</p>
+<p class="xhtml-validation"><a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a></p>
 </div>
 </body>
 </html>
