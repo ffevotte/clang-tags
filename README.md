@@ -19,17 +19,34 @@ complete description of `clang-tags`' features and a usage documentation.
 
 ### Requirements
 
+- `cmake`
+- `boost` (at least the `system` and `asio` components)
+- `jsoncpp`
 - `libclang` (>= 3.0)
+- `sqlite3`
+- `socat`
+- `strace`
 - `python` (>= 2.3)
   - a version newer than 2.7 is recommended to benefit from the more recent `argparse` module.
+
+
+The following are suggested:
+- `git`: to get the latest version
+- `pkg-config`: helps finding other requirements
+- `doxygen`: required to build the developer documentation
+- `emacs`: obviously required for the Emacs interface
+  - `org-mode`: required to build user documentation
+
 
 ### Building
 
 `clang-tags` uses [`CMake`](http://www.cmake.org/) as a build system.
 
-A complete build and test process could for example look like this:
+Provided that the dependencies are installed (in standard locations), a complete
+build and test process should be as simple as this:
 
 ```
+mkdir clang-tags && cd clang-tags
 git clone https://github.com/ffevotte/clang-tags.git src
 mkdir build && cd build
 cmake ../src

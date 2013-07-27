@@ -36,7 +36,7 @@ include_directories (${Libclang_INCLUDE_DIRS})
 link_directories (${Libclang_LIBRARY_DIRS})
 set(LIBS ${LIBS} ${Libclang_LIBRARIES})
 
-set (CMAKE_REQUIRED_LIBRARIES -lclang)
+set (CMAKE_REQUIRED_LIBRARIES ${Libclang_LIBRARIES})
 check_function_exists (clang_getExpansionLocation
   HAVE_CLANG_GETEXPANSIONLOCATION)
 
@@ -50,6 +50,14 @@ set(LIBS ${LIBS} ${Libsqlite3_LIBRARIES})
 
 # Check for socat
 find_package (Socat REQUIRED)
+
+
+# Check for strace
+find_package (Strace REQUIRED)
+
+
+# Check for python
+find_package (PythonInterp REQUIRED)
 
 
 # Manage a stack of source directories
@@ -100,6 +108,9 @@ configure_file (
 
 install (
   PROGRAMS     clang-tags
+  DESTINATION  bin)
+install (
+  TARGETS      clang-tags-server
   DESTINATION  bin)
 
 
