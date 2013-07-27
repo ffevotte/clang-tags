@@ -84,74 +84,13 @@ tested much yet. For now, it is safer to follow the instructions in the previous
 
 ## Getting started
 
-All details are in the [user manual](http://ffevotte.github.com/clang-tags), but
-here are a few steps which should get you started. If anything goes wrong,
-please consult the documentation.
+The [quick start guide](http://ffevotte.github.com/clang-tags/quickStart.html)
+should get you started in a few minutes. It is also a good starting point to get
+a quick overview of the features `clang-tags` provides.
 
-0. source the environment:
+To go a step further, all details are in the
+[user manual](http://ffevotte.github.com/clang-tags).
 
-    ```
-    ~> source path/to/build/env.sh
-    ~> echo $PATH
-    /usr/local/bin:/usr/bin:/bin:path/to/clang-tags/src:path/to/clang-tags/build
-    ```
-
-1. build the compilation database (in this example, we'll index the sources of `clang-tags` itself):
-
-    ```
-    ~> cd path/to/clang-tags/build
-    build> make clean
-    build> clang-tags trace make
-    [ 33%] Building CXX object CMakeFiles/getopt++.dir/getopt/getopt.cxx.o
-    Linking CXX static library libgetopt++.a
-    [ 33%] Built target getopt++
-    [ 66%] Building CXX object CMakeFiles/clang-tags-def.dir/findDefinition.cxx.o
-    Linking CXX executable clang-tags-def
-    [ 66%] Built target clang-tags-def
-    [100%] Building CXX object CMakeFiles/clang-tags-index.dir/index.cxx.o
-    Linking CXX executable clang-tags-index
-    [100%] Built target clang-tags-index
-    ```
-
-2. index the source files:
-
-    ```
-    build> clang-tags index --emacs-conf ../src/
-    src/getopt/getopt.cxx...          1.27s.
-    src/findDefinition.cxx...         0.34s.
-    src/index.cxx...                  0.33s.
-    ```
-
-3. find the definition location of the identifier located in `index.cxx` at
-   offset 750:
-
-    ```
-    build> clang-tags find-def ../src/index.cxx 902
-    -- cursor -- DeclRefExpr cursor
-       /local00/home/H55056/local/perso/projets/git/clang-tags/src/index.cxx:17-17:23-40: VarDecl cursor
-       USR: c:index.cxx@405@F@indexFile#$@SA@CXCursor#S0_#*v#@cursor
-
-    -- cursor.location() -- CallExpr location
-       /local00/home/H55056/local/perso/projets/git/clang-tags/src/clang/cursor.hxx:67-69:20-5: CXXMethod location
-       USR: c:@N@Clang@C@Cursor@F@location#1
-
-    -- cursor.location().expansionLocation() -- CallExpr expansionLocation
-       /local00/home/H55056/local/perso/projets/git/clang-tags/src/clang/sourceLocation.hxx:31-51:20-5: CXXMethod expansionLocation
-       USR: c:@N@Clang@C@SourceLocation@F@expansionLocation#1
-    ```
-
-4. find all uses of the `Cursor::location()` method (identified by its USR, as
-   given in the second result of `clang-tags find-def` above):
-
-    ```
-    build> clang-tags grep 'c:@N@Clang@C@Cursor@F@location#1' | sort -u
-    clang/cursor.hxx:67:    SourceLocation location () const {
-    findDefinition.cxx:12:  const Clang::SourceLocation location (cursor.location());
-    findDefinition.cxx:135:    Clang::SourceLocation target = cursor.location();
-    findDefinition.cxx:32:    const Clang::SourceLocation::Position begin = cursorDef.location().expansionLocation();
-    findDefinition.cxx:51:  const Clang::SourceLocation location (cursor.location());
-    index.cxx:30:  const Clang::SourceLocation::Position begin = cursor.location().expansionLocation();
-    ```
 
 
 ## See also
@@ -187,6 +126,12 @@ hesitate to fork the repository or submit bug reports on
 [github](https://github.com/ffevotte/clang-tags). The repository's URL is:
 
     https://github.com/ffevotte/clang-tags.el.git
+
+
+A doxygen-generated documentation targeted at developers is available
+[here](http://ffevotte.github.com/clang-tags/doxygen). Please do not hesitate to
+consult it, should you need help implementing in `clang-tags` the killer feature
+you need.
 
 
 ## License

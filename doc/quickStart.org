@@ -37,7 +37,6 @@
   #+include: "../tests/ct-grep" src sh :lines "3-"
   #+include: "../../build/tests/ct-grep.out" src grep-rw
 
-
 * Read the user guide
 
   Learn more about clang-tags in the [[file:index.org][user manual]].
