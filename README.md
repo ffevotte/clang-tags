@@ -12,74 +12,17 @@ Its main features are:
 - finding the definition location of an identifier in a source file,
 - finding all uses of a definition in the project sources.
 
+The [quick start guide](http://ffevotte.github.com/clang-tags/quickStart.html)
+is a good place to get a quick look at `clang-tags` various features.
+
 Please see the [user manual](http://ffevotte.github.com/clang-tags) for a
-complete description of `clang-tags`' features and a usage documentation.
+complete description of `clang-tags` features and a usage documentation.
+
 
 ## Installing
 
-### Requirements
-
-- `cmake`
-- `boost` (at least the `system` and `asio` components)
-- `jsoncpp`
-- `libclang` (>= 3.0)
-- `sqlite3`
-- `socat`
-- `strace`
-- `python` (>= 2.3)
-  - a version newer than 2.7 is recommended to benefit from the more recent `argparse` module.
-
-
-The following are suggested:
-- `git`: to get the latest version
-- `pkg-config`: helps finding other requirements
-- `doxygen`: required to build the developer documentation
-- `emacs`: obviously required for the Emacs interface
-  - `org-mode`: required to build user documentation
-
-
-### Building
-
-`clang-tags` uses [`CMake`](http://www.cmake.org/) as a build system.
-
-Provided that the dependencies are installed (in standard locations), a complete
-build and test process should be as simple as this:
-
-```
-mkdir clang-tags && cd clang-tags
-git clone https://github.com/ffevotte/clang-tags.git src
-mkdir build && cd build
-cmake ../src
-make
-make test
-```
-
-### Testing and using without installing
-
-It is possible to use `clang-tags` immediately after the build, without properly installing it on
-the system. Two environment setup scripts are generated during the build to help in this respect:
-
-- **setup the shell environment**: `env.sh` appropriately sets the required environment variables,
-  such as `PATH`:
-
-    ```
-    source env.sh
-    ```
-
-- **setup script for Emacs**: `env.el` sets the required environment variables and loads the
-  `clang-tags.el` library. You can either:
-  - load it interactively: `M-x load-file RET /path/to/build/env.el RET`
-  - or put the following in your Emacs initialization file (`~/.emacs.d/init.el` or `~/.emacs`):
-
-        ```lisp
-        (load-file "/path/to/build/env.el")
-        ```
-
-### Installing
-
-Running `make install` in the build directory should install `clang-tags`, but this has not been
-tested much yet. For now, it is safer to follow the instructions in the previous section.
-
+The [installation guide](http://ffevotte.github.com/clang-tags/install.html)
+should provide all information to build and install `clang-tags`.
 
 
 ## Getting started

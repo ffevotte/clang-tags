@@ -1,3 +1,5 @@
+(require 'compile)
+
 (defconst ct/source-location-re
   "\\(.+\\):\\([[:digit:]]+\\)-\\([[:digit:]]+\\):\\([[:digit:]]+\\)-\\([[:digit:]]+\\)")
 
