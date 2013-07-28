@@ -83,9 +83,12 @@
     { background-color: #ffff00; color: #000000; font-weight: bold; }
   /*]]>*/-->
 </style>
-<link type="text/css" href="worg.css" title="Standard" rel="stylesheet">
-<link type="text/css" href="worg-zenburn.css" title="Zenburn" rel="alternate stylesheet">
-<link type="text/css" href="worg-classic.css" title="Classic" rel="alternate stylesheet">
+<link type="text/css" href="http://orgmode.org/worg/style/worg.css" title="Standard" rel="stylesheet">
+<link type="text/css" href="http://orgmode.org/worg/style/worg-zenburn.css" title="Zenburn" rel="alternate stylesheet">
+<link type="text/css" href="http://orgmode.org/worg/style/worg-classic.css" title="Classic" rel="alternate stylesheet">
+<style type="text/css">
+html { background: white }
+</style>
 <style type="text/css">
 #text-1 pre.src { float: left; margin-right: 3em }
 #sec-1-1 { clear: both; }
@@ -184,39 +187,39 @@ Let us consider the following C++ code:
 
 <div class="org-src-container">
 
-<pre class="src src-c++"><span class="linenr"> 1: </span><span style="color: #729fcf;">#include</span> <span style="color: #ad7fa8; font-style: italic;">"config.h"</span>
-<span class="linenr"> 2: </span><span style="color: #729fcf;">#include</span> <span style="color: #ad7fa8; font-style: italic;">&lt;iostream&gt;</span>
+<pre class="src src-c++"><span class="linenr"> 1: </span><span style="color: #7a378b;">#include</span> <span style="color: #8b2252;">"config.h"</span>
+<span class="linenr"> 2: </span><span style="color: #7a378b;">#include</span> <span style="color: #8b2252;">&lt;iostream&gt;</span>
 <span class="linenr"> 3: </span>
-<span class="linenr"> 4: </span><span style="color: #729fcf;">#ifdef</span> DEBUG
-<span id="coderef-debug1" class="coderef-off"><span class="linenr"> 5: </span><span style="color: #729fcf; font-weight: bold;">inline</span> <span style="color: #8ae234; font-weight: bold;">void</span> <span style="color: #edd400; font-weight: bold; font-style: italic;">debug</span> (<span style="color: #729fcf; font-weight: bold;">const</span> <span style="color: #8ae234; font-weight: bold;">char</span>* <span style="color: #eeeeec;">message</span>) {                <span style="color: #888a85;">//</span></span>
-<span class="linenr"> 6: </span>  <span style="color: #8ae234;">std</span>::cerr &lt;&lt; message &lt;&lt; <span style="color: #8ae234;">std</span>::endl;
+<span class="linenr"> 4: </span><span style="color: #7a378b;">#ifdef</span> DEBUG
+<span id="coderef-debug1" class="coderef-off"><span class="linenr"> 5: </span><span style="color: #a020f0;">inline</span> <span style="color: #228b22;">void</span> <span style="color: #0000ff;">debug</span> (<span style="color: #a020f0;">const</span> <span style="color: #228b22;">char</span>* <span style="color: #a0522d;">message</span>) {                <span style="color: #b22222;">//</span></span>
+<span class="linenr"> 6: </span>  <span style="color: #008b8b;">std</span>::cerr &lt;&lt; message &lt;&lt; <span style="color: #008b8b;">std</span>::endl;
 <span class="linenr"> 7: </span>}
-<span class="linenr"> 8: </span><span style="color: #729fcf;">#else</span>
-<span id="coderef-debug2" class="coderef-off"><span class="linenr"> 9: </span><span style="color: #729fcf; font-weight: bold;">inline</span> <span style="color: #8ae234; font-weight: bold;">void</span> <span style="color: #edd400; font-weight: bold; font-style: italic;">debug</span> (<span style="color: #729fcf; font-weight: bold;">const</span> <span style="color: #8ae234; font-weight: bold;">char</span>* <span style="color: #eeeeec;">message</span>) {}               <span style="color: #888a85;">//</span></span>
-<span class="linenr">10: </span><span style="color: #729fcf;">#endif</span>
+<span class="linenr"> 8: </span><span style="color: #7a378b;">#else</span>
+<span id="coderef-debug2" class="coderef-off"><span class="linenr"> 9: </span><span style="color: #a020f0;">inline</span> <span style="color: #228b22;">void</span> <span style="color: #0000ff;">debug</span> (<span style="color: #a020f0;">const</span> <span style="color: #228b22;">char</span>* <span style="color: #a0522d;">message</span>) {}               <span style="color: #b22222;">//</span></span>
+<span class="linenr">10: </span><span style="color: #7a378b;">#endif</span>
 <span class="linenr">11: </span>
-<span class="linenr">12: </span><span style="color: #729fcf; font-weight: bold;">template</span> &lt;<span style="color: #729fcf; font-weight: bold;">typename</span> <span style="color: #8ae234; font-weight: bold;">T</span>&gt; <span style="color: #729fcf; font-weight: bold;">struct</span> <span style="color: #8ae234; font-weight: bold;">MyClass</span> {
-<span id="coderef-defCtor" class="coderef-off"><span class="linenr">13: </span>  <span style="color: #edd400; font-weight: bold; font-style: italic;">MyClass</span> () { debug (<span style="color: #ad7fa8; font-style: italic;">"MyClass::MyClass"</span>); }             <span style="color: #888a85;">//</span></span>
+<span class="linenr">12: </span><span style="color: #a020f0;">template</span> &lt;<span style="color: #a020f0;">typename</span> <span style="color: #228b22;">T</span>&gt; <span style="color: #a020f0;">struct</span> <span style="color: #228b22;">MyClass</span> {
+<span id="coderef-defCtor" class="coderef-off"><span class="linenr">13: </span>  <span style="color: #0000ff;">MyClass</span> () { debug (<span style="color: #8b2252;">"MyClass::MyClass"</span>); }             <span style="color: #b22222;">//</span></span>
 <span class="linenr">14: </span>
-<span id="coderef-defDisplayT" class="coderef-off"><span class="linenr">15: </span>  <span style="color: #8ae234; font-weight: bold;">void</span> <span style="color: #edd400; font-weight: bold; font-style: italic;">display</span> () {                                      <span style="color: #888a85;">//</span></span>
-<span class="linenr">16: </span>    <span style="color: #8ae234;">std</span>::cout &lt;&lt; <span style="color: #ad7fa8; font-style: italic;">"MyClass&lt;T&gt;::display()"</span> &lt;&lt; <span style="color: #8ae234;">std</span>::endl;
+<span id="coderef-defDisplayT" class="coderef-off"><span class="linenr">15: </span>  <span style="color: #228b22;">void</span> <span style="color: #0000ff;">display</span> () {                                      <span style="color: #b22222;">//</span></span>
+<span class="linenr">16: </span>    <span style="color: #008b8b;">std</span>::cout &lt;&lt; <span style="color: #8b2252;">"MyClass&lt;T&gt;::display()"</span> &lt;&lt; <span style="color: #008b8b;">std</span>::endl;
 <span class="linenr">17: </span>  }
 <span class="linenr">18: </span>};
 <span class="linenr">19: </span>
-<span class="linenr">20: </span><span style="color: #729fcf; font-weight: bold;">template</span> &lt;&gt; <span style="color: #729fcf; font-weight: bold;">struct</span> <span style="color: #8ae234; font-weight: bold;">MyClass</span>&lt;<span style="color: #8ae234; font-weight: bold;">int</span>&gt; {
-<span id="coderef-defDisplayInt" class="coderef-off"><span class="linenr">21: </span>  <span style="color: #8ae234; font-weight: bold;">void</span> <span style="color: #edd400; font-weight: bold; font-style: italic;">display</span> () {                                      <span style="color: #888a85;">//</span></span>
-<span class="linenr">22: </span>    <span style="color: #8ae234;">std</span>::cout &lt;&lt; <span style="color: #ad7fa8; font-style: italic;">"MyClass&lt;int&gt;::display()"</span> &lt;&lt; <span style="color: #8ae234;">std</span>::endl;
+<span class="linenr">20: </span><span style="color: #a020f0;">template</span> &lt;&gt; <span style="color: #a020f0;">struct</span> <span style="color: #228b22;">MyClass</span>&lt;<span style="color: #228b22;">int</span>&gt; {
+<span id="coderef-defDisplayInt" class="coderef-off"><span class="linenr">21: </span>  <span style="color: #228b22;">void</span> <span style="color: #0000ff;">display</span> () {                                      <span style="color: #b22222;">//</span></span>
+<span class="linenr">22: </span>    <span style="color: #008b8b;">std</span>::cout &lt;&lt; <span style="color: #8b2252;">"MyClass&lt;int&gt;::display()"</span> &lt;&lt; <span style="color: #008b8b;">std</span>::endl;
 <span class="linenr">23: </span>  }
 <span class="linenr">24: </span>};
 <span class="linenr">25: </span>
-<span class="linenr">26: </span><span style="color: #8ae234; font-weight: bold;">int</span> <span style="color: #edd400; font-weight: bold; font-style: italic;">main</span> () {
-<span id="coderef-display1" class="coderef-off"><span class="linenr">27: </span>  <span style="color: #8ae234; font-weight: bold;">int</span> <span style="color: #eeeeec;">display</span> = 3;                                       <span style="color: #888a85;">//</span></span>
+<span class="linenr">26: </span><span style="color: #228b22;">int</span> <span style="color: #0000ff;">main</span> () {
+<span id="coderef-display1" class="coderef-off"><span class="linenr">27: </span>  <span style="color: #228b22;">int</span> <span style="color: #a0522d;">display</span> = 3;                                       <span style="color: #b22222;">//</span></span>
 <span class="linenr">28: </span>
-<span id="coderef-ctor" class="coderef-off"><span class="linenr">29: </span>  <span style="color: #8ae234; font-weight: bold;">MyClass</span>&lt;<span style="color: #8ae234; font-weight: bold;">double</span>&gt; <span style="color: #eeeeec;">a</span>;                                     <span style="color: #888a85;">//</span></span>
-<span id="coderef-display2" class="coderef-off"><span class="linenr">30: </span>  a.display();                                           <span style="color: #888a85;">//</span></span>
+<span id="coderef-ctor" class="coderef-off"><span class="linenr">29: </span>  <span style="color: #228b22;">MyClass</span>&lt;<span style="color: #228b22;">double</span>&gt; <span style="color: #a0522d;">a</span>;                                     <span style="color: #b22222;">//</span></span>
+<span id="coderef-display2" class="coderef-off"><span class="linenr">30: </span>  a.display();                                           <span style="color: #b22222;">//</span></span>
 <span class="linenr">31: </span>
-<span class="linenr">32: </span>  <span style="color: #8ae234; font-weight: bold;">MyClass</span>&lt;<span style="color: #8ae234; font-weight: bold;">int</span>&gt; <span style="color: #eeeeec;">b</span>;
-<span id="coderef-display3" class="coderef-off"><span class="linenr">33: </span>  b.display();                                           <span style="color: #888a85;">//</span></span>
+<span class="linenr">32: </span>  <span style="color: #228b22;">MyClass</span>&lt;<span style="color: #228b22;">int</span>&gt; <span style="color: #a0522d;">b</span>;
+<span id="coderef-display3" class="coderef-off"><span class="linenr">33: </span>  b.display();                                           <span style="color: #b22222;">//</span></span>
 <span class="linenr">34: </span>}
 </pre>
 </div>
@@ -420,8 +423,8 @@ Example usage:
 </p>
 <div class="org-src-container">
 
-<pre class="src src-sh">make clean                 <span style="color: #888a85;"># </span><span style="color: #888a85;">Ensure that the whole project will be rebuilt</span>
-clang-tags trace -- make   <span style="color: #888a85;"># </span><span style="color: #888a85;">Generate the compilation database</span>
+<pre class="src src-sh">make clean                 <span style="color: #b22222;"># </span><span style="color: #b22222;">Ensure that the whole project will be rebuilt</span>
+clang-tags trace -- make   <span style="color: #b22222;"># </span><span style="color: #b22222;">Generate the compilation database</span>
 </pre>
 </div>
 </div>

@@ -83,9 +83,12 @@
     { background-color: #ffff00; color: #000000; font-weight: bold; }
   /*]]>*/-->
 </style>
-<link type="text/css" href="worg.css" title="Standard" rel="stylesheet">
-<link type="text/css" href="worg-zenburn.css" title="Zenburn" rel="alternate stylesheet">
-<link type="text/css" href="worg-classic.css" title="Classic" rel="alternate stylesheet">
+<link type="text/css" href="http://orgmode.org/worg/style/worg.css" title="Standard" rel="stylesheet">
+<link type="text/css" href="http://orgmode.org/worg/style/worg-zenburn.css" title="Zenburn" rel="alternate stylesheet">
+<link type="text/css" href="http://orgmode.org/worg/style/worg-classic.css" title="Classic" rel="alternate stylesheet">
+<style type="text/css">
+html { background: white }
+</style>
 <script type="text/javascript">
 /*
 @licstart  The following is the entire license notice for the
@@ -140,31 +143,71 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1. Run the server</a></li>
-<li><a href="#sec-2">2. Build the compilation database</a></li>
-<li><a href="#sec-3">3. Load the compilation database</a></li>
-<li><a href="#sec-4">4. Index the source files</a></li>
-<li><a href="#sec-5">5. Find symbol definitions</a></li>
-<li><a href="#sec-6">6. Find symbol references</a></li>
-<li><a href="#sec-7">7. Read the user guide</a></li>
+<li><a href="#sec-1">1. Set the system up</a>
+<ul>
+<li><a href="#sec-1-1">1.1. Run the server</a></li>
+<li><a href="#sec-1-2">1.2. Build the compilation database</a></li>
+<li><a href="#sec-1-3">1.3. Load the compilation database</a></li>
+<li><a href="#sec-1-4">1.4. Index the source files</a></li>
+</ul>
+</li>
+<li><a href="#sec-2">2. Try the command-line interface</a>
+<ul>
+<li><a href="#sec-2-1">2.1. Find symbol definitions</a></li>
+<li><a href="#sec-2-2">2.2. Find symbol references</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3. Try the Emacs interface</a>
+<ul>
+<li><a href="#sec-3-1">3.1. Activate <code>clang-tags-mode</code></a></li>
+<li><a href="#sec-3-2">3.2. Find symbol definitions</a></li>
+<li><a href="#sec-3-3">3.3. Find symbol references</a></li>
+</ul>
+</li>
+<li><a href="#sec-4">4. Read the user guide</a></li>
 </ul>
 </div>
 </div>
 
 <div id="outline-container-sec-1" class="outline-2">
-<h2 id="sec-1"><span class="section-number-2">1</span> Run the server</h2>
+<h2 id="sec-1"><span class="section-number-2">1</span> Set the system up</h2>
 <div class="outline-text-2" id="text-1">
+<p>
+These steps are necessary to use <code>clang-tags</code>.
+</p>
+
+<p>
+If you have't installed `clang-tags` in a standard location in the system,
+you should source the proper environment before running the following
+commands (see the <a href="quickStart.html#ID-9919342a-dc4f-48b9-be0e-8c3f60b89a00">installation guide</a> for more details):
+</p>
+
 <div class="org-src-container">
 
-<pre class="src src-sh"><span style="color: #729fcf;">cd</span> /path/to/build-dir
-clang-tags-server
+<pre class="src src-sh"><span style="color: #7a378b;">source</span> path/to/clang-tags/build/env.sh
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Run the server</h3>
+<div class="outline-text-3" id="text-1-1">
+<div class="org-src-container">
+
+<pre class="src src-sh"><span style="color: #7a378b;">cd</span> /path/to/build-dir
+rm -f /tmp/clang-tags
+clang-tags-server &gt;.ct.log &amp;
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-sec-2" class="outline-2">
-<h2 id="sec-2"><span class="section-number-2">2</span> Build the compilation database</h2>
-<div class="outline-text-2" id="text-2">
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Build the compilation database</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+This should be done every time the project configuration changes (list of
+source files, compiler switches, &#x2026;):
+</p>
 <div class="org-src-container">
 
 <pre class="src src-sh">make clean
@@ -180,9 +223,13 @@ g++ -o main main.o
 </div>
 </div>
 </div>
-<div id="outline-container-sec-3" class="outline-2">
-<h2 id="sec-3"><span class="section-number-2">3</span> Load the compilation database</h2>
-<div class="outline-text-2" id="text-3">
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Load the compilation database</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+After the compilation database has been generated (at the previous step), it
+should be loaded into the system:
+</p>
 <div class="org-src-container">
 
 <pre class="src src-sh">clang-tags load
@@ -195,9 +242,13 @@ g++ -o main main.o
 </div>
 </div>
 </div>
-<div id="outline-container-sec-4" class="outline-2">
-<h2 id="sec-4"><span class="section-number-2">4</span> Index the source files</h2>
-<div class="outline-text-2" id="text-4">
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Index the source files</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+The first time <code>clang-tags</code> is used for a project, the full sources should
+be indexed:
+</p>
 <div class="org-src-container">
 
 <pre class="src src-sh">clang-tags index
@@ -214,11 +265,44 @@ g++ -o main main.o
 0.877169s.
 </pre>
 </div>
+
+<p>
+After source files change, the source index can be updated, which saves some
+time by only reparsing new content:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-sh">clang-tags update
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-fundamental">Server response:
+
+-- Indexing project
+../src/main.cxx:
+  parsing...    0.747997s.
+  indexing...   0.022584
+0.877169s.
+</pre>
 </div>
 </div>
-<div id="outline-container-sec-5" class="outline-2">
-<h2 id="sec-5"><span class="section-number-2">5</span> Find symbol definitions</h2>
-<div class="outline-text-2" id="text-5">
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Try the command-line interface</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+This section show how to use the command-line interface to query `clang-tags`
+about symbol definitions and references in the source files. You can safely
+skip to the next section if you plan to only use the Emacs interface.
+</p>
+</div>
+
+<div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Find symbol definitions</h3>
+<div class="outline-text-3" id="text-2-1">
 <p>
 Find the definition location of the identifier located in <code>main.cxx</code> at offset
 849:
@@ -238,16 +322,16 @@ Find the definition location of the identifier located in <code>main.cxx</code> 
 </div>
 </div>
 </div>
-<div id="outline-container-sec-6" class="outline-2">
-<h2 id="sec-6"><span class="section-number-2">6</span> Find symbol references</h2>
-<div class="outline-text-2" id="text-6">
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Find symbol references</h3>
+<div class="outline-text-3" id="text-2-2">
 <p>
 Find all uses of the <code>Cursor::location()</code> method (identified by its USR, as
 given in the second result of <code>clang-tags find-def</code> above):
 </p>
 <div class="org-src-container">
 
-<pre class="src src-sh">clang-tags grep <span style="color: #ad7fa8; font-style: italic;">'c:@S@MyClass&gt;#I@F@display#'</span>
+<pre class="src src-sh">clang-tags grep <span style="color: #8b2252;">'c:@S@MyClass&gt;#I@F@display#'</span>
 </pre>
 </div>
 <div class="org-src-container">
@@ -260,9 +344,100 @@ given in the second result of <code>clang-tags find-def</code> above):
 </div>
 </div>
 </div>
-<div id="outline-container-sec-7" class="outline-2">
-<h2 id="sec-7"><span class="section-number-2">7</span> Read the user guide</h2>
-<div class="outline-text-2" id="text-7">
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><a id="ID-f35b7f1e-9992-4bf0-a096-8923f18277e4" name="ID-f35b7f1e-9992-4bf0-a096-8923f18277e4"></a><span class="section-number-2">3</span> Try the Emacs interface</h2>
+<div class="outline-text-2" id="text-3">
+
+<p>
+If you haven't configured Emacs to use `clang-tags`, you should load the
+correct environment (see the <a href="quickStart.html#ID-9919342a-dc4f-48b9-be0e-8c3f60b89a00">installation guide</a> for more details):
+</p>
+
+<p>
+<code>M-x load-file RET /path/to/clang-tags/build/env.el RET</code>
+</p>
+</div>
+
+<div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Activate <code>clang-tags-mode</code></h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+Open any source file in the project, and activate <code>clang-tags-mode</code>:
+</p>
+
+<p>
+<code>M-x clang-tags-mode</code>
+</p>
+
+<p>
+The mode-line should display a <code>ct</code> lighter indicating that the mode is
+active.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> Find symbol definitions</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+Go to any symbol in the source file, and press <code>M-&lt;dot&gt;</code>.  A list of possible
+definition locations for the symbol should be displayed in a dedicated buffer
+called <code>*ct/find-def*</code>:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ct/find-def-rw">Server response:
+-- display -- MemberRefExpr display
+   /home/francois/projets/git/clang-tags/build/tests/src/main.cxx:15-17:8-3: CXXMethod display
+   USR: c:@S@MyClass&gt;#d@F@display#
+</pre>
+</div>
+
+<p>
+This buffer is a type of
+<code>compilation</code> buffer, meaning that all usual keys are available, especially:
+</p>
+<ul class="org-ul">
+<li><code>&lt;tab&gt;</code> and <code>S-&lt;tab&gt;</code>: move to the next/previous entry
+</li>
+<li><code>RET</code>: goto the location of the entry at point
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-3-3" class="outline-3">
+<h3 id="sec-3-3"><span class="section-number-3">3.3</span> Find symbol references</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+While in the <code>*ct/find-def*</code> buffer, press <code>M-&lt;comma&gt;</code> to get a list of all
+uses of the symbol identified by the entry at point. The symbol uses should
+be displayed in a dedicated buffer called <code>*ct/grep*</code>, looking like this:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-grep-rw">Server response:
+<span id="coderef-defDisplayInt" class="coderef-off">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx:21:  void display () {                                      // (defDisplayInt)</span>
+<span id="coderef-display3" class="coderef-off">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx:33:  b.display();                                           // (display3)</span>
+<span id="coderef-display3" class="coderef-off">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx:33:  b.display();                                           // (display3)</span>
+</pre>
+</div>
+
+<p>
+This buffer displays the same content as if you had grepped your
+source files for the symbol name, and filtered out all false positives
+(symbols with the same name, but in different contexts). The buffer uses
+Emacs' standard <code>grep</code> mode, meaning that all usual features are
+available. In particular, using <code>wgrep</code> in this buffer can be an efficient
+refactoring tool to rename a particular symbol.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Read the user guide</h2>
+<div class="outline-text-2" id="text-4">
 <p>
 Learn more about clang-tags in the <a href="index.html">user manual</a>.
 </p>

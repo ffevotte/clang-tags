@@ -1,0 +1,104 @@
+#+TITLE: clang-tags -- Installation guide
+#+SETUPFILE: setup.org
+
+* Requirements
+
+  - =cmake=
+  - a C++11 compiler (e.g. =g++= or =clang++=)
+  - =boost= (at least the =system= and =asio= components)
+  - =jsoncpp=
+  - =libclang= (>= 3.0)
+  - =sqlite3=
+  - =socat=
+  - =strace=
+  - =python= (>= 2.3)
+    - a version newer than 2.7 is recommended to benefit from the more recent
+      =argparse= module.
+  
+
+  The following are recommended:
+  - =git=: to get the latest version
+  - =pkg-config=: helps finding other requirements
+  - =emacs=: obviously required for the Emacs interface
+
+
+  And here are a few suggested packages:
+  - =doxygen=: required to build the developer documentation
+  - =org-mode=: required to build user documentation
+
+
+* Building
+
+  =clang-tags= uses [[http://www.cmake.org/][=CMake=]] as a build system.
+  
+  Provided that the dependencies are installed (in standard locations), a complete
+  build and test process should be as simple as:
+  
+  #+begin_src sh
+    cmake path/to/sources
+    make
+    make test
+  #+end_src
+
+  
+  As an example, here is an installation procedure which has been tested on
+  a fresh Debian Jessie system:
+
+  #+begin_src sh
+    # Install dependencies
+    su -c "apt-get install build-essential git cmake pkg-config \
+                           libboost-system-dev libjsoncpp-dev   \
+                           libclang-dev libsqlite3-dev socat    \
+                           strace emacs"
+    
+    # Get clang-tags sources
+    mkdir clang-tags && cd clang-tags
+    git clone https://github.com/ffevotte/clang-tags.git src
+    
+    # Create a build directory
+    mkdir build && cd build
+    
+    # Configure the project
+    cmake ../src
+    
+    # Build and run tests
+    make
+    make test
+  #+end_src
+
+
+* Testing and using without installing
+  :PROPERTIES:
+  :ID:       9919342a-dc4f-48b9-be0e-8c3f60b89a00
+  :END:
+  
+  It is possible to use =clang-tags= immediately after the build, without
+  properly installing it on the system. Two environment setup scripts are
+  generated during the build to help in this respect:
+  
+  - **setup the shell environment**: =env.sh= appropriately sets the required
+    environment variables, such as =PATH=:
+  
+    #+begin_src sh
+      source env.sh
+    #+end_src
+  
+  - **setup script for Emacs**: =env.el= sets the required environment variables
+    and loads the =clang-tags.el= library. You can either:
+    - load it interactively: =M-x load-file RET /path/to/build/env.el RET=
+    - or put the following in your Emacs initialization file
+      (=~/.emacs.d/init.el= or =~/.emacs=):
+  
+      #+begin_src emacs-lisp
+        (load-file "/path/to/build/env.el")
+      #+end_src
+
+   Now would be a good time to proceed to the [[file:quickStart.org][quick start guide]] or the [[file:index.org][user
+    manual]] to ger started using =clang-tags=.
+
+
+* Installing
+
+  Running =make install= in the build directory should install =clang-tags=, but
+  this has not been tested much yet. For now, it is safer to follow the
+  instructions in the previous section.
