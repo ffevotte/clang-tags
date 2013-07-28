@@ -316,7 +316,7 @@ Find the definition location of the identifier located in <code>main.cxx</code> 
 
 <pre class="src src-ct/find-def-rw">Server response:
 -- display -- MemberRefExpr display
-   /home/francois/projets/git/clang-tags/build/tests/src/main.cxx:15-17:8-3: CXXMethod display
+   <span style="color: #ffa500; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">15</span><span style="text-decoration: underline;">-</span><span style="color: #a0522d; text-decoration: underline;">17</span><span style="text-decoration: underline;">:</span><span style="color: #228b22; text-decoration: underline;">8</span><span style="text-decoration: underline;">-</span><span style="color: #228b22; text-decoration: underline;">3</span>: CXXMethod display
    USR: c:@S@MyClass&gt;#d@F@display#
 </pre>
 </div>
@@ -337,9 +337,9 @@ given in the second result of <code>clang-tags find-def</code> above):
 <div class="org-src-container">
 
 <pre class="src src-grep-rw">Server response:
-<span id="coderef-defDisplayInt" class="coderef-off">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx:21:  void display () {                                      // (defDisplayInt)</span>
-<span id="coderef-display3" class="coderef-off">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx:33:  b.display();                                           // (display3)</span>
-<span id="coderef-display3" class="coderef-off">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx:33:  b.display();                                           // (display3)</span>
+<span id="coderef-defDisplayInt" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">21</span><span style="text-decoration: underline;">:</span>  void display () {                                      // (defDisplayInt)</span>
+<span id="coderef-display3" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>  b.display();                                           // (display3)</span>
+<span id="coderef-display3" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>  b.display();                                           // (display3)</span>
 </pre>
 </div>
 </div>
@@ -389,7 +389,7 @@ called <code>*ct/find-def*</code>:
 
 <pre class="src src-ct/find-def-rw">Server response:
 -- display -- MemberRefExpr display
-   /home/francois/projets/git/clang-tags/build/tests/src/main.cxx:15-17:8-3: CXXMethod display
+   <span style="color: #ffa500; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">15</span><span style="text-decoration: underline;">-</span><span style="color: #a0522d; text-decoration: underline;">17</span><span style="text-decoration: underline;">:</span><span style="color: #228b22; text-decoration: underline;">8</span><span style="text-decoration: underline;">-</span><span style="color: #228b22; text-decoration: underline;">3</span>: CXXMethod display
    USR: c:@S@MyClass&gt;#d@F@display#
 </pre>
 </div>
@@ -417,9 +417,9 @@ be displayed in a dedicated buffer called <code>*ct/grep*</code>, looking like t
 <div class="org-src-container">
 
 <pre class="src src-grep-rw">Server response:
-<span id="coderef-defDisplayInt" class="coderef-off">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx:21:  void display () {                                      // (defDisplayInt)</span>
-<span id="coderef-display3" class="coderef-off">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx:33:  b.display();                                           // (display3)</span>
-<span id="coderef-display3" class="coderef-off">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx:33:  b.display();                                           // (display3)</span>
+<span id="coderef-defDisplayInt" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">21</span><span style="text-decoration: underline;">:</span>  void display () {                                      // (defDisplayInt)</span>
+<span id="coderef-display3" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>  b.display();                                           // (display3)</span>
+<span id="coderef-display3" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>  b.display();                                           // (display3)</span>
 </pre>
 </div>
 
