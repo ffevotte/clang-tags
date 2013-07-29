@@ -13,10 +13,12 @@ class Indexer : public LibClang::Visitor<Indexer> {
 public:
   Indexer (const std::string & fileName,
            const std::vector<std::string> & exclude,
-           Storage & storage)
+           Storage & storage,
+           std::ostream & cout)
     : sourceFile_ (fileName),
       exclude_    (exclude),
-      storage_    (storage)
+      storage_    (storage),
+      cout_       (cout)
   {
     needsUpdate_[fileName] = storage.beginFile (fileName);
     storage_.addInclude (fileName, fileName);
@@ -55,6 +57,7 @@ public:
     }
 
     if (needsUpdate_.count(fileName) == 0) {
+      cout_ << "    " << fileName << std::endl;
       needsUpdate_[fileName] = storage_.beginFile (fileName);
       storage_.addInclude (fileName, sourceFile_);
     }
@@ -75,6 +78,7 @@ private:
   const std::vector<std::string> & exclude_;
   Storage                        & storage_;
   std::map<std::string, bool>      needsUpdate_;
+  std::ostream                   & cout_;
 };
 
 
@@ -119,11 +123,11 @@ void Application::updateIndex_ (IndexArgs & args, std::ostream & cout) {
       }
     }
 
-    cout << "  indexing..." << std::flush;
+    cout << "  indexing..." << std::endl;
     LibClang::Cursor top (tu);
-    Indexer indexer (fileName, args.exclude, storage_);
+    Indexer indexer (fileName, args.exclude, storage_, cout);
     indexer.visitChildren (top);
-    cout << "\t" << timer.get() << std::endl;
+    cout << "  indexing...\t" << timer.get() << "s." << std::endl;
   }
   storage_.endIndex();
   cout << totalTimer.get() << "s." << std::endl;
