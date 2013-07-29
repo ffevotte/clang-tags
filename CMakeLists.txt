@@ -112,6 +112,10 @@ install (
 install (
   TARGETS      clang-tags-server
   DESTINATION  bin)
+install (
+  FILES        clang-tags.el
+  DESTINATION  share/emacs/site-lisp/
+)
 
 
 function (ct_add_test name)

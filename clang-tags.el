@@ -105,3 +105,5 @@ operations."
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "M-.") 'ct/find-def)
             map))
+
+(provide 'clang-tags)
