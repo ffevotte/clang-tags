@@ -12,6 +12,12 @@ import time
 import re
 import types
 
+### Common constants
+logPath    = ".ct.log"
+socketPath = ".ct.sock"
+pidPath    = ".ct.pid"
+
+
 ### Helper functions
 def endsWithOne (string, suffixes):
     "Return True iff STRING ends with one of SUFFIXES."
@@ -26,7 +32,7 @@ def sendRequest (request):
     request = json.dumps (request)
 
     if os.getenv ("CLANG_TAGS_TEST") is None:
-        cmd = ["socat", "-", "UNIX-CONNECT:/tmp/clang-tags"]
+        cmd = ["socat", "-", "UNIX-CONNECT:%s" % socketPath]
     else:
         cmd = ["clang-tags-server", "--stdin"]
 
@@ -38,13 +44,52 @@ def sendRequest (request):
     sys.exit (process.returncode)
 
 
-### Entry points for the subcommands
+
+### Manage the server
+def start (args):
+    "Start the clang-tags server."
+
+    if os.path.exists(socketPath):
+        sys.stderr.write ("ERROR: socket already exists!\n")
+        sys.exit (1)
+
+    print "Starting server..."
+    command = ["sh", "-c", "clang-tags-server >%s 2>&1 &" % logPath]
+    sys.exit (subprocess.call (command))
+
+
+def stop (args):
+    "Stop the clang-tags server."
+
+    request = {"command": "exit"}
+    sendRequest (request)
+
+
+def clean (args):
+    "Clean server leftovers after a non-nice exit."
+
+    command = ["rm", socketPath, pidPath]
+    sys.exit (subprocess.call (command))
+
+
+def kill (args):
+    "Kill the clang-tags server."
+
+    f = open (pidPath, "r")
+    pid = f.readline().strip()
+    f.close()
+
+    command = ["kill", pid]
+    sys.exit (subprocess.call (command))
+
+
+### Generate the compilation database
 
 def trace (args):
     """Entry point for generating a compilation database by tracing a build
     command."""
     compilers  = ["gcc", "g++", "c++", "clang", "clang++"]
-    extensions = [".c", ".cxx", ".cc", ".C"]
+    extensions = [".c", ".cxx", ".cc", ".C", ".cpp"]
 
     command  = ["strace", "-f", "-s256", "-etrace=execve,chdir", "-q"]
     command += args.command
@@ -117,6 +162,7 @@ def scan (args):
     f.close()
 
 
+### Manage the source files index
 def load (args):
     "Entry point for reading a compilation database."
 
@@ -140,7 +186,9 @@ def update (args):
     request = {"command": "update"}
     sendRequest (request)
 
+
 
+### IDE-like features
 def findDefinition (args):
     "Entry point for finding the definition of an identifier"
     fileName = os.path.realpath (args.fileName)
@@ -169,14 +217,9 @@ def complete (args):
                "column": args.column}
     sendRequest (request)
 
-
-def shutdown (args):
-    "Entry point for server shutdown"
-
-    request = {"command": "exit"}
-    sendRequest (request)
 
 
+### Process command-line arguments
 def main_argparse ():
     "Entry point for the application"
 
@@ -188,6 +231,35 @@ def main_argparse ():
 
     subparsers = parser.add_subparsers (metavar = "SUBCOMMAND")
 
+
+    # Manage the server
+    subparsers.add_parser (
+        "start",
+        help = "start the clang-tags server",
+        description = "Start the clang-tags server."
+        ).set_defaults (fun = start)
+
+    subparsers.add_parser (
+        "stop",
+        help = "shutdown the clang-tags server",
+        description = "Shutdown the clang-tags server."
+        ).set_defaults (fun = stop)
+
+    subparsers.add_parser (
+        "kill",
+        help = "kill the clang-tags server",
+        description = "Kill the clang-tags server."
+        ).set_defaults (fun = kill)
+
+    subparsers.add_parser (
+        "clean",
+        help = "clean-up after a non-nice server shutdown",
+        description = "Clean up after a non-nice server shutdown:"
+        " pid file and server socket are wiped."
+        ).set_defaults (fun = clean)
+
+
+    # Create the compilation database
     parserTrace = subparsers.add_parser (
         "trace", help = "trace a build command",
         description =
@@ -218,6 +290,7 @@ def main_argparse ():
     parserScan.set_defaults (fun = scan)
 
 
+    # Manage the source files index
     parserLoad = subparsers.add_parser (
         "load", help = "load a compilation database",
         description = "Read the compilation commands needed to build the"
@@ -254,6 +327,7 @@ def main_argparse ():
     parserUpdate.set_defaults (fun = update)
 
 
+    # IDE-like features
     parserFindDef = subparsers.add_parser (
         "find-def",
         help = "find the definition of an identifier in a source file",
@@ -300,11 +374,6 @@ def main_argparse ():
     parserComplete.add_argument ("column", metavar = "COLUMN",
                                  help = "Column number")
     parserComplete.set_defaults (fun = complete)
-
-
-    parserExit = subparsers.add_parser (
-        "exit", help = "shutdown the clang-tags server")
-    parserExit.set_defaults (fun = shutdown)
 
 
     args = parser.parse_args ()

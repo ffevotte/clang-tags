@@ -16,8 +16,11 @@
 ** Run the server
    #+BEGIN_SRC sh
      cd /path/to/build-dir
-     rm -f /tmp/clang-tags
-     clang-tags-server >.ct.log &
+     clang-tags start
+   #+END_SRC
+
+   #+BEGIN_SRC fundamental
+     Starting server...
    #+END_SRC
 
 ** Build the compilation database
@@ -115,6 +118,19 @@
    available. In particular, using =wgrep= in this buffer can be an efficient
    refactoring tool to rename a particular symbol.
 
+
+* Shut the server down
+
+  When you are done with clang-tags, don't forget to shut the server down:
+
+  #+BEGIN_SRC sh
+    clang-tags stop
+  #+END_SRC
+
+  #+BEGIN_SRC fundamental
+    Server response:
+    Exiting...
+  #+END_SRC
 
 * Read the user guide
 

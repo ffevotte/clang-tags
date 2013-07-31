@@ -206,7 +206,8 @@ struct ExitCommand : public Request::CommandParser {
   }
 
   void run (std::ostream & cout) {
-    throw std::runtime_error ("Exiting...");
+    cout << "Exiting..." << std::endl;
+    throw std::runtime_error ("shutdown requested");
   }
 };
 
@@ -248,10 +249,18 @@ int main (int argc, char **argv) {
     p.parseJson (std::cin, std::cout);
   }
   else {
+    const std::string pidPath (".ct.pid");
+    std::ofstream pidFile (pidPath);
+    pidFile << getpid() << std::endl;
+    pidFile.close();
+
+    std::cerr << "Server starting with pid: " << getpid() << std::endl;
+
+    const std::string socketPath (".ct.sock");
     try
       {
         boost::asio::io_service io_service;
-        boost::asio::local::stream_protocol::endpoint endpoint ("/tmp/clang-tags");
+        boost::asio::local::stream_protocol::endpoint endpoint (socketPath);
         boost::asio::local::stream_protocol::acceptor acceptor (io_service, endpoint);
         for (;;)
           {
@@ -265,8 +274,11 @@ int main (int argc, char **argv) {
       }
     catch (std::exception& e)
       {
-        std::cerr << e.what() << std::endl;
+        std::cerr << std::endl << "Caught exception: " << e.what() << std::endl;
       }
+    std::cerr << "Server exiting..." << std::endl;
+    unlink (socketPath.c_str());
+    unlink (pidPath.c_str());
   }
 
   return EXIT_SUCCESS;
