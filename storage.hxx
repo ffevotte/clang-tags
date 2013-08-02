@@ -225,6 +225,20 @@ public:
     int offset2;
     std::string kind;
     std::string spelling;
+
+    Json::Value json () const {
+      Json::Value json;
+      json["file"]     = file;
+      json["line1"]    = line1;
+      json["line2"]    = line2;
+      json["col1"]     = col1;
+      json["col2"]     = col2;
+      json["offset1"]  = offset1;
+      json["offset2"]  = offset2;
+      json["kind"]     = kind;
+      json["spelling"] = spelling;
+      return json;
+    }
   };
 
   struct Definition {
@@ -236,11 +250,31 @@ public:
     int col2;
     std::string kind;
     std::string spelling;
+
+    Json::Value json () const {
+      Json::Value json;
+      json["usr"]      = usr;
+      json["file"]     = file;
+      json["line1"]    = line1;
+      json["line2"]    = line2;
+      json["col1"]     = col1;
+      json["col2"]     = col2;
+      json["kind"]     = kind;
+      json["spelling"] = spelling;
+      return json;
+    }
   };
 
   struct RefDef {
     Reference ref;
     Definition def;
+
+    Json::Value json () const {
+      Json::Value json;
+      json["ref"] = ref.json();
+      json["def"] = def.json();
+      return json;
+    }
   };
 
   std::vector<RefDef> findDefinition (const std::string fileName,

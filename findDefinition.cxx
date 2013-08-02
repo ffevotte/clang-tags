@@ -33,6 +33,18 @@ void displayRefDef (const Storage::RefDef & refDef, std::ostream & cout)
   }
 }
 
+void outputRefDef (const Storage::RefDef & refDef, std::ostream & cout)
+{
+  Json::FastWriter writer;
+  Json::Value json = refDef.json();
+
+  const Storage::Reference & ref = refDef.ref;
+  SourceFile sourceFile (ref.file);
+  json["ref"]["substring"] = sourceFile.substring (ref.offset1, ref.offset2);
+
+  cout << writer.write (json);
+}
+
 void displayCursor (LibClang::Cursor cursor, std::ostream & cout)
 {
   const LibClang::SourceLocation location (cursor.location());
@@ -71,7 +83,7 @@ void displayCursor (LibClang::Cursor cursor, std::ostream & cout)
     def.usr = cursorDef.USR();
   }
 
-  displayRefDef (refDef, cout);
+  outputRefDef (refDef, cout);
 }
 
 class FindDefinition : public LibClang::Visitor<FindDefinition>
@@ -112,7 +124,7 @@ void Application::findDefinitionFromIndex_ (FindDefinitionArgs & args, std::ostr
     ? refDef + 1
     : refDefs.end();
   for ( ; refDef != end ; ++refDef ) {
-    displayRefDef (*refDef, cout);
+    outputRefDef (*refDef, cout);
   }
 }
 

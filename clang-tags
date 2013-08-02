@@ -26,8 +26,8 @@ def endsWithOne (string, suffixes):
             return True
     return False
 
-def sendRequest (request):
-    "Send a JSON request to the clang-tags daemon on port 1313."
+def sendRequest (request, processOutput=sys.stdout.write):
+    "Send a JSON request to the clang-tags daemon."
     #TODO: implement this in python rather than calling `socat`
     request = json.dumps (request)
 
@@ -38,8 +38,16 @@ def sendRequest (request):
 
     process = subprocess.Popen (cmd,
                                 stdin  = subprocess.PIPE,
-                                stdout = sys.stdout)
+                                stdout = subprocess.PIPE)
     process.stdin.write (request + "\n\n")
+
+    while 1:
+        # Use readline() to avoid buffering problems
+        line = process.stdout.readline()
+        if line == "":
+            break
+        processOutput (line)
+
     process.wait()
     sys.exit (process.returncode)
 
@@ -197,7 +205,23 @@ def findDefinition (args):
                "file":      fileName,
                "offset":    args.offset,
                "fromIndex": args.fromIndex}
-    sendRequest (request)
+
+    def processOutput (line):
+        try:
+            refDef = json.loads (line)
+            refDef["ref"]["file"] = os.path.relpath (refDef["ref"]["file"])
+            refDef["def"]["file"] = os.path.relpath (refDef["def"]["file"])
+            refDef["def"]["col2"] -= 1
+
+            sys.stdout.write ("-- %(substring)s -- %(kind)s %(spelling)s\n" % refDef["ref"])
+            sys.stdout.write ("   %(file)s:%(line1)d-%(line2)d:%(col1)d-%(col2)d: %(spelling)s\n"
+                              % refDef["def"])
+            sys.stdout.write ("   %(usr)s\n" % refDef["def"])
+            sys.stdout.write ("\n")
+        except:
+            sys.stdout.write (line)
+
+    sendRequest (request, processOutput)
 
 
 def grep (args):
