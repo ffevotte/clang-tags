@@ -229,7 +229,17 @@ def grep (args):
 
     request = {"command": "grep",
                "usr": args.usr}
-    sendRequest (request)
+
+    def processOutput (line):
+        try:
+            ref = json.loads (line)
+            ref["file"] = os.path.relpath (ref["file"])
+
+            sys.stdout.write ("%(file)s:%(line1)s:%(lineContents)s\n" % ref)
+        except:
+            sys.stdout.write (line)
+
+    sendRequest (request, processOutput)
 
 
 def complete (args):

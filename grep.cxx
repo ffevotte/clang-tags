@@ -2,15 +2,15 @@
 #include "sourceFile.hxx"
 
 void Application::grep (const GrepArgs & args, std::ostream & cout) {
-  const auto refs = storage_.grep (args.usr);
+  Json::FastWriter writer;
 
+  const auto refs = storage_.grep (args.usr);
   auto ref = refs.begin ();
   const auto end = refs.end ();
   for ( ; ref != end ; ++ref ) {
+    Json::Value json = ref->json();
     SourceFile file (ref->file);
-    cout << ref->file
-         << ":" << ref->line1
-         << ":" << file.line (ref->line1)
-         << std::endl;
+    json["lineContents"] = file.line (ref->line1);
+    cout << writer.write (json);
   }
 }
