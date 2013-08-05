@@ -9,7 +9,18 @@ class Application {
 public:
   Application (Storage & storage)
     : storage_ (storage)
-  { }
+  {
+    const size_t size = 4096;
+    cwd_ = new char[size];
+    if (getcwd (cwd_, size) == NULL) {
+      // FIXME: correctly handle this case
+     throw std::runtime_error ("Not enough space to store current directory name.");
+    }
+  }
+
+  ~Application () {
+    delete[] cwd_;
+  }
 
 
   struct CompilationDatabaseArgs {
@@ -56,12 +67,16 @@ private:
   void findDefinitionFromSource_ (FindDefinitionArgs & args, std::ostream & cout);
 
   LibClang::TranslationUnit & translationUnit_ (std::string fileName) {
+    std::string directory;
+    std::vector<std::string> clArgs;
+    storage_.getCompileCommand (fileName, directory, clArgs);
+
+    // chdir() to the correct directory
+    // (whether we need to parse the TU for the first time or reparse it)
+    chdir (directory.c_str());
+
     auto it = tu_.find (fileName);
     if (it == tu_.end()) {
-      std::string directory;
-      std::vector<std::string> clArgs;
-      storage_.getCompileCommand (fileName, directory, clArgs);
-
       LibClang::TranslationUnit tu = index_.parse (clArgs);
       return tu_.insert (std::make_pair (fileName, tu)).first->second;
     } else {
@@ -73,4 +88,5 @@ private:
   Storage & storage_;
   LibClang::Index index_;
   std::map<std::string, LibClang::TranslationUnit> tu_;
+  char* cwd_;
 };

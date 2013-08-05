@@ -15,7 +15,7 @@ public:
 
     using Request::key;
     add (key ("database", args_.fileName)
-         ->metavar ("FILENAME")
+         ->metavar ("FILEPATH")
          ->description ("Load compilation commands from a JSON compilation database"));
   }
 

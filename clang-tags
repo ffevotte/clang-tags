@@ -138,7 +138,7 @@ def trace (args):
     compilationDb = []
     for sourceFile in sourceFiles:
         (directory, command) = sourceFiles[sourceFile]
-        compilationDb.append ({"file": sourceFile,
+        compilationDb.append ({"file": os.path.realpath(sourceFile),
                                "directory": directory,
                                "command": subprocess.list2cmdline(command)})
     f = open ("compile_commands.json", "w")
@@ -174,7 +174,8 @@ def scan (args):
 def load (args):
     "Entry point for reading a compilation database."
 
-    request = {"command": "load"}
+    request = {"command": "load",
+               "database": args.compilationDB}
     sendRequest (request)
 
 
@@ -329,6 +330,11 @@ def main_argparse ():
         "load", help = "load a compilation database",
         description = "Read the compilation commands needed to build the"
         " project from a compilation database.")
+    parserLoad.add_argument ("compilationDB",
+                             metavar = "FILEPATH",
+                             help = "path to the compilation database",
+                             nargs = "?",
+                             default = "compile_commands.json")
     parserLoad.set_defaults (fun = load)
 
 

@@ -4,6 +4,10 @@
 
 void Application::compilationDatabase (CompilationDatabaseArgs & args,
                                        std::ostream & cout) {
+  // Change back to the original WD (in case `index` or `update` would have
+  // changed it)
+  chdir (cwd_);
+
   Json::Value root;
   Json::Reader reader;
 
