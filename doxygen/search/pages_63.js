@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['clang_2dtags_20developer_20documentation',['clang-tags developer documentation',['../index.html',1,'']]]
+  ['clang_2dtags',['clang-tags',['../md_README.html',1,'']]]
 ];

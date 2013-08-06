@@ -37,6 +37,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
       <li><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
@@ -65,7 +66,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -97,43 +98,10 @@ Classes</h2></td></tr>
 <a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>Wrapper around the SQLite C API. </p>
 <p>Here is a brief example: </p>
-<div class="fragment"><div class="line">  <span class="keyword">using namespace </span>Sqlite;</div>
-<div class="line"></div>
-<div class="line"></div>
-<div class="line">  <span class="comment">// Create a database connection</span></div>
-<div class="line">  <a class="code" href="classSqlite_1_1Database.html" title="Connection to an SQLite database.">Database</a> database (<span class="stringliteral">&quot;/tmp/db.sqlite&quot;</span>);</div>
-<div class="line"></div>
-<div class="line"></div>
-<div class="line">  <span class="comment">// Execute an SQL statement</span></div>
-<div class="line">  database.execute (<span class="stringliteral">&quot;CREATE TABLE IF NOT EXISTS foo (&quot;</span></div>
-<div class="line">                    <span class="stringliteral">&quot;  id    INTEGER PRIMARY KEY,&quot;</span></div>
-<div class="line">                    <span class="stringliteral">&quot;  name  TEXT&quot;</span></div>
-<div class="line">                    <span class="stringliteral">&quot;)&quot;</span>);</div>
-<div class="line"></div>
-<div class="line"></div>
-<div class="line">  <span class="comment">// Prepare an SQL statement with a placeholder, ...</span></div>
-<div class="line">  database.prepare (<span class="stringliteral">&quot;INSERT INTO foo VALUES (NULL, ?)&quot;</span>)</div>
-<div class="line">    .bind (<span class="stringliteral">&quot;bar&quot;</span>)  <span class="comment">// bind it to a value, ...</span></div>
-<div class="line">    .step ();      <span class="comment">// execute it</span></div>
-<div class="line"></div>
-<div class="line"></div>
-<div class="line">  <span class="comment">// Prepare an SQL statement</span></div>
-<div class="line">  <a class="code" href="classSqlite_1_1Statement.html" title="Prepared SQL statement.">Statement</a> statement = database.prepare (<span class="stringliteral">&quot;SELECT id, name FROM foo&quot;</span>);</div>
-<div class="line"></div>
-<div class="line">  <span class="comment">// Fetch all returned rows</span></div>
-<div class="line">  <span class="keywordflow">while</span> (statement.step() == SQLITE_ROW) {</div>
-<div class="line">    <span class="comment">// Fetch column values from the row, ...</span></div>
-<div class="line">    <span class="keywordtype">int</span> id;</div>
-<div class="line">    std::string name;</div>
-<div class="line">    statement &gt;&gt; <span class="keywordtype">id</span> &gt;&gt; name;</div>
-<div class="line"></div>
-<div class="line">    <span class="comment">// and display them</span></div>
-<div class="line">    std::cerr &lt;&lt; <span class="keywordtype">id</span> &lt;&lt; <span class="stringliteral">&quot;: &quot;</span> &lt;&lt; name &lt;&lt; std::endl;</div>
-<div class="line">  }</div>
-</div><!-- fragment --></div><!-- contents -->
+<div class="fragment"></div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 27 2013 23:22:50 for clang-tags by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 6 2013 23:30:55 for clang-tags by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

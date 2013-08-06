@@ -357,8 +357,8 @@ string "a".
 disambiguate uses of the same spelling in different scopes. In order to uniquely identify a
 symbol across all translation units in a project, clang defines Unified Symbol
 Resolutions. For example the USR of the <code>display</code> symbol referred to on line <a href="#coderef-display2"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display2');" onmouseout="CodeHighlightOff(this, 'coderef-display2');">30</a> is
-<code>c:@S@MyClass&gt;#d@F@display#</code> whereas line <a href="#coderef-display3"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display3');" onmouseout="CodeHighlightOff(this, 'coderef-display3');">33</a> refers to the symbol with USR
-<code>c:@S@MyClass&gt;#I@F@display#</code>
+<code>c:MyClass&gt;#ddisplay#</code> whereas line <a href="#coderef-display3"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-display3');" onmouseout="CodeHighlightOff(this, 'coderef-display3');">33</a> refers to the symbol with USR
+<code>c:MyClass&gt;#Idisplay#</code>
 </dd>
 </dl>
 </div>
@@ -399,7 +399,15 @@ thus as simple as:
 <div class="outline-text-4" id="text-2-1-2">
 <div class="org-src-container">
 
-<pre class="src src-sh">clang-tags trace -- BUILD COMMAND
+<pre class="src src-fundamental">usage: clang-tags trace [-h] ...
+
+Create a compilation database by tracing a build command.
+
+positional arguments:
+  COMMAND     build command line
+
+optional arguments:
+  -h, --help  show this help message and exit
 </pre>
 </div>
 
@@ -423,8 +431,15 @@ Example usage:
 </p>
 <div class="org-src-container">
 
-<pre class="src src-sh">make clean                 <span style="color: #b22222;"># </span><span style="color: #b22222;">Ensure that the whole project will be rebuilt</span>
-clang-tags trace -- make   <span style="color: #b22222;"># </span><span style="color: #b22222;">Generate the compilation database</span>
+<pre class="src src-sh">make clean
+clang-tags trace make
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-fundamental">rm -f main.o
+g++ -c -o main.o ../src/main.cxx
+g++ -o main main.o
 </pre>
 </div>
 </div>
@@ -435,7 +450,18 @@ clang-tags trace -- make   <span style="color: #b22222;"># </span><span style="c
 <div class="outline-text-4" id="text-2-1-3">
 <div class="org-src-container">
 
-<pre class="src src-sh">clang-tags scan SRC_DIR -- CLANG ARGS
+<pre class="src src-fundamental">usage: clang-tags scan [-h] [--compiler COMPILER] srcdir ...
+
+Create a compilation database by scanning a source directory
+
+positional arguments:
+  srcdir                top sources directory
+  CLANG_ARGS            additional clang command-line arguments
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --compiler COMPILER, -c COMPILER
+                        compiler name (default: gcc)
 </pre>
 </div>
 
@@ -465,30 +491,63 @@ Example usage:
 <div class="outline-text-4" id="text-2-2-1">
 <div class="org-src-container">
 
-<pre class="src src-sh">clang-tags index [--emacs-conf SRC_DIR]
+<pre class="src src-fundamental">usage: clang-tags index [-h] [--exclude DIR] [--exclude-clear]
+
+Create an index of all tags in the source code base. Source files and compilation commands
+are taken from a clang <span style="color: #8b2252;">"compilation database"</span> in JSON format, previously read using the
+<span style="color: #8b2252;">"load"</span> subcommand.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --exclude DIR, -e DIR
+                        do not index files under DIR
+  --exclude-clear, -E   reset exclude list
 </pre>
 </div>
 
 <p>
-This command uses the compilation database to index all source files. An
-optional argument <code>--emacs-conf</code> allows generating a suitable <code>.dir-local.el</code>
-emacs configuration file in the sources directory.
+This command uses the compilation database to index all source files.
 </p>
+<p>
+Example usage:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-sh">clang-tags index
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-fundamental">Server response:
+
+-- Indexing project
+/home/francois/projets/git/clang-tags/build/tests/src/main.cxx:
+  parsing...    0.163754s.
+  indexing...
+    /home/francois/projets/git/clang-tags/build/tests/src/config.h
+  indexing...   0.024179s.
+0.311464s.
+</pre>
 </div>
 </div>
+</div>
+
 <div id="outline-container-sec-2-2-2" class="outline-4">
 <h4 id="sec-2-2-2"><span class="section-number-4">2.2.2</span> Updating the index</h4>
 <div class="outline-text-4" id="text-2-2-2">
 <div class="org-src-container">
 
-<pre class="src src-sh">clang-tags update [--all]
+<pre class="src src-fundamental">usage: clang-tags update [-h]
+
+Update the source code base index, using the same arguments as previous call to `index'
+
+optional arguments:
+  -h, --help  show this help message and exit
 </pre>
 </div>
 
 <p>
-This command updates the index. With the optional <code>--all</code> switch, the
-compilation database is also rebuilt using the same sub-command <code>trace</code> or
-<code>build</code> as previously.
+This command updates the index.
 </p>
 </div>
 </div>
@@ -499,14 +558,89 @@ compilation database is also rebuilt using the same sub-command <code>trace</cod
 <div class="outline-text-3" id="text-2-3">
 </div><div id="outline-container-sec-2-3-1" class="outline-4">
 <h4 id="sec-2-3-1"><span class="section-number-4">2.3.1</span> Finding the definition of a symbol</h4>
+<div class="outline-text-4" id="text-2-3-1">
+<div class="org-src-container">
+
+<pre class="src src-fundamental">usage: clang-tags find-def [-h] [--index] [--recompile] FILE_NAME OFFSET
+
+Find the definition location of an identifier in a source file.
+
+positional arguments:
+  FILE_NAME        source file name
+  OFFSET           offset in bytes
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --index, -i      look for the definition in the index
+  --recompile, -r  recompile the file to find the definition
+</pre>
+</div>
+
+<p>
+Example usage:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-sh">clang-tags find-def -i ../src/main.cxx 942
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-ct/find-def-rw">Server response:
+-- display -- MemberRefExpr display
+   <span style="color: #ffa500; font-weight: bold; text-decoration: underline;">../src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">21</span><span style="text-decoration: underline;">-</span><span style="color: #a0522d; text-decoration: underline;">23</span><span style="text-decoration: underline;">:</span><span style="color: #228b22; text-decoration: underline;">8</span><span style="text-decoration: underline;">-</span><span style="color: #228b22; text-decoration: underline;">3</span>: display
+   c:@S@MyClass&gt;#I@F@display#
+
+-- b.display() -- CallExpr display
+   <span style="color: #ffa500; font-weight: bold; text-decoration: underline;">../src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">21</span><span style="text-decoration: underline;">-</span><span style="color: #a0522d; text-decoration: underline;">23</span><span style="text-decoration: underline;">:</span><span style="color: #228b22; text-decoration: underline;">8</span><span style="text-decoration: underline;">-</span><span style="color: #228b22; text-decoration: underline;">3</span>: display
+   c:@S@MyClass&gt;#I@F@display#
+
+-- main () { int display = 3; //(ref:displ... -- FunctionDecl main
+   <span style="color: #ffa500; font-weight: bold; text-decoration: underline;">../src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">26</span><span style="text-decoration: underline;">-</span><span style="color: #a0522d; text-decoration: underline;">34</span><span style="text-decoration: underline;">:</span><span style="color: #228b22; text-decoration: underline;">5</span><span style="text-decoration: underline;">-</span><span style="color: #228b22; text-decoration: underline;">1</span>: main
+   c:@F@main
+</pre>
+</div>
+</div>
 </div>
 
 <div id="outline-container-sec-2-3-2" class="outline-4">
 <h4 id="sec-2-3-2"><span class="section-number-4">2.3.2</span> Looking for all references to a symbol</h4>
-</div>
-</div>
+<div class="outline-text-4" id="text-2-3-2">
+<div class="org-src-container">
+
+<pre class="src src-fundamental">usage: clang-tags grep [-h] USR
+
+Find all uses of a definition, identified by its USR (Unified Symbol Resolution). Outputs
+results in a grep-like format.
+
+positional arguments:
+  USR         USR for the definition
+
+optional arguments:
+  -h, --help  show this help message and exit
+</pre>
 </div>
 
+<p>
+Example usage:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-sh">clang-tags grep <span style="color: #8b2252;">'c:@S@MyClass&gt;#I@F@display#'</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-grep-rw">Server response:
+<span id="coderef-defDisplayInt" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">../src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">21</span><span style="text-decoration: underline;">:</span>  void display () {                                      // (defDisplayInt)</span>
+<span id="coderef-display3" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">../src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>  b.display();                                           // (display3)</span>
+<span id="coderef-display3" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">../src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>  b.display();                                           // (display3)</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
 
 <div id="outline-container-sec-3" class="outline-2">
 <h2 id="sec-3"><span class="section-number-2">3</span> Emacs user interface</h2>

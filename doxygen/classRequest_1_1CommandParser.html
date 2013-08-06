@@ -37,6 +37,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
@@ -72,7 +73,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -147,46 +148,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Parser</b></td></tr>
 <div class="textblock"><p>Base class for command parsers. </p>
 <p>Parses the keys associated to a command, and run it.</p>
 <p>Custom commands should be implemented through user-defined functors deriving from <a class="el" href="classRequest_1_1CommandParser.html" title="Base class for command parsers.">CommandParser</a>.</p>
-<div class="fragment"><div class="line"><span class="keyword">using</span> <a class="code" href="classRequest_1_1CommandParser.html#a679141558f2f02b5c824b6fe6f723681" title="Constructor.">Request::CommandParser</a>;</div>
-<div class="line"><span class="keyword">using</span> <a class="code" href="group__request.html#ga001fd07bdeb110dfb4fcf60961a84e30" title="Helper function to create key parsers.">Request::key</a>;</div>
-<div class="line"></div>
-<div class="line"><span class="keyword">class </span><a class="code" href="classRepeat.html" title="Example custom command parser.">Repeat</a> : <span class="keyword">public</span> <a class="code" href="classRequest_1_1CommandParser.html#a679141558f2f02b5c824b6fe6f723681" title="Constructor.">CommandParser</a> {</div>
-<div class="line"><span class="keyword">public</span>:</div>
-<div class="line">  <a class="code" href="classRepeat.html" title="Example custom command parser.">Repeat</a> (std::string <a class="code" href="classRequest_1_1CommandParser.html#a8372882a4042764c1dc90e3c6a89507d" title="Get the command name.">name</a>)</div>
-<div class="line">    : <a class="code" href="classRequest_1_1CommandParser.html#a679141558f2f02b5c824b6fe6f723681" title="Constructor.">CommandParser</a> (name, <span class="stringliteral">&quot;repeat provided input&quot;</span>)</div>
-<div class="line">  {</div>
-<div class="line">    <span class="comment">// The constructor should set default values before keys are defined</span></div>
-<div class="line">    <a class="code" href="classRequest_1_1CommandParser.html#a55afbfc97becec867022bfe0ff8a4a59" title="Set default values for keys.">defaults</a> ();</div>
-<div class="line"></div>
-<div class="line">    <a class="code" href="classRequest_1_1CommandParser.html#aeda30b0ed680acdd05e0b2534ff23221" title="Add a key parser to the list of parameters.">add</a> (<a class="code" href="group__request.html#ga001fd07bdeb110dfb4fcf60961a84e30" title="Helper function to create key parsers.">key</a> (<span class="stringliteral">&quot;times&quot;</span>, times_)</div>
-<div class="line">         -&gt;metavar (<span class="stringliteral">&quot;N&quot;</span>)</div>
-<div class="line">         -&gt;description (<span class="stringliteral">&quot;number of times to repeat&quot;</span>));</div>
-<div class="line"></div>
-<div class="line">    <a class="code" href="classRequest_1_1CommandParser.html#aeda30b0ed680acdd05e0b2534ff23221" title="Add a key parser to the list of parameters.">add</a> (<a class="code" href="group__request.html#ga001fd07bdeb110dfb4fcf60961a84e30" title="Helper function to create key parsers.">key</a> (<span class="stringliteral">&quot;input&quot;</span>, input_)</div>
-<div class="line">         -&gt;metavar (<span class="stringliteral">&quot;STRING&quot;</span>)</div>
-<div class="line">         -&gt;description (<span class="stringliteral">&quot;message to repeat&quot;</span>)</div>
-<div class="line">         -&gt;required());</div>
-<div class="line">  }</div>
-<div class="line"></div>
-<div class="line">  <span class="keywordtype">void</span> <a class="code" href="classRequest_1_1CommandParser.html#a55afbfc97becec867022bfe0ff8a4a59" title="Set default values for keys.">defaults</a> () {</div>
-<div class="line">    <span class="comment">// Set default values</span></div>
-<div class="line">    times_ = 2;</div>
-<div class="line">  }</div>
-<div class="line"></div>
-<div class="line">  <span class="keywordtype">void</span> <a class="code" href="classRequest_1_1CommandParser.html#a5426c96b22270aa8cf07bd2a574931d6" title="Run the command.">run</a> (std::ostream &amp; cout) {</div>
-<div class="line">    <span class="comment">// do something with key values</span></div>
-<div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0 ; i&lt;times_ ; ++i) {</div>
-<div class="line">      cout &lt;&lt; input_ &lt;&lt; std::endl;</div>
-<div class="line">    }</div>
-<div class="line">  }</div>
-<div class="line"></div>
-<div class="line"><span class="keyword">private</span>:</div>
-<div class="line">  <span class="comment">// Variables where key values will be stored</span></div>
-<div class="line">  <span class="keywordtype">int</span>         times_;</div>
-<div class="line">  std::string input_;</div>
-<div class="line">};</div>
-</div><!-- fragment --><dl><dt><b>Examples: </b></dt><dd><a class="el" href="test_request_8cxx-example.html#_a0">test_request.cxx</a>.</dd>
-</dl></div><h2>Constructor &amp; Destructor Documentation</h2>
+<div class="fragment"></div><!-- fragment --></div><h2>Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a679141558f2f02b5c824b6fe6f723681"></a>
 <div class="memitem">
 <div class="memproto">
@@ -227,8 +189,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Parser</b></td></tr>
   </table>
   </dd>
 </dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="test_request_8cxx-example.html#a3">test_request.cxx</a>.</dd>
-</dl>
+
 </div>
 </div>
 <h2>Member Function Documentation</h2>
@@ -262,8 +223,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Parser</b></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the command parser itself </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="test_request_8cxx-example.html#a7">test_request.cxx</a>.</dd>
-</dl>
+
 </div>
 </div>
 <a class="anchor" id="a55afbfc97becec867022bfe0ff8a4a59"></a>
@@ -317,8 +277,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Parser</b></td></tr>
 
 <p>Get the command name. </p>
 <dl class="section return"><dt>Returns</dt><dd>the command name, as a string </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="test_request_8cxx-example.html#a5">test_request.cxx</a>.</dd>
-</dl>
+
 </div>
 </div>
 <a class="anchor" id="ad3925a0077f9d30de61d6bfc4cb43a37"></a>
@@ -486,12 +445,12 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Parser</b></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>request/<a class="el" href="request_8hxx_source.html">request.hxx</a></li>
+<li>/home/francois/projets/git/clang-tags/src/request/<a class="el" href="request_8hxx_source.html">request.hxx</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 27 2013 23:22:51 for clang-tags by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 6 2013 23:30:56 for clang-tags by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

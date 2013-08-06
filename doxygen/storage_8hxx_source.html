@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
-<title>clang-tags: storage.hxx Source File</title>
+<title>clang-tags: /home/francois/projets/git/clang-tags/src/storage.hxx Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -37,6 +37,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
       <li><a href="annotated.html"><span>Classes</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
@@ -64,13 +65,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="files.html"><span>File&#160;List</span></a></li>
     </ul>
   </div>
-</div><!-- top -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -79,6 +79,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li>  </ul>
+</div>
+</div><!-- top -->
 <div class="header">
   <div class="headertitle">
 <div class="title">storage.hxx</div>  </div>
@@ -311,176 +316,210 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    <span class="keywordtype">int</span> offset2;</div>
 <div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;    std::string kind;</div>
 <div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    std::string spelling;</div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;  };</div>
-<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;</div>
-<div class="line"><a name="l00230"></a><span class="lineno"><a class="code" href="structStorage_1_1Definition.html">  230</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structStorage_1_1Definition.html">Definition</a> {</div>
-<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;    std::string usr;</div>
-<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;    std::string file;</div>
-<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;    <span class="keywordtype">int</span> line1;</div>
-<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;    <span class="keywordtype">int</span> line2;</div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;    <span class="keywordtype">int</span> col1;</div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;    <span class="keywordtype">int</span> col2;</div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;    std::string kind;</div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;    std::string spelling;</div>
-<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;  };</div>
-<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;</div>
-<div class="line"><a name="l00241"></a><span class="lineno"><a class="code" href="structStorage_1_1RefDef.html">  241</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structStorage_1_1RefDef.html">RefDef</a> {</div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;    <a class="code" href="structStorage_1_1Reference.html">Reference</a> ref;</div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    <a class="code" href="structStorage_1_1Definition.html">Definition</a> def;</div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;  };</div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;</div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;  std::vector&lt;RefDef&gt; findDefinition (<span class="keyword">const</span> std::string fileName,</div>
-<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;                       <span class="keywordtype">int</span> offset) {</div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    <span class="keywordtype">int</span> fileId = fileId_ (fileName);</div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;    <a class="code" href="classSqlite_1_1Statement.html" title="Prepared SQL statement.">Sqlite::Statement</a> stmt =</div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;      db_.<a class="code" href="classSqlite_1_1Database.html#ade989e229d28832377c926df9a5ec9c0" title="Prepare execution of SQL statements.">prepare</a> (<span class="stringliteral">&quot;SELECT ref.offset1, ref.offset2, ref.kind, ref.spelling,&quot;</span></div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;                   <span class="stringliteral">&quot;       def.usr, defFile.name,&quot;</span></div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;                   <span class="stringliteral">&quot;       def.line1, def.line2, def.col1, def.col2, &quot;</span></div>
-<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;                   <span class="stringliteral">&quot;       def.kind, def.spelling &quot;</span></div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;                   <span class="stringliteral">&quot;FROM tags AS ref &quot;</span></div>
-<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;                   <span class="stringliteral">&quot;INNER JOIN tags AS def ON def.usr = ref.usr &quot;</span></div>
-<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;                   <span class="stringliteral">&quot;INNER JOIN files AS defFile ON def.fileId = defFile.id &quot;</span></div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;                   <span class="stringliteral">&quot;WHERE def.isDecl = 1 &quot;</span></div>
-<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;                   <span class="stringliteral">&quot;  AND ref.fileId = ?  &quot;</span></div>
-<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;                   <span class="stringliteral">&quot;  AND ref.offset1 &lt;= ? &quot;</span></div>
-<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;                   <span class="stringliteral">&quot;  AND ref.offset2 &gt;= ? &quot;</span></div>
-<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;                   <span class="stringliteral">&quot;ORDER BY (ref.offset2 - ref.offset1)&quot;</span>)</div>
-<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (fileId)</div>
-<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (offset)</div>
-<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (offset);</div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;</div>
-<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    std::vector&lt;RefDef&gt; ret;</div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;    <span class="keywordflow">while</span> (stmt.<a class="code" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc" title="Execute the statement or fetch the next result row.">step</a>() == SQLITE_ROW) {</div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;      <a class="code" href="structStorage_1_1RefDef.html">RefDef</a> refDef;</div>
-<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;      <a class="code" href="structStorage_1_1Reference.html">Reference</a> &amp; ref = refDef.ref;</div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;      <a class="code" href="structStorage_1_1Definition.html">Definition</a> &amp; def = refDef.def;</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;    Json::Value json ()<span class="keyword"> const </span>{</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;      Json::Value json;</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;      json[<span class="stringliteral">&quot;file&quot;</span>]     = file;</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;      json[<span class="stringliteral">&quot;line1&quot;</span>]    = line1;</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;      json[<span class="stringliteral">&quot;line2&quot;</span>]    = line2;</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;      json[<span class="stringliteral">&quot;col1&quot;</span>]     = col1;</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;      json[<span class="stringliteral">&quot;col2&quot;</span>]     = col2;</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;      json[<span class="stringliteral">&quot;offset1&quot;</span>]  = offset1;</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;      json[<span class="stringliteral">&quot;offset2&quot;</span>]  = offset2;</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;      json[<span class="stringliteral">&quot;kind&quot;</span>]     = kind;</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;      json[<span class="stringliteral">&quot;spelling&quot;</span>] = spelling;</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;      <span class="keywordflow">return</span> json;</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;    }</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;  };</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;</div>
+<div class="line"><a name="l00244"></a><span class="lineno"><a class="code" href="structStorage_1_1Definition.html">  244</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structStorage_1_1Definition.html">Definition</a> {</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;    std::string usr;</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;    std::string file;</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;    <span class="keywordtype">int</span> line1;</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    <span class="keywordtype">int</span> line2;</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;    <span class="keywordtype">int</span> col1;</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;    <span class="keywordtype">int</span> col2;</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;    std::string kind;</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;    std::string spelling;</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;    Json::Value json ()<span class="keyword"> const </span>{</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;      Json::Value json;</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;      json[<span class="stringliteral">&quot;usr&quot;</span>]      = usr;</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;      json[<span class="stringliteral">&quot;file&quot;</span>]     = file;</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;      json[<span class="stringliteral">&quot;line1&quot;</span>]    = line1;</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;      json[<span class="stringliteral">&quot;line2&quot;</span>]    = line2;</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;      json[<span class="stringliteral">&quot;col1&quot;</span>]     = col1;</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;      json[<span class="stringliteral">&quot;col2&quot;</span>]     = col2;</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;      json[<span class="stringliteral">&quot;kind&quot;</span>]     = kind;</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;      json[<span class="stringliteral">&quot;spelling&quot;</span>] = spelling;</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;      <span class="keywordflow">return</span> json;</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;    }</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;  };</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;</div>
+<div class="line"><a name="l00268"></a><span class="lineno"><a class="code" href="structStorage_1_1RefDef.html">  268</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structStorage_1_1RefDef.html">RefDef</a> {</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;    <a class="code" href="structStorage_1_1Reference.html">Reference</a> ref;</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;    <a class="code" href="structStorage_1_1Definition.html">Definition</a> def;</div>
 <div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;</div>
-<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;      stmt &gt;&gt; ref.offset1 &gt;&gt; ref.offset2 &gt;&gt; ref.kind &gt;&gt; ref.spelling</div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;           &gt;&gt; def.usr &gt;&gt; def.file</div>
-<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;           &gt;&gt; def.line1 &gt;&gt; def.line2 &gt;&gt; def.col1 &gt;&gt; def.col2</div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;           &gt;&gt; def.kind &gt;&gt; def.spelling;</div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;      ref.file = fileName;</div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;      ret.push_back(refDef);</div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;    }</div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;    <span class="keywordflow">return</span> ret;</div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;  }</div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;</div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;  std::vector&lt;Reference&gt; grep (<span class="keyword">const</span> std::string usr) {</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;    Json::Value json ()<span class="keyword"> const </span>{</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;      Json::Value json;</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;      json[<span class="stringliteral">&quot;ref&quot;</span>] = ref.json();</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;      json[<span class="stringliteral">&quot;def&quot;</span>] = def.json();</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;      <span class="keywordflow">return</span> json;</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;    }</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;  };</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;  std::vector&lt;RefDef&gt; findDefinition (<span class="keyword">const</span> std::string fileName,</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;                       <span class="keywordtype">int</span> offset) {</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;    <span class="keywordtype">int</span> fileId = fileId_ (fileName);</div>
 <div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;    <a class="code" href="classSqlite_1_1Statement.html" title="Prepared SQL statement.">Sqlite::Statement</a> stmt =</div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;      db_.<a class="code" href="classSqlite_1_1Database.html#ade989e229d28832377c926df9a5ec9c0" title="Prepare execution of SQL statements.">prepare</a>(<span class="stringliteral">&quot;SELECT ref.line1, ref.line2, ref.col1, ref.col2, &quot;</span></div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;                  <span class="stringliteral">&quot;       ref.offset1, ref.offset2, refFile.name, ref.kind &quot;</span></div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;                  <span class="stringliteral">&quot;FROM tags AS ref &quot;</span></div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;                  <span class="stringliteral">&quot;INNER JOIN files AS refFile ON ref.fileId = refFile.id &quot;</span></div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;                  <span class="stringliteral">&quot;WHERE ref.usr = ?&quot;</span>)</div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (usr);</div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;</div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;    std::vector&lt;Reference&gt; ret;</div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;    <span class="keywordflow">while</span> (stmt.<a class="code" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc" title="Execute the statement or fetch the next result row.">step</a>() == SQLITE_ROW) {</div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;      Reference ref;</div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;      stmt &gt;&gt; ref.line1 &gt;&gt; ref.line2 &gt;&gt; ref.col1 &gt;&gt; ref.col2</div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;           &gt;&gt; ref.offset1 &gt;&gt; ref.offset2 &gt;&gt; ref.file &gt;&gt; ref.kind;</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;      ret.push_back (ref);</div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;    }</div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;    <span class="keywordflow">return</span> ret;</div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;  }</div>
-<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;</div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;  <span class="keywordtype">void</span> setOption (<span class="keyword">const</span> std::string &amp; name, <span class="keyword">const</span> std::string &amp; value) {</div>
-<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;    db_.<a class="code" href="classSqlite_1_1Database.html#ade989e229d28832377c926df9a5ec9c0" title="Prepare execution of SQL statements.">prepare</a> (<span class="stringliteral">&quot;DELETE FROM options &quot;</span></div>
-<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;                 <span class="stringliteral">&quot;WHERE name = ?&quot;</span>)</div>
-<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (name)</div>
-<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc" title="Execute the statement or fetch the next result row.">step</a>();</div>
-<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;</div>
-<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;    db_.<a class="code" href="classSqlite_1_1Database.html#ade989e229d28832377c926df9a5ec9c0" title="Prepare execution of SQL statements.">prepare</a> (<span class="stringliteral">&quot;INSERT INTO options &quot;</span></div>
-<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;                 <span class="stringliteral">&quot;VALUES (?, ?)&quot;</span>)</div>
-<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (name)</div>
-<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (value)</div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc" title="Execute the statement or fetch the next result row.">step</a>();</div>
-<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;  }</div>
-<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;</div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;  <span class="keywordtype">void</span> setOption (<span class="keyword">const</span> std::string &amp; name, <span class="keyword">const</span> std::vector&lt;std::string&gt; &amp; value) {</div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;    setOption (name, serialize_(value));</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;  }</div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;</div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;</div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;  std::string getOption (<span class="keyword">const</span> std::string &amp; name) {</div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;    <a class="code" href="classSqlite_1_1Statement.html" title="Prepared SQL statement.">Sqlite::Statement</a> stmt =</div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;      db_.<a class="code" href="classSqlite_1_1Database.html#ade989e229d28832377c926df9a5ec9c0" title="Prepare execution of SQL statements.">prepare</a> (<span class="stringliteral">&quot;SELECT value FROM options &quot;</span></div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;                   <span class="stringliteral">&quot;WHERE name = ?&quot;</span>)</div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (name);</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;      db_.<a class="code" href="classSqlite_1_1Database.html#ade989e229d28832377c926df9a5ec9c0" title="Prepare execution of SQL statements.">prepare</a> (<span class="stringliteral">&quot;SELECT ref.offset1, ref.offset2, ref.kind, ref.spelling,&quot;</span></div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;                   <span class="stringliteral">&quot;       def.usr, defFile.name,&quot;</span></div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;                   <span class="stringliteral">&quot;       def.line1, def.line2, def.col1, def.col2, &quot;</span></div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;                   <span class="stringliteral">&quot;       def.kind, def.spelling &quot;</span></div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;                   <span class="stringliteral">&quot;FROM tags AS ref &quot;</span></div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;                   <span class="stringliteral">&quot;INNER JOIN tags AS def ON def.usr = ref.usr &quot;</span></div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;                   <span class="stringliteral">&quot;INNER JOIN files AS defFile ON def.fileId = defFile.id &quot;</span></div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;                   <span class="stringliteral">&quot;WHERE def.isDecl = 1 &quot;</span></div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;                   <span class="stringliteral">&quot;  AND ref.fileId = ?  &quot;</span></div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;                   <span class="stringliteral">&quot;  AND ref.offset1 &lt;= ? &quot;</span></div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;                   <span class="stringliteral">&quot;  AND ref.offset2 &gt;= ? &quot;</span></div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;                   <span class="stringliteral">&quot;ORDER BY (ref.offset2 - ref.offset1)&quot;</span>)</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (fileId)</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (offset)</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (offset);</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;    std::vector&lt;RefDef&gt; ret;</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;    <span class="keywordflow">while</span> (stmt.<a class="code" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc" title="Execute the statement or fetch the next result row.">step</a>() == SQLITE_ROW) {</div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;      <a class="code" href="structStorage_1_1RefDef.html">RefDef</a> refDef;</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;      <a class="code" href="structStorage_1_1Reference.html">Reference</a> &amp; ref = refDef.ref;</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;      <a class="code" href="structStorage_1_1Definition.html">Definition</a> &amp; def = refDef.def;</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;      stmt &gt;&gt; ref.offset1 &gt;&gt; ref.offset2 &gt;&gt; ref.kind &gt;&gt; ref.spelling</div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;           &gt;&gt; def.usr &gt;&gt; def.file</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;           &gt;&gt; def.line1 &gt;&gt; def.line2 &gt;&gt; def.col1 &gt;&gt; def.col2</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;           &gt;&gt; def.kind &gt;&gt; def.spelling;</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;      ref.file = fileName;</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;      ret.push_back(refDef);</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;    }</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;    <span class="keywordflow">return</span> ret;</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;  }</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;  std::vector&lt;Reference&gt; grep (<span class="keyword">const</span> std::string usr) {</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;    <a class="code" href="classSqlite_1_1Statement.html" title="Prepared SQL statement.">Sqlite::Statement</a> stmt =</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;      db_.<a class="code" href="classSqlite_1_1Database.html#ade989e229d28832377c926df9a5ec9c0" title="Prepare execution of SQL statements.">prepare</a>(<span class="stringliteral">&quot;SELECT ref.line1, ref.line2, ref.col1, ref.col2, &quot;</span></div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;                  <span class="stringliteral">&quot;       ref.offset1, ref.offset2, refFile.name, ref.kind &quot;</span></div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;                  <span class="stringliteral">&quot;FROM tags AS ref &quot;</span></div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;                  <span class="stringliteral">&quot;INNER JOIN files AS refFile ON ref.fileId = refFile.id &quot;</span></div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;                  <span class="stringliteral">&quot;WHERE ref.usr = ?&quot;</span>)</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (usr);</div>
 <div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;</div>
-<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;    std::string ret;</div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;    <span class="keywordflow">if</span> (stmt.<a class="code" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc" title="Execute the statement or fetch the next result row.">step</a>() == SQLITE_ROW) {</div>
-<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;      stmt &gt;&gt; ret;</div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;      <span class="keywordflow">throw</span> std::runtime_error (<span class="stringliteral">&quot;No stored value for option: `&quot;</span> + name + <span class="stringliteral">&quot;&#39;&quot;</span>);</div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;    }</div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;    std::vector&lt;Reference&gt; ret;</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;    <span class="keywordflow">while</span> (stmt.<a class="code" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc" title="Execute the statement or fetch the next result row.">step</a>() == SQLITE_ROW) {</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;      Reference ref;</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;      stmt &gt;&gt; ref.line1 &gt;&gt; ref.line2 &gt;&gt; ref.col1 &gt;&gt; ref.col2</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;           &gt;&gt; ref.offset1 &gt;&gt; ref.offset2 &gt;&gt; ref.file &gt;&gt; ref.kind;</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;      ret.push_back (ref);</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;    }</div>
 <div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;    <span class="keywordflow">return</span> ret;</div>
 <div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;  }</div>
 <div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;</div>
-<div class="line"><a name="l00335"></a><span class="lineno"><a class="code" href="structStorage_1_1Vector.html">  335</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structStorage_1_1Vector.html">Vector</a> {};</div>
-<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;  std::vector&lt;std::string&gt; getOption (<span class="keyword">const</span> std::string &amp; name, <span class="keyword">const</span> <a class="code" href="structStorage_1_1Vector.html">Vector</a> &amp; v) {</div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;    std::vector&lt;std::string&gt; ret;</div>
-<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;    deserialize_ (getOption (name), ret);</div>
-<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;    <span class="keywordflow">return</span> ret;</div>
-<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;  }</div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;</div>
-<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;  <span class="keywordtype">int</span> fileId_ (<span class="keyword">const</span> std::string &amp; fileName) {</div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;    <a class="code" href="classSqlite_1_1Statement.html" title="Prepared SQL statement.">Sqlite::Statement</a> stmt</div>
-<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;      = db_.<a class="code" href="classSqlite_1_1Database.html#ade989e229d28832377c926df9a5ec9c0" title="Prepare execution of SQL statements.">prepare</a> (<span class="stringliteral">&quot;SELECT id FROM files WHERE name=?&quot;</span>)</div>
-<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (fileName);</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;  <span class="keywordtype">void</span> setOption (<span class="keyword">const</span> std::string &amp; name, <span class="keyword">const</span> std::string &amp; value) {</div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;    db_.<a class="code" href="classSqlite_1_1Database.html#ade989e229d28832377c926df9a5ec9c0" title="Prepare execution of SQL statements.">prepare</a> (<span class="stringliteral">&quot;DELETE FROM options &quot;</span></div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;                 <span class="stringliteral">&quot;WHERE name = ?&quot;</span>)</div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (name)</div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc" title="Execute the statement or fetch the next result row.">step</a>();</div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;    db_.<a class="code" href="classSqlite_1_1Database.html#ade989e229d28832377c926df9a5ec9c0" title="Prepare execution of SQL statements.">prepare</a> (<span class="stringliteral">&quot;INSERT INTO options &quot;</span></div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;                 <span class="stringliteral">&quot;VALUES (?, ?)&quot;</span>)</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (name)</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (value)</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc" title="Execute the statement or fetch the next result row.">step</a>();</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;  }</div>
 <div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;</div>
-<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;    <span class="keywordtype">int</span> <span class="keywordtype">id</span> = -1;</div>
-<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;    <span class="keywordflow">if</span> (stmt.<a class="code" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc" title="Execute the statement or fetch the next result row.">step</a>() == SQLITE_ROW) {</div>
-<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;      stmt &gt;&gt; id;</div>
-<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;    }</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;  <span class="keywordtype">void</span> setOption (<span class="keyword">const</span> std::string &amp; name, <span class="keyword">const</span> std::vector&lt;std::string&gt; &amp; value) {</div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;    setOption (name, serialize_(value));</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;  }</div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;</div>
 <div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;</div>
-<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;    <span class="keywordflow">return</span> id;</div>
-<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;  }</div>
-<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;</div>
-<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;  <span class="keywordtype">int</span> addFile_ (<span class="keyword">const</span> std::string &amp; fileName) {</div>
-<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;    <span class="keywordtype">int</span> <span class="keywordtype">id</span> = fileId_ (fileName);</div>
-<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;    <span class="keywordflow">if</span> (<span class="keywordtype">id</span> == -1) {</div>
-<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;      db_.<a class="code" href="classSqlite_1_1Database.html#ade989e229d28832377c926df9a5ec9c0" title="Prepare execution of SQL statements.">prepare</a> (<span class="stringliteral">&quot;INSERT INTO files VALUES (NULL, ?, 0)&quot;</span>)</div>
-<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;        .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (fileName)</div>
-<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;        .<a class="code" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc" title="Execute the statement or fetch the next result row.">step</a>();</div>
-<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;</div>
-<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;      <span class="keywordtype">id</span> = db_.<a class="code" href="classSqlite_1_1Database.html#a43fc68124272e13feaca07d90e12ba20" title="Retrieve the id of the last inserted row.">lastInsertRowId</a>();</div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;  std::string getOption (<span class="keyword">const</span> std::string &amp; name) {</div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;    <a class="code" href="classSqlite_1_1Statement.html" title="Prepared SQL statement.">Sqlite::Statement</a> stmt =</div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;      db_.<a class="code" href="classSqlite_1_1Database.html#ade989e229d28832377c926df9a5ec9c0" title="Prepare execution of SQL statements.">prepare</a> (<span class="stringliteral">&quot;SELECT value FROM options &quot;</span></div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;                   <span class="stringliteral">&quot;WHERE name = ?&quot;</span>)</div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (name);</div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;</div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;    std::string ret;</div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;    <span class="keywordflow">if</span> (stmt.<a class="code" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc" title="Execute the statement or fetch the next result row.">step</a>() == SQLITE_ROW) {</div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;      stmt &gt;&gt; ret;</div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;      <span class="keywordflow">throw</span> std::runtime_error (<span class="stringliteral">&quot;No stored value for option: `&quot;</span> + name + <span class="stringliteral">&quot;&#39;&quot;</span>);</div>
 <div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;    }</div>
-<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;    <span class="keywordflow">return</span> id;</div>
-<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;  }</div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;</div>
-<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;  std::string serialize_ (<span class="keyword">const</span> std::vector&lt;std::string&gt; &amp; v) {</div>
-<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;    Json::Value json;</div>
-<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;    <span class="keyword">auto</span> it = v.begin();</div>
-<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;    <span class="keyword">auto</span> end = v.end();</div>
-<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;    <span class="keywordflow">for</span> ( ; it != end ; ++it) {</div>
-<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;      json.append (*it);</div>
-<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;    }</div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;</div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;    <span class="keywordflow">return</span> ret;</div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;  }</div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;</div>
+<div class="line"><a name="l00369"></a><span class="lineno"><a class="code" href="structStorage_1_1Vector.html">  369</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structStorage_1_1Vector.html">Vector</a> {};</div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;  std::vector&lt;std::string&gt; getOption (<span class="keyword">const</span> std::string &amp; name, <span class="keyword">const</span> <a class="code" href="structStorage_1_1Vector.html">Vector</a> &amp; v) {</div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;    std::vector&lt;std::string&gt; ret;</div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;    deserialize_ (getOption (name), ret);</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;    <span class="keywordflow">return</span> ret;</div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;  }</div>
 <div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;</div>
-<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;    Json::FastWriter writer;</div>
-<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;    <span class="keywordflow">return</span> writer.write (json);</div>
-<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;  }</div>
-<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;</div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;  <span class="keywordtype">void</span> deserialize_ (<span class="keyword">const</span> std::string &amp; s, std::vector&lt;std::string&gt; &amp; v) {</div>
-<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;    Json::Value json;</div>
-<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;    Json::Reader reader;</div>
-<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;    <span class="keywordflow">if</span> (! reader.parse (s, json)) {</div>
-<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;      <span class="keywordflow">throw</span> std::runtime_error (reader.getFormattedErrorMessages());</div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;  <span class="keywordtype">int</span> fileId_ (<span class="keyword">const</span> std::string &amp; fileName) {</div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;    <a class="code" href="classSqlite_1_1Statement.html" title="Prepared SQL statement.">Sqlite::Statement</a> stmt</div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;      = db_.<a class="code" href="classSqlite_1_1Database.html#ade989e229d28832377c926df9a5ec9c0" title="Prepare execution of SQL statements.">prepare</a> (<span class="stringliteral">&quot;SELECT id FROM files WHERE name=?&quot;</span>)</div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;      .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (fileName);</div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;</div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;    <span class="keywordtype">int</span> <span class="keywordtype">id</span> = -1;</div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;    <span class="keywordflow">if</span> (stmt.<a class="code" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc" title="Execute the statement or fetch the next result row.">step</a>() == SQLITE_ROW) {</div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;      stmt &gt;&gt; id;</div>
 <div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;    }</div>
 <div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;</div>
-<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0 ; i&lt;json.size() ; ++i) {</div>
-<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;      v.push_back (json[i].asString());</div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;    }</div>
-<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;  }</div>
-<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;</div>
-<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;  <a class="code" href="classSqlite_1_1Database.html" title="Connection to an SQLite database.">Sqlite::Database</a> db_;</div>
-<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;};</div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;    <span class="keywordflow">return</span> id;</div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;  }</div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;</div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;  <span class="keywordtype">int</span> addFile_ (<span class="keyword">const</span> std::string &amp; fileName) {</div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;    <span class="keywordtype">int</span> <span class="keywordtype">id</span> = fileId_ (fileName);</div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;    <span class="keywordflow">if</span> (<span class="keywordtype">id</span> == -1) {</div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;      db_.<a class="code" href="classSqlite_1_1Database.html#ade989e229d28832377c926df9a5ec9c0" title="Prepare execution of SQL statements.">prepare</a> (<span class="stringliteral">&quot;INSERT INTO files VALUES (NULL, ?, 0)&quot;</span>)</div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;        .<a class="code" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a" title="Bind a placeholder to a value.">bind</a> (fileName)</div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;        .<a class="code" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc" title="Execute the statement or fetch the next result row.">step</a>();</div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;</div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;      <span class="keywordtype">id</span> = db_.<a class="code" href="classSqlite_1_1Database.html#a43fc68124272e13feaca07d90e12ba20" title="Retrieve the id of the last inserted row.">lastInsertRowId</a>();</div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;    }</div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;    <span class="keywordflow">return</span> id;</div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;  }</div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;</div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;  std::string serialize_ (<span class="keyword">const</span> std::vector&lt;std::string&gt; &amp; v) {</div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;    Json::Value json;</div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;    <span class="keyword">auto</span> it = v.begin();</div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;    <span class="keyword">auto</span> end = v.end();</div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;    <span class="keywordflow">for</span> ( ; it != end ; ++it) {</div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;      json.append (*it);</div>
+<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;    }</div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;</div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;    Json::FastWriter writer;</div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;    <span class="keywordflow">return</span> writer.write (json);</div>
+<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;  }</div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;</div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;  <span class="keywordtype">void</span> deserialize_ (<span class="keyword">const</span> std::string &amp; s, std::vector&lt;std::string&gt; &amp; v) {</div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;    Json::Value json;</div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;    Json::Reader reader;</div>
+<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;    <span class="keywordflow">if</span> (! reader.parse (s, json)) {</div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;      <span class="keywordflow">throw</span> std::runtime_error (reader.getFormattedErrorMessages());</div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;    }</div>
+<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;</div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0 ; i&lt;json.size() ; ++i) {</div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;      v.push_back (json[i].asString());</div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;    }</div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;  }</div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;</div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;  <a class="code" href="classSqlite_1_1Database.html" title="Connection to an SQLite database.">Sqlite::Database</a> db_;</div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;};</div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 27 2013 23:22:50 for clang-tags by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 6 2013 23:30:55 for clang-tags by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

@@ -164,7 +164,8 @@ for the JavaScript code in this tag.
 <li><a href="#sec-3-3">3.3. Find symbol references</a></li>
 </ul>
 </li>
-<li><a href="#sec-4">4. Read the user guide</a></li>
+<li><a href="#sec-4">4. Shut the server down</a></li>
+<li><a href="#sec-5">5. Read the user guide</a></li>
 </ul>
 </div>
 </div>
@@ -179,7 +180,7 @@ These steps are necessary to use <code>clang-tags</code>.
 <p>
 If you have't installed `clang-tags` in a standard location in the system,
 you should source the proper environment before running the following
-commands (see the <a href="quickStart.html#ID-9919342a-dc4f-48b9-be0e-8c3f60b89a00">installation guide</a> for more details):
+commands (see the <a href="../../src/doc/install.html#ID-9919342a-dc4f-48b9-be0e-8c3f60b89a00">installation guide</a> for more details):
 </p>
 
 <div class="org-src-container">
@@ -195,8 +196,13 @@ commands (see the <a href="quickStart.html#ID-9919342a-dc4f-48b9-be0e-8c3f60b89a
 <div class="org-src-container">
 
 <pre class="src src-sh"><span style="color: #7a378b;">cd</span> /path/to/build-dir
-rm -f /tmp/clang-tags
-clang-tags-server &gt;.ct.log &amp;
+clang-tags start
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-fundamental">Starting server...
 </pre>
 </div>
 </div>
@@ -259,10 +265,12 @@ be indexed:
 <pre class="src src-fundamental">Server response:
 
 -- Indexing project
-../src/main.cxx:
-  parsing...    0.747997s.
-  indexing...   0.022584
-0.877169s.
+/home/francois/projets/git/clang-tags/build/tests/src/main.cxx:
+  parsing...    0.163754s.
+  indexing...
+    /home/francois/projets/git/clang-tags/build/tests/src/config.h
+  indexing...   0.024179s.
+0.311464s.
 </pre>
 </div>
 
@@ -280,10 +288,12 @@ time by only reparsing new content:
 <pre class="src src-fundamental">Server response:
 
 -- Indexing project
-../src/main.cxx:
-  parsing...    0.747997s.
-  indexing...   0.022584
-0.877169s.
+/home/francois/projets/git/clang-tags/build/tests/src/main.cxx:
+  parsing...    0.163754s.
+  indexing...
+    /home/francois/projets/git/clang-tags/build/tests/src/config.h
+  indexing...   0.024179s.
+0.311464s.
 </pre>
 </div>
 </div>
@@ -316,8 +326,8 @@ Find the definition location of the identifier located in <code>main.cxx</code> 
 
 <pre class="src src-ct/find-def-rw">Server response:
 -- display -- MemberRefExpr display
-   <span style="color: #ffa500; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">15</span><span style="text-decoration: underline;">-</span><span style="color: #a0522d; text-decoration: underline;">17</span><span style="text-decoration: underline;">:</span><span style="color: #228b22; text-decoration: underline;">8</span><span style="text-decoration: underline;">-</span><span style="color: #228b22; text-decoration: underline;">3</span>: CXXMethod display
-   USR: c:@S@MyClass&gt;#d@F@display#
+   <span style="color: #ffa500; font-weight: bold; text-decoration: underline;">../src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">15</span><span style="text-decoration: underline;">-</span><span style="color: #a0522d; text-decoration: underline;">17</span><span style="text-decoration: underline;">:</span><span style="color: #228b22; text-decoration: underline;">8</span><span style="text-decoration: underline;">-</span><span style="color: #228b22; text-decoration: underline;">3</span>: display
+   c:@S@MyClass&gt;#d@F@display#
 </pre>
 </div>
 </div>
@@ -337,9 +347,9 @@ given in the second result of <code>clang-tags find-def</code> above):
 <div class="org-src-container">
 
 <pre class="src src-grep-rw">Server response:
-<span id="coderef-defDisplayInt" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">21</span><span style="text-decoration: underline;">:</span>  void display () {                                      // (defDisplayInt)</span>
-<span id="coderef-display3" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>  b.display();                                           // (display3)</span>
-<span id="coderef-display3" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>  b.display();                                           // (display3)</span>
+<span id="coderef-defDisplayInt" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">../src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">21</span><span style="text-decoration: underline;">:</span>  void display () {                                      // (defDisplayInt)</span>
+<span id="coderef-display3" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">../src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>  b.display();                                           // (display3)</span>
+<span id="coderef-display3" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">../src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>  b.display();                                           // (display3)</span>
 </pre>
 </div>
 </div>
@@ -352,7 +362,7 @@ given in the second result of <code>clang-tags find-def</code> above):
 
 <p>
 If you haven't configured Emacs to use `clang-tags`, you should load the
-correct environment (see the <a href="quickStart.html#ID-9919342a-dc4f-48b9-be0e-8c3f60b89a00">installation guide</a> for more details):
+correct environment (see the <a href="../../src/doc/install.html#ID-9919342a-dc4f-48b9-be0e-8c3f60b89a00">installation guide</a> for more details):
 </p>
 
 <p>
@@ -389,8 +399,8 @@ called <code>*ct/find-def*</code>:
 
 <pre class="src src-ct/find-def-rw">Server response:
 -- display -- MemberRefExpr display
-   <span style="color: #ffa500; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">15</span><span style="text-decoration: underline;">-</span><span style="color: #a0522d; text-decoration: underline;">17</span><span style="text-decoration: underline;">:</span><span style="color: #228b22; text-decoration: underline;">8</span><span style="text-decoration: underline;">-</span><span style="color: #228b22; text-decoration: underline;">3</span>: CXXMethod display
-   USR: c:@S@MyClass&gt;#d@F@display#
+   <span style="color: #ffa500; font-weight: bold; text-decoration: underline;">../src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">15</span><span style="text-decoration: underline;">-</span><span style="color: #a0522d; text-decoration: underline;">17</span><span style="text-decoration: underline;">:</span><span style="color: #228b22; text-decoration: underline;">8</span><span style="text-decoration: underline;">-</span><span style="color: #228b22; text-decoration: underline;">3</span>: display
+   c:@S@MyClass&gt;#d@F@display#
 </pre>
 </div>
 
@@ -417,9 +427,9 @@ be displayed in a dedicated buffer called <code>*ct/grep*</code>, looking like t
 <div class="org-src-container">
 
 <pre class="src src-grep-rw">Server response:
-<span id="coderef-defDisplayInt" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">21</span><span style="text-decoration: underline;">:</span>  void display () {                                      // (defDisplayInt)</span>
-<span id="coderef-display3" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>  b.display();                                           // (display3)</span>
-<span id="coderef-display3" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">/home/francois/projets/git/clang-tags/build/tests/src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>  b.display();                                           // (display3)</span>
+<span id="coderef-defDisplayInt" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">../src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">21</span><span style="text-decoration: underline;">:</span>  void display () {                                      // (defDisplayInt)</span>
+<span id="coderef-display3" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">../src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>  b.display();                                           // (display3)</span>
+<span id="coderef-display3" class="coderef-off"><span style="color: #00cd00; font-weight: bold; text-decoration: underline;">../src/main.cxx</span><span style="text-decoration: underline;">:</span><span style="color: #a0522d; text-decoration: underline;">33</span><span style="text-decoration: underline;">:</span>  b.display();                                           // (display3)</span>
 </pre>
 </div>
 
@@ -436,8 +446,30 @@ refactoring tool to rename a particular symbol.
 </div>
 
 <div id="outline-container-sec-4" class="outline-2">
-<h2 id="sec-4"><span class="section-number-2">4</span> Read the user guide</h2>
+<h2 id="sec-4"><span class="section-number-2">4</span> Shut the server down</h2>
 <div class="outline-text-2" id="text-4">
+<p>
+When you are done with clang-tags, don't forget to shut the server down:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">clang-tags stop
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-fundamental">Server response:
+Exiting...
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Read the user guide</h2>
+<div class="outline-text-2" id="text-5">
 <p>
 Learn more about clang-tags in the <a href="index.html">user manual</a>.
 </p>

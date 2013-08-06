@@ -37,6 +37,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
@@ -72,7 +73,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -120,35 +121,7 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>Request parser. </p>
 <p>Parses a request to identify the command, and run it.</p>
-<div class="fragment"><div class="line">  <span class="keyword">using</span> <a class="code" href="classRequest_1_1Parser.html#ac6b5bf438737a2ce72adcd09f860fefa" title="Constructor.">Request::Parser</a>;</div>
-<div class="line">  std::stringstream requests;</div>
-<div class="line"></div>
-<div class="line"></div>
-<div class="line">  <span class="comment">// Create the command parser</span></div>
-<div class="line">  <a class="code" href="classRequest_1_1Parser.html#ac6b5bf438737a2ce72adcd09f860fefa" title="Constructor.">Parser</a> p (<span class="stringliteral">&quot;Example application&quot;</span>);</div>
-<div class="line">  p .add (<span class="keyword">new</span> <a class="code" href="classRepeat.html" title="Example custom command parser.">Repeat</a> (<span class="stringliteral">&quot;repeat&quot;</span>))</div>
-<div class="line">    .prompt (<span class="stringliteral">&quot;Command&gt; &quot;</span>)</div>
-<div class="line">    .echo ();</div>
-<div class="line"></div>
-<div class="line"></div>
-<div class="line">  <span class="comment">// Print a usage message</span></div>
-<div class="line">  p.help(std::cout);</div>
-<div class="line"></div>
-<div class="line"></div>
-<div class="line">  <span class="comment">// Request detailed help about command &quot;echo&quot;</span></div>
-<div class="line">  requests &lt;&lt; <span class="stringliteral">&quot;help repeat&quot;</span> &lt;&lt; std::endl &lt;&lt; std::endl;</div>
-<div class="line"></div>
-<div class="line"></div>
-<div class="line">  <span class="comment">// Call command &quot;echo&quot;</span></div>
-<div class="line">  requests &lt;&lt; <span class="stringliteral">&quot;repeat&quot;</span> &lt;&lt; std::endl</div>
-<div class="line">           &lt;&lt; <span class="stringliteral">&quot;times 5&quot;</span> &lt;&lt; std::endl</div>
-<div class="line">           &lt;&lt; <span class="stringliteral">&quot;input foo&quot;</span> &lt;&lt; std::endl &lt;&lt; std::endl;</div>
-<div class="line"></div>
-<div class="line"></div>
-<div class="line">  <span class="comment">// Handle requests</span></div>
-<div class="line">  p.parse (requests, std::cout);</div>
-</div><!-- fragment --><dl><dt><b>Examples: </b></dt><dd><a class="el" href="test_request_8cxx-example.html#_a9">test_request.cxx</a>.</dd>
-</dl></div><h2>Constructor &amp; Destructor Documentation</h2>
+<div class="fragment"></div><!-- fragment --></div><h2>Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="ac6b5bf438737a2ce72adcd09f860fefa"></a>
 <div class="memitem">
 <div class="memproto">
@@ -411,12 +384,12 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>request/<a class="el" href="request_8hxx_source.html">request.hxx</a></li>
+<li>/home/francois/projets/git/clang-tags/src/request/<a class="el" href="request_8hxx_source.html">request.hxx</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 27 2013 23:22:51 for clang-tags by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 6 2013 23:30:56 for clang-tags by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

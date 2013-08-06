@@ -37,6 +37,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
@@ -72,7 +73,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -125,8 +126,7 @@ Public Member Functions</h2></td></tr>
 <p>Objects of this type represent prepared SQL statements destined to be executed on an SQLite database.</p>
 <p>Prepared SQL statements can have placeholders (written as question marks <code>'</code>?' in the SQL request) which can be bound to real values (see <a class="el" href="classSqlite_1_1Statement.html#a3243f226b72aac545e3664d920d5f01a">bind</a>) before being executed (see <a class="el" href="classSqlite_1_1Statement.html#a53d61eccfec84a990f95b220575854dc">step</a>).</p>
 <p>Values can be extracted from the query results using <a class="el" href="classSqlite_1_1Statement.html#a1a93c7f153d8234a612882f776d3887d" title="Extract an int value from the current result row.">operator&gt;&gt;()</a>. </p>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="test_sqlite_09_09_8cxx-example.html#_a5">test_sqlite++.cxx</a>.</dd>
-</dl></div><h2>Constructor &amp; Destructor Documentation</h2>
+</div><h2>Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a67d7c9edb91d4f37fa4c023125e1b9e4"></a>
 <div class="memitem">
 <div class="memproto">
@@ -209,8 +209,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the <a class="el" href="classSqlite_1_1Statement.html" title="Prepared SQL statement.">Statement</a> object itself </dd></dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="test_sqlite_09_09_8cxx-example.html#a3">test_sqlite++.cxx</a>.</dd>
-</dl>
+
 </div>
 </div>
 <a class="anchor" id="ae8b0b173189fbb58055b5f1ffe13d6af"></a>
@@ -347,17 +346,16 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl><dt><b>Examples: </b></dt><dd><a class="el" href="test_sqlite_09_09_8cxx-example.html#a4">test_sqlite++.cxx</a>.</dd>
-</dl>
+
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>sqlite++/<a class="el" href="statement_8hxx_source.html">statement.hxx</a></li>
+<li>/home/francois/projets/git/clang-tags/src/sqlite++/<a class="el" href="statement_8hxx_source.html">statement.hxx</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 27 2013 23:22:51 for clang-tags by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 6 2013 23:30:56 for clang-tags by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>
