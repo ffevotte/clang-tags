@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd doc
+emacs -Q -l generate.el

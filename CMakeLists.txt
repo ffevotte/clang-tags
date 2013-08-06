@@ -99,12 +99,27 @@ add_executable (clang-tags-server
 target_link_libraries (clang-tags-server ${LIBS})
 
 
-configure_file (
-  "${PROJECT_SOURCE_DIR}/env.sh.in"
-  "${PROJECT_BINARY_DIR}/env.sh")
-configure_file (
-  "${PROJECT_SOURCE_DIR}/env.el.in"
-  "${PROJECT_BINARY_DIR}/env.el")
+function (ct_template path)
+  configure_file (
+    "${PROJECT_SOURCE_DIR}/${path}"
+    "${PROJECT_BINARY_DIR}/${path}")
+endfunction (ct_template)
+ct_template ("env.sh")
+ct_template ("env.el")
+
+# Generate documentation
+ct_template ("Doxyfile")
+ct_template ("doc/export-org")
+ct_template ("doc/generate.el")
+ct_template ("doc/setup.org")
+ct_template ("doc/index.org")
+ct_template ("doc/quickStart.org")
+ct_template ("doc/install.org")
+add_custom_target (doc-doxygen COMMAND doxygen)
+add_custom_target (doc-org     COMMAND ./doc/export-org)
+add_custom_target (doc DEPENDS doc-doxygen doc-org)
+  
+
 
 install (
   PROGRAMS     clang-tags
@@ -139,6 +154,10 @@ function (ct_add_test name)
 endfunction (ct_add_test)
 
 enable_testing()
+
+ct_add_test (ct-help
+  "ct-help"
+)
 
 ct_add_test (setup
   "rm -rf src build"

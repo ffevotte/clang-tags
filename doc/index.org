@@ -13,7 +13,7 @@ relies on the [[http://clang.llvm.org][clang]] compiler (via the libclang interf
 
   Let us consider the following C++ code:
 
-  #+include: "../tests/src/main.cxx" src c++ -n -r
+  #+include: "@PROJECT_SOURCE_DIR@/tests/src/main.cxx" src c++ -n -r
 
   A few difficulties can be found in this file, making indexing difficult without the help of a
   full-fledged C++ compiler:
@@ -127,9 +127,7 @@ relies on the [[http://clang.llvm.org][clang]] compiler (via the libclang interf
 
 *** Tracing the standard build process
 
-    #+begin_src sh
-      clang-tags trace -- BUILD COMMAND
-    #+end_src
+    #+include: "@PROJECT_BINARY_DIR@/tests/trace-help.out" src fundamental
 
     For non =CMake=-managed projects, there is no "free" way to build the compilation database. One
     way to get the necessary information consists in inspecting the build process as a black box
@@ -143,17 +141,13 @@ relies on the [[http://clang.llvm.org][clang]] compiler (via the libclang interf
     features to inspect the build process.
 
     Example usage:
-    #+begin_src sh
-      make clean                 # Ensure that the whole project will be rebuilt
-      clang-tags trace -- make   # Generate the compilation database
-    #+end_src
+    #+include: "@PROJECT_SOURCE_DIR@/tests/ct-trace" src sh :lines "3-"
+    #+include: "@PROJECT_BINARY_DIR@/tests/ct-trace.out" src fundamental
 
 
 *** Scanning the sources directory
 
-    #+begin_src sh
-      clang-tags scan SRC_DIR -- CLANG ARGS
-    #+end_src
+    #+include: "@PROJECT_BINARY_DIR@/tests/scan-help.out" src fundamental
 
     For relatively simple projects, it can be sufficient to simply scan the top sources directory to
     find all =*.c= or =*.cxx= files, and additionally provide =clang-tags= with a set of command-line
@@ -163,37 +157,54 @@ relies on the [[http://clang.llvm.org][clang]] compiler (via the libclang interf
     #+begin_src sh
       clang-tags scan ../src -- -I.
     #+end_src
+    # #+include: "@PROJECT_SOURCE_DIR@/tests/ct-scan" src sh :lines "3-"
+    # #+include: "@PROJECT_BINARY_DIR@/tests/ct-scan.out" src fundamental
 
 
 ** Indexing the source files
 
 *** Creating the index
 
-    #+begin_src sh
-      clang-tags index [--emacs-conf SRC_DIR]
-    #+end_src
+    #+include: "@PROJECT_BINARY_DIR@/tests/index-help.out" src fundamental
 
-    This command uses the compilation database to index all source files. An
-    optional argument =--emacs-conf= allows generating a suitable =.dir-local.el=
-    emacs configuration file in the sources directory.
+    This command uses the compilation database to index all source files.
+    # An optional argument =--emacs-conf= allows generating a suitable =.dir-local.el=
+    # emacs configuration file in the sources directory.
+
+    Example usage:
+    #+include: "@PROJECT_SOURCE_DIR@/tests/ct-index" src sh :lines "3-"
+    #+include: "@PROJECT_BINARY_DIR@/tests/ct-index.out" src fundamental
+
 
 *** Updating the index
 
-    #+begin_src sh
-      clang-tags update [--all]
-    #+end_src
+    #+include: "@PROJECT_BINARY_DIR@/tests/update-help.out" src fundamental
 
-    This command updates the index. With the optional =--all= switch, the
-    compilation database is also rebuilt using the same sub-command =trace= or
-    =build= as previously.
+    This command updates the index.
+
+    # Example usage:
+    # #+include: "@PROJECT_SOURCE_DIR@/tests/ct-update" src sh :lines "3-"
+    # #+include: "@PROJECT_BINARY_DIR@/tests/ct-update.out" src fundamental
 
 
 ** Looking for symbols
 
 *** Finding the definition of a symbol
 
+    #+include: "@PROJECT_BINARY_DIR@/tests/find-def-help.out" src fundamental
+
+    Example usage:
+    #+include: "@PROJECT_SOURCE_DIR@/tests/ct-find-def-i" src sh :lines "3-"
+    #+include: "@PROJECT_BINARY_DIR@/tests/ct-find-def-i.out" src ct/find-def-rw
+
+
 *** Looking for all references to a symbol
 
+    #+include: "@PROJECT_BINARY_DIR@/tests/grep-help.out" src fundamental
+
+    Example usage:
+    #+include: "@PROJECT_SOURCE_DIR@/tests/ct-grep" src sh :lines "3-"
+    #+include: "@PROJECT_BINARY_DIR@/tests/ct-grep.out" src grep-rw
 
 
 * Emacs user interface
