@@ -420,86 +420,10 @@ def main_argparse ():
     args.fun (args)
 
 
-def main_optparse ():
-    """Main entry point for the application, used for python <2.7 when argparse
-    is not available."""
-
-    parser = optparse.OptionParser(
-        usage = "usage: %prog SUBCOMMAND [options]",
-        description = "Index a source code base using libclang. "
-        "Please consult the full help on: https://github.com/ffevotte/clang-tags.")
-    parser.add_option ("--debug", dest="debug", action = 'store_true',
-                       help = "print debugging information")
-
-    subcommand = sys.argv[1]
-    if subcommand == "trace":
-        (options, args) = parser.parse_args (sys.argv[2:])
-        options.command = args
-        options.fun = trace
-        trace (options)
-
-    elif subcommand == "scan":
-        parser.add_option ("--compiler", "-c", default = "gcc")
-        (options, args) = parser.parse_args (sys.argv[2:])
-        options.srcdir = args[0]
-        options.clangArgs = args[1:]
-        options.fun = scan
-        scan (options)
-
-    elif subcommand == "load":
-        (options, args) = parser.parse_args (sys.argv[2:])
-        options.fun = scan
-        load (options)
-
-    elif subcommand == "index":
-        parser.add_option ("--exclude-clear", "-E", dest="exclude",
-                           action="store_const", const=[])
-        parser.add_option ("--exclude", "-e", action="append")
-        parser.set_defaults (exclude = ["/usr"])
-        (options, args) = parser.parse_args (sys.argv[2:])
-        index (options)
-
-    elif subcommand == "update":
-        (options, args) = parser.parse_args (sys.argv[2:])
-        update (options)
-
-    elif subcommand == "find-def":
-        parser.add_option ("--index", "-i",
-                           dest = "fromIndex",
-                           action = "store_true")
-        parser.add_option ("--recompile", "-r",
-                           dest = "fromIndex",
-                           action = "store_false")
-        parser.set_defaults (fromIndex = True)
-        (options, args) = parser.parse_args (sys.argv[2:])
-        options.fileName = args[0]
-        options.offset = args[1]
-        findDefinition (options)
-
-    elif subcommand == "grep":
-        (options, args) = parser.parse_args (sys.argv[2:])
-        options.usr = args[0]
-        grep (options)
-
-    elif subcommand == "complete":
-        (options, args) = parser.parse_args (sys.argv[2:])
-        options.fileName = args[0]
-        options.line = args[1]
-        options.column = args[2]
-        complete (options)
-
-    elif subcommand == "exit":
-        (options, args) = parser.parse_args (sys.argv[2:])
-        shutdown (options)
-
-    else:
-        sys.stderr.write ("unknown subcommand: %s\n" % subcommand)
-        parser.print_help()
 
 if __name__ == "__main__":
     try:
         import argparse
-        main_argparse ()
     except ImportError:
-        import optparse
-        main_optparse ()
+        import arg2opt as argparse
+    main_argparse ()

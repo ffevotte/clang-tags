@@ -114,9 +114,10 @@ install (
   DESTINATION  bin)
 install (
   FILES        clang-tags.el
-  DESTINATION  share/emacs/site-lisp/
-)
-
+  DESTINATION  share/emacs/site-lisp/)
+install (
+  FILES        arg2opt.py
+  DESTINATION  share/pyshared/)
 
 function (ct_add_test name)
   set (CMD ":")
