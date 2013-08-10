@@ -163,13 +163,25 @@ relies on the [[http://clang.llvm.org][clang]] compiler (via the libclang interf
 
 ** Indexing the source files
 
+*** Loading the compilation commands
+
+    #+include: "@PROJECT_BINARY_DIR@/tests/load-help.out" src fundamental
+
+    This command loads a previously created compilation database into the server.
+
+    An optional argument =--emacs-conf= allows generating a suitable =.dir-local.el=
+    emacs configuration file in the sources directory.
+
+    Example usage:
+    #+include: "@PROJECT_SOURCE_DIR@/tests/ct-load" src sh :lines "3-"
+    #+include: "@PROJECT_BINARY_DIR@/tests/ct-load.out" src fundamental
+
+
 *** Creating the index
 
     #+include: "@PROJECT_BINARY_DIR@/tests/index-help.out" src fundamental
 
     This command uses the compilation database to index all source files.
-    # An optional argument =--emacs-conf= allows generating a suitable =.dir-local.el=
-    # emacs configuration file in the sources directory.
 
     Example usage:
     #+include: "@PROJECT_SOURCE_DIR@/tests/ct-index" src sh :lines "3-"
