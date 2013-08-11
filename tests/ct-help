@@ -1,10 +1,10 @@
 #!/bin/bash -e
 
-clang-tags --help \
-| perl -n \
-    -e '$s=0 unless m/^\s*(\S+)/;' \
-    -e 'print "$1\n" if $s;' \
-    -e '$s=1 if m/^\s+SUBCOMMAND/;' \
-| while read subcommand; do
+for subcommand in \
+    start stop kill clean \
+    trace scan fake-compiler \
+    add load index update \
+    find-def grep complete \
+; do
     clang-tags $subcommand --help >${subcommand}-help.out
 done

@@ -31,6 +31,7 @@ void Application::compilationDatabase (CompilationDatabaseArgs & args,
       clArgs.push_back (arg);
     } while (! command.eof());
 
+    cout << "  " << fileName << std::endl;
     storage_.setCompileCommand (fileName, directory, clArgs);
   }
 }

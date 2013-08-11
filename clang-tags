@@ -11,11 +11,15 @@ import shlex, subprocess
 import time
 import re
 import types
+import tempfile
 
 ### Common constants
 logPath    = ".ct.log"
 socketPath = ".ct.sock"
 pidPath    = ".ct.pid"
+
+extensions = [".c", ".cxx", ".cc", ".C", ".cpp"]
+compilers  = ["gcc", "g++", "c++", "clang", "clang++"]
 
 
 ### Helper functions
@@ -93,12 +97,33 @@ def kill (args):
 
 ### Generate the compilation database
 
-def trace (args):
-    """Entry point for generating a compilation database by tracing a build
-    command."""
-    compilers  = ["gcc", "g++", "c++", "clang", "clang++"]
-    extensions = [".c", ".cxx", ".cc", ".C", ".cpp"]
+def getSourceFile (command):
+    "Find the source file name within a compile command"
+    for arg in command:
+        if endsWithOne (arg, extensions) and os.path.exists (arg):
+            return arg
 
+
+def fakeCompiler (args):
+    """Generate a compilation database by creating a fake compiler proxy."""
+    tmpdir = tempfile.mkdtemp ()
+
+    # Heuristic: `fake-compiler` can be found in the same directory
+    #  as `clang-tags-server`
+    which = subprocess.Popen (["which", "clang-tags-server"],
+                              stdout = subprocess.PIPE)
+    line = which.stdout.readline()
+    fakeCompilersDir = "%s/fake-compiler" % os.path.dirname(line)
+    for line in which.stdout:
+        pass
+
+    # Create a new environment in which compilers are faked
+    os.environ["PATH"] = "%s:%s" % (fakeCompilersDir, os.environ["PATH"])
+    return subprocess.call (args.command)
+
+
+def trace (args):
+    """Generate a compilation database by tracing a build command."""
     command  = ["strace", "-f", "-s256", "-etrace=execve,chdir", "-q"]
     command += args.command
 
@@ -129,10 +154,9 @@ def trace (args):
 
             (programName, command) = eval(line)
             if endsWithOne(programName, [ "/" + c for c in compilers]):
-                for arg in command:
-                    if endsWithOne (arg, extensions) and os.path.exists (arg):
-                        sourceFiles[arg] = (cwd, command)
-                        break
+                sourceFile = getSourceFile (command)
+                if sourceFile is not None:
+                    sourceFiles[sourceFile] = (cwd, command)
     p.wait()
 
     compilationDb = []
@@ -148,8 +172,7 @@ def trace (args):
 
 
 def scan (args):
-    """Entry point for generating a compilation database by scanning a sources
-    directory."""
+    """Generate a compilation database by scanning a sources directory."""
     srcdir = args.srcdir
     clangArgs = args.clangArgs
     compiler = args.compiler
@@ -171,12 +194,38 @@ def scan (args):
 
 
 ### Manage the source files index
+def add (args):
+    """Load a single compilation command in the server"""
+    if args.command[0] == '--':
+        args.command = args.command[1:]
+
+    sourceFile = getSourceFile (args.command)
+    if sourceFile is None:
+        return 1
+
+    database = [{"directory": os.getcwd(),
+                 "command": subprocess.list2cmdline(args.command),
+                 "file": os.path.realpath(sourceFile)}]
+
+    (fd, tmpFile) = tempfile.mkstemp()
+
+    f = open (tmpFile, "w")
+    json.dump (database, f, indent=4)
+    f.close()
+    request = {"command": "load",
+               "database": tmpFile}
+    ret = sendRequest (request)
+    os.remove (tmpFile)
+
+    return ret
+
+
 def load (args):
-    "Entry point for reading a compilation database."
+    """Read a compilation database."""
 
     request = {"command": "load",
                "database": args.compilationDB}
-    sendRequest (request)
+    ret = sendRequest (request)
 
     if args.emacs_conf is not None:
         f = open (os.path.join (args.emacs_conf, ".dir-locals.el"), "w")
@@ -189,9 +238,11 @@ def load (args):
             % os.getcwd())
         f.close()
 
+    return ret
+
 
 def index (args):
-    "Entry point for indexing the source code base."
+    """Index the source code base."""
 
     exclude = [os.path.realpath(d) for d in args.exclude]
 
@@ -201,7 +252,7 @@ def index (args):
 
 
 def update (args):
-    "Entry point for updating the source code base index"
+    """Update the source code base index."""
 
     request = {"command": "update"}
     sendRequest (request)
@@ -210,7 +261,7 @@ def update (args):
 
 ### IDE-like features
 def findDefinition (args):
-    "Entry point for finding the definition of an identifier"
+    """Find the definition of an identifier."""
     fileName = os.path.realpath (args.fileName)
 
     request = {"command":   "find",
@@ -226,7 +277,8 @@ def findDefinition (args):
             refDef["def"]["col2"] -= 1
 
             sys.stdout.write ("-- %(substring)s -- %(kind)s %(spelling)s\n" % refDef["ref"])
-            sys.stdout.write ("   %(file)s:%(line1)d-%(line2)d:%(col1)d-%(col2)d: %(spelling)s\n"
+            sys.stdout.write ("   %(file)s:%(line1)d-%(line2)d:%(col1)d-%(col2)d:"
+                              " %(spelling)s\n"
                               % refDef["def"])
             sys.stdout.write ("   USR: %(usr)s\n" % refDef["def"])
             sys.stdout.write ("\n")
@@ -237,7 +289,7 @@ def findDefinition (args):
 
 
 def grep (args):
-    "Entry point for finding the uses of a definition"
+    """Find all references to a symbol."""
 
     request = {"command": "grep",
                "usr": args.usr}
@@ -255,7 +307,7 @@ def grep (args):
 
 
 def complete (args):
-    "Entry point for automatic completion"
+    """Automatic completion."""
 
     request = {"command": "complete",
                "file": os.path.realpath (args.fileName),
@@ -324,7 +376,7 @@ def main_argparse ():
     s = subparsers.add_parser (
         "scan",
         help = "scan a source directory",
-        description = "Create a compilation database by scanning a source directory")
+        description = "Create a compilation database by scanning a source directory.")
     s.add_argument (
         "--compiler", "-c",
         default = "gcc",
@@ -341,7 +393,7 @@ def main_argparse ():
     s.set_defaults (fun = scan)
 
 
-    # Manage the source files index
+    # Load compilation commands
     s = subparsers.add_parser (
         "load",
         help = "load a compilation database",
@@ -361,6 +413,32 @@ def main_argparse ():
     s.set_defaults (fun = load)
 
 
+    s = subparsers.add_parser (
+        "add",
+        help = "manually load a compilation command",
+        description = "Manually load a single compilation command into the server.")
+    s.add_argument (
+        "command",
+        metavar = "COMMAND",
+        nargs = argparse.REMAINDER,
+        help = "compilation command line")
+    s.set_defaults (fun = add)
+
+
+    s = subparsers.add_parser (
+        "fake-compiler",
+        help = "fake compilers for a build command",
+        description = "Load compilation commands by interposing fake proxy compilers"
+        " during the build process.")
+    s.add_argument (
+        "command",
+        metavar = "COMMAND",
+        nargs = argparse.REMAINDER,
+        help = "build command line")
+    s.set_defaults (fun = fakeCompiler)
+
+
+    # Manage the source files index
     s = subparsers.add_parser (
         "index",
         help = "index source code base",

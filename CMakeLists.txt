@@ -107,6 +107,19 @@ endfunction (ct_template)
 ct_template ("env.sh")
 ct_template ("env.el")
 
+
+# Fake compilers
+function (ct_fake_compiler name)
+  configure_file (
+    "${PROJECT_SOURCE_DIR}/fake-compiler.sh"
+    "${PROJECT_BINARY_DIR}/fake-compiler/${name}")
+endfunction (ct_fake_compiler)
+ct_fake_compiler ("gcc")
+ct_fake_compiler ("g++")
+ct_fake_compiler ("clang")
+ct_fake_compiler ("clang++")
+
+
 # Generate documentation
 ct_template ("Doxyfile")
 ct_template ("doc/export-org")
