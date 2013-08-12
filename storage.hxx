@@ -106,7 +106,11 @@ public:
       stmt >> includedName >> indexed >> sourceName;
 
       struct stat fileStat;
-      stat (includedName.c_str(), &fileStat);
+      if (stat (includedName.c_str(), &fileStat) != 0) {
+        std::cerr << "Warning: could not stat() file `" << includedName << "'" << std::endl
+                  << "  removing it from the index" << std::endl;
+        removeFile (includedName);
+      }
       int modified = fileStat.st_mtime;
 
       if (modified > indexed) {
@@ -184,6 +188,33 @@ public:
       throw std::runtime_error ("Cannot add inclusion for unknown files `"
                                 + includedFile + "' and `" + sourceFile + "'");
     addInclude (includedId, sourceId);
+  }
+
+  void removeFile (const std::string & fileName) {
+    int fileId = fileId_ (fileName);
+    db_
+      .prepare ("DELETE FROM commands WHERE fileId = ?")
+      .bind (fileId)
+      .step();
+
+    db_
+      .prepare ("DELETE FROM includes WHERE sourceId = ?")
+      .bind (fileId)
+      .step();
+
+    db_
+      .prepare ("DELETE FROM includes WHERE includedId = ?")
+      .bind (fileId)
+      .step();
+
+    db_
+      .prepare ("DELETE FROM tags WHERE fileId = ?")
+      .bind (fileId)
+      .step();
+
+    db_.prepare ("DELETE FROM files WHERE id = ?")
+      .bind (fileId)
+      .step();
   }
 
   void addTag (const std::string & usr,
