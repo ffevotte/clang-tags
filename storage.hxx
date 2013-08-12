@@ -110,6 +110,7 @@ public:
         std::cerr << "Warning: could not stat() file `" << includedName << "'" << std::endl
                   << "  removing it from the index" << std::endl;
         removeFile (includedName);
+        continue;
       }
       int modified = fileStat.st_mtime;
 
