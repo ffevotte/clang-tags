@@ -16,7 +16,7 @@ include_directories (${CMAKE_SOURCE_DIR})
 # Check for Boost (system + asio)
 find_package (Boost
   REQUIRED
-  COMPONENTS system
+  COMPONENTS system thread
 )
 include_directories (${Boost_INCLUDE_DIRS})
 link_directories (${Boost_LIBRARY_DIRS})
@@ -90,7 +90,7 @@ include ("util/CMakeLists.txt")
 
 add_executable (clang-tags-server
   main.cxx
-  request/request.cxx
+  watch.cxx
   compilationDatabase.cxx
   index.cxx
   findDefinition.cxx

@@ -1,14 +1,18 @@
 #include "application.hxx"
+#include "watch.hxx"
 #include "util/util.hxx"
 #include "request/request.hxx"
 #include "getopt++/getopt.hxx"
 #include <boost/asio.hpp>
+#include <boost/thread/thread.hpp>
 
 class CompilationDatabaseCommand : public Request::CommandParser {
 public:
-  CompilationDatabaseCommand (const std::string & name, Application & application)
+  CompilationDatabaseCommand (const std::string & name, Application & application,
+                              Watch & watch)
     : Request::CommandParser (name, "Read a compilation database"),
-      application_ (application)
+      application_ (application),
+      watch_ (watch)
   {
     prompt_ = "load> ";
     defaults();
@@ -25,10 +29,12 @@ public:
 
   void run (std::ostream & cout) {
     application_.compilationDatabase (args_, cout);
+    watch_.update();
   }
 
 private:
   Application & application_;
+  Watch & watch_;
   Application::CompilationDatabaseArgs args_;
 };
 
@@ -213,6 +219,10 @@ struct ExitCommand : public Request::CommandParser {
 
 
 int main (int argc, char **argv) {
+  if (sqlite3_config (SQLITE_CONFIG_SERIALIZED) != SQLITE_OK) {
+    std::cerr << "Could not set SQlite3 to serialized mode" << std::endl;
+  }
+
   Getopt options (argc, argv);
   options.add ("help", 'h', 0,
                "print this help message and exit");
@@ -234,8 +244,10 @@ int main (int argc, char **argv) {
 
   Storage storage;
   Application app (storage);
+  Watch watch (app);
+
   Request::Parser p ("Clang-tags server\n");
-  p .add (new CompilationDatabaseCommand ("load", app))
+  p .add (new CompilationDatabaseCommand ("load", app, watch))
     .add (new IndexCommand ("index", app))
     .add (new UpdateCommand ("update", app))
     .add (new FindCommand ("find", app))
@@ -255,6 +267,8 @@ int main (int argc, char **argv) {
     pidFile.close();
 
     std::cerr << "Server starting with pid: " << getpid() << std::endl;
+
+    boost::thread watchThread (boost::ref(watch));
 
     const std::string socketPath (".ct.sock");
     try

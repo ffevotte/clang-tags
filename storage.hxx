@@ -90,6 +90,18 @@ public:
     }
   }
 
+  std::vector<std::string> listFiles () {
+    Sqlite::Statement stmt = db_.prepare ("SELECT name FROM files ORDER BY name");
+
+    std::vector<std::string> list;
+    while (stmt.step() == SQLITE_ROW) {
+      std::string fileName;
+      stmt >> fileName;
+      list.push_back (fileName);
+    }
+    return list;
+  }
+
   std::string nextFile () {
     Sqlite::Statement stmt
       = db_.prepare ("SELECT included.name, included.indexed, source.name, "

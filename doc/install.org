@@ -5,7 +5,7 @@
 
   - =cmake=
   - a C++11 compiler (e.g. =g++= or =clang++=)
-  - =boost= (at least the =system= and =asio= components)
+  - =boost= (at least the =system=, =thread= and =asio= components)
   - =jsoncpp=
   - =libclang= (>= 3.0)
   - =sqlite3=

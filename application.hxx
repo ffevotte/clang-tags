@@ -61,6 +61,11 @@ public:
   void complete (CompleteArgs & args, std::ostream & cout);
 
 
+  std::vector<std::string> listFiles () {
+    return storage_.listFiles();
+  }
+
+
 private:
   void updateIndex_ (IndexArgs & args, std::ostream & cout);
   void findDefinitionFromIndex_  (FindDefinitionArgs & args, std::ostream & cout);
