@@ -3,8 +3,10 @@
 #include <sys/inotify.h>
 #include <sys/poll.h>
 
-Watch::Watch (Application & application)
-  : application_ (application)
+namespace ClangTags {
+Watch::Watch (Storage & storage, Cache & cache)
+  : storage_ (storage),
+    index_   (storage, cache)
 {
   // Initialize inotify
   fd_inotify_ = inotify_init ();
@@ -36,7 +38,7 @@ std::string Watch::fileName (int wd) {
 
 void Watch::update () {
   std::cerr << "Updating watchlist..." << std::endl;
-  std::vector<std::string> list = application_.listFiles();
+  std::vector<std::string> list = storage_.listFiles();
   for (auto it=list.begin() ; it!=list.end() ; ++it) {
     std::string fileName = *it;
 
@@ -49,7 +51,6 @@ void Watch::update () {
     int wd = inotify_add_watch (fd_inotify_, fileName.c_str(), IN_MODIFY);
     if (wd == -1) {
       perror ("inotify_add_watch");
-      return;
     }
 
     addWatchDescriptor (fileName, wd);
@@ -58,8 +59,6 @@ void Watch::update () {
 
 void Watch::operator() () {
   update();
-
-  Application::IndexArgs args;
 
   const size_t BUF_LEN = 1024;
   char buf[BUF_LEN] __attribute__((aligned(4)));
@@ -80,6 +79,7 @@ void Watch::operator() () {
       std::cerr << "Detected modification of " << fileName(event->wd) << std::endl;
     }
 
-    application_.update(args, std::cerr);
+    index_ (std::cerr);
   }
+}
 }

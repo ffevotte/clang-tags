@@ -107,7 +107,7 @@ relies on the [[http://clang.llvm.org][clang]] compiler (via the libclang interf
         =c:@S@MyClass>#I@F@display#=
 
 
-* Command-line interface   
+* Command-line interface
 
 ** Creating the compilation database
 

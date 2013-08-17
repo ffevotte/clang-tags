@@ -1,13 +1,20 @@
+#include "findDefinition.hxx"
 #include "sourceFile.hxx"
 
 #include "libclang++/libclang++.hxx"
-
-#include "application.hxx"
-
 #include <iostream>
 #include <cstdlib>
 
-void displayRefDef (const Storage::RefDef & refDef, std::ostream & cout)
+namespace ClangTags {
+
+FindDefinition::FindDefinition (Storage & storage,
+                                Cache & cache)
+  : storage_ (storage),
+    cache_   (cache)
+{}
+
+void FindDefinition::displayRefDef (const Storage::RefDef & refDef,
+                                    std::ostream & cout)
 {
   const Storage::Reference  & ref = refDef.ref;
   const Storage::Definition & def = refDef.def;
@@ -33,7 +40,8 @@ void displayRefDef (const Storage::RefDef & refDef, std::ostream & cout)
   }
 }
 
-void outputRefDef (const Storage::RefDef & refDef, std::ostream & cout)
+void FindDefinition::outputRefDef (const Storage::RefDef & refDef,
+                                   std::ostream & cout)
 {
   Json::FastWriter writer;
   Json::Value json = refDef.json();
@@ -45,7 +53,8 @@ void outputRefDef (const Storage::RefDef & refDef, std::ostream & cout)
   cout << writer.write (json);
 }
 
-void displayCursor (LibClang::Cursor cursor, std::ostream & cout)
+void FindDefinition::displayCursor (LibClang::Cursor cursor,
+                                    std::ostream & cout)
 {
   const LibClang::SourceLocation location (cursor.location());
   const LibClang::Cursor cursorDef = cursor.referenced();
@@ -86,11 +95,11 @@ void displayCursor (LibClang::Cursor cursor, std::ostream & cout)
   outputRefDef (refDef, cout);
 }
 
-class FindDefinition : public LibClang::Visitor<FindDefinition>
+class Finder : public LibClang::Visitor<Finder>
 {
 public:
-  FindDefinition (const LibClang::SourceLocation & targetLocation,
-                  std::ostream & cout)
+  Finder (const LibClang::SourceLocation & targetLocation,
+          std::ostream & cout)
     : targetLocation_ (targetLocation),
       cout_ (cout)
   {}
@@ -106,7 +115,7 @@ public:
     }
 
     if (location == targetLocation_) {
-      displayCursor (cursor, cout_);
+      FindDefinition::displayCursor (cursor, cout_);
     }
 
     return CXChildVisit_Recurse;
@@ -117,7 +126,7 @@ private:
   std::ostream & cout_;
 };
 
-void Application::findDefinitionFromIndex_ (FindDefinitionArgs & args, std::ostream & cout) {
+void FindDefinition::fromIndex_ (Args & args, std::ostream & cout) {
   const auto refDefs = storage_.findDefinition (args.fileName, args.offset);
   auto refDef = refDefs.begin();
   const auto end = args.mostSpecific
@@ -128,13 +137,8 @@ void Application::findDefinitionFromIndex_ (FindDefinitionArgs & args, std::ostr
   }
 }
 
-void Application::findDefinitionFromSource_ (FindDefinitionArgs & args, std::ostream & cout) {
-  std::string directory;
-  std::vector<std::string> clArgs;
-  storage_.getCompileCommand (args.fileName, directory, clArgs);
-
-  LibClang::Index index;
-  LibClang::TranslationUnit tu = index.parse (clArgs);
+void FindDefinition::fromSource_ (Args & args, std::ostream & cout) {
+  LibClang::TranslationUnit tu = cache_.translationUnit (args.fileName);
 
   // Print clang diagnostics if requested
   if (args.diagnostics) {
@@ -151,18 +155,19 @@ void Application::findDefinitionFromSource_ (FindDefinitionArgs & args, std::ost
   }
   else {
     LibClang::SourceLocation target = cursor.location();
-    FindDefinition findDef (target, cout);
+    Finder findDef (target, cout);
     findDef.visitChildren (tu.cursor());
   }
 }
 
-void Application::findDefinition (FindDefinitionArgs & args, std::ostream & cout) {
+void FindDefinition::operator() (Args & args, std::ostream & cout) {
   if (args.fromIndex) {
     // Request references from the index database
-    findDefinitionFromIndex_ (args, cout);
+    fromIndex_ (args, cout);
   }
   else {
     // Parse the source file and analyse it
-    findDefinitionFromSource_ (args, cout);
+    fromSource_ (args, cout);
   }
+}
 }

@@ -90,12 +90,12 @@ include ("util/CMakeLists.txt")
 
 add_executable (clang-tags-server
   main.cxx
-  watch.cxx
-  compilationDatabase.cxx
-  index.cxx
-  findDefinition.cxx
-  grep.cxx
-  complete.cxx)
+  clangTags/watch.cxx
+  clangTags/load.cxx
+  clangTags/findDefinition.cxx
+  clangTags/complete.cxx
+  clangTags/grep.cxx
+  clangTags/index.cxx)
 target_link_libraries (clang-tags-server ${LIBS})
 
 

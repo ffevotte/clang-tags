@@ -2,12 +2,14 @@
 #include "getopt++/getopt.hxx"
 
 #include "util/util.hxx"
-#include "application.hxx"
+#include "index.hxx"
 
 #include <cstdlib>
 #include <string>
 #include <iostream>
 #include <fstream>
+
+namespace ClangTags {
 
 class Indexer : public LibClang::Visitor<Indexer> {
 public:
@@ -82,26 +84,22 @@ private:
 };
 
 
+Index::Index (Storage & storage, Cache & cache)
+  : storage_ (storage),
+    cache_   (cache)
+{}
 
-void Application::index (IndexArgs & args, std::ostream & cout) {
-  cout << std::endl
-       << "-- Indexing project" << std::endl;
-  storage_.setOption ("exclude", args.exclude);
-  storage_.cleanIndex();
+void Index::operator() (std::ostream & cout) {
+  Timer totalTimer;
 
-  updateIndex_ (args, cout);
-}
-
-void Application::update (IndexArgs & args, std::ostream & cout) {
   cout << std::endl
        << "-- Updating index" << std::endl;
-  args.exclude = storage_.getOption ("exclude", Storage::Vector());
 
-  updateIndex_ (args, cout);
-}
+  std::vector<std::string> exclude;
+  storage_.getOption ("index.exclude", exclude);
 
-void Application::updateIndex_ (IndexArgs & args, std::ostream & cout) {
-  Timer totalTimer;
+  bool diagnostics;
+  storage_.getOption ("index.diagnostics", diagnostics);
 
   storage_.beginIndex();
   std::string fileName;
@@ -110,13 +108,13 @@ void Application::updateIndex_ (IndexArgs & args, std::ostream & cout) {
          << "  parsing..." << std::flush;
     Timer timer;
 
-    LibClang::TranslationUnit tu = translationUnit_(fileName);
+    LibClang::TranslationUnit tu = cache_.translationUnit (fileName);
 
     cout << "\t" << timer.get() << "s." << std::endl;
     timer.reset();
 
     // Print clang diagnostics if requested
-    if (args.diagnostics) {
+    if (diagnostics) {
       for (unsigned int N = tu.numDiagnostics(),
              i = 0 ; i < N ; ++i) {
         cout << tu.diagnostic (i) << std::endl << std::endl;
@@ -125,10 +123,11 @@ void Application::updateIndex_ (IndexArgs & args, std::ostream & cout) {
 
     cout << "  indexing..." << std::endl;
     LibClang::Cursor top (tu);
-    Indexer indexer (fileName, args.exclude, storage_, cout);
+    Indexer indexer (fileName, exclude, storage_, cout);
     indexer.visitChildren (top);
     cout << "  indexing...\t" << timer.get() << "s." << std::endl;
   }
   storage_.endIndex();
   cout << totalTimer.get() << "s." << std::endl;
+}
 }

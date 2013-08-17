@@ -9,6 +9,7 @@
 #include <sstream>
 #include <iostream>
 
+namespace ClangTags {
 class Storage {
 public:
   Storage ()
@@ -45,6 +46,13 @@ public:
                  "  name   TEXT, "
                  "  value  TEXT "
                  ")");
+    db_
+      .prepare ("INSERT INTO options (name, value) VALUES"
+                " (?,?),"
+                " (?,?);")
+      .bind ("index.exclude")     .bind ("[\"/usr\"]")
+      .bind ("index.diagnostics") .bind ("true")
+      .step();
   }
 
   int setCompileCommand (const std::string & fileName,
@@ -394,27 +402,31 @@ public:
   }
 
 
-  std::string getOption (const std::string & name) {
+  template <typename T>
+  void getOption (const std::string & name, T & destination) {
+    std::string val;
+    getOption (name, val);
+    std::istringstream iss (val);
+    iss >> std::boolalpha >> destination;
+  }
+
+  void getOption (const std::string & name, std::string & destination) {
     Sqlite::Statement stmt =
       db_.prepare ("SELECT value FROM options "
                    "WHERE name = ?")
       .bind (name);
 
-    std::string ret;
     if (stmt.step() == SQLITE_ROW) {
-      stmt >> ret;
+      stmt >> destination;
     } else {
       throw std::runtime_error ("No stored value for option: `" + name + "'");
     }
-
-    return ret;
   }
 
-  struct Vector {};
-  std::vector<std::string> getOption (const std::string & name, const Vector & v) {
-    std::vector<std::string> ret;
-    deserialize_ (getOption (name), ret);
-    return ret;
+  void getOption (const std::string & name, std::vector<std::string> & destination) {
+    std::string val;
+    getOption (name, val);
+    deserialize_ (val, destination);
   }
 
 private:
@@ -469,3 +481,4 @@ private:
 
   Sqlite::Database db_;
 };
+}

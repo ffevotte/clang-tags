@@ -1,7 +1,13 @@
-#include "application.hxx"
+#include "grep.hxx"
 #include "sourceFile.hxx"
 
-void Application::grep (const GrepArgs & args, std::ostream & cout) {
+namespace ClangTags {
+
+Grep::Grep (Storage & storage)
+  : storage_ (storage)
+{}
+
+void Grep::operator() (const Args & args, std::ostream & cout) {
   Json::FastWriter writer;
 
   const auto refs = storage_.grep (args.usr);
@@ -13,4 +19,5 @@ void Application::grep (const GrepArgs & args, std::ostream & cout) {
     json["lineContents"] = file.line (ref->line1);
     cout << writer.write (json);
   }
+}
 }

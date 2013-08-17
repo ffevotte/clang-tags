@@ -1,18 +1,26 @@
-#include "application.hxx"
-#include "watch.hxx"
 #include "util/util.hxx"
 #include "request/request.hxx"
 #include "getopt++/getopt.hxx"
+
+#include "clangTags/watch.hxx"
+#include "clangTags/load.hxx"
+#include "clangTags/findDefinition.hxx"
+#include "clangTags/complete.hxx"
+#include "clangTags/grep.hxx"
+#include "clangTags/index.hxx"
+
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
 
-class CompilationDatabaseCommand : public Request::CommandParser {
+namespace ClangTags {
+
+class LoadCommand : public Request::CommandParser {
 public:
-  CompilationDatabaseCommand (const std::string & name, Application & application,
-                              Watch & watch)
+  LoadCommand (const std::string & name,
+               Storage & storage,
+               Watch & watch)
     : Request::CommandParser (name, "Read a compilation database"),
-      application_ (application),
-      watch_ (watch)
+      loader_ (storage, watch)
   {
     prompt_ = "load> ";
     defaults();
@@ -28,77 +36,38 @@ public:
   }
 
   void run (std::ostream & cout) {
-    application_.compilationDatabase (args_, cout);
-    watch_.update();
+    loader_ (args_, cout);
   }
 
 private:
-  Application & application_;
-  Watch & watch_;
-  Application::CompilationDatabaseArgs args_;
+  ClangTags::Load loader_;
+  ClangTags::Load::Args args_;
 };
 
 
-class UpdateCommand : public Request::CommandParser {
+class IndexCommand : public Request::CommandParser {
 public:
-  UpdateCommand (const std::string & name, Application & application)
+  IndexCommand (const std::string & name, Storage & storage, ClangTags::Cache & cache)
     : Request::CommandParser (name, "Update the source code index"),
-      application_ (application)
+      index_ (storage, cache)
   {
-    prompt_ = "update> ";
-    defaults();
-
-    using Request::key;
-    add (key ("diagnostics", args_.diagnostics)
-         ->metavar ("true|false")
-         ->description ("Print compilation diagnostics"));
-  }
-
-  void defaults () {
-    args_.diagnostics = true;
+    prompt_ = "index> ";
   }
 
   void run (std::ostream & cout) {
-    application_.update (args_, cout);
+    index_ (cout);
   }
 
 protected:
-  Application & application_;
-  Application::IndexArgs args_;
-};
-
-
-class IndexCommand : public UpdateCommand {
-public:
-  IndexCommand (const std::string & name, Application & application)
-    : UpdateCommand (name, application)
-  {
-    setDescription ("Index the source code base");
-    prompt_ = "index> ";
-
-    defaults ();
-    using Request::key;
-    add (key ("exclude", args_.exclude)
-         ->metavar ("PATH")
-         ->description ("Exclude path"));
-  }
-
-  void defaults () {
-    UpdateCommand::defaults();
-    args_.exclude = {"/usr"};
-  }
-
-  void run (std::ostream & cout) {
-    application_.index (args_, cout);
-  }
+  ClangTags::Index index_;
 };
 
 
 class FindCommand : public Request::CommandParser {
 public:
-  FindCommand (const std::string & name, Application & application)
+  FindCommand (const std::string & name, Storage & storage, ClangTags::Cache & cache)
     : Request::CommandParser (name, "Find the definition of a symbol"),
-      application_ (application)
+      findDefinition_ (storage, cache)
   {
     prompt_ = "find> ";
     defaults ();
@@ -130,20 +99,20 @@ public:
   }
 
   void run (std::ostream & cout) {
-    application_.findDefinition (args_, cout);
+    findDefinition_ (args_, cout);
   }
 
 private:
-  Application & application_;
-  Application::FindDefinitionArgs args_;
+  ClangTags::FindDefinition findDefinition_;
+  ClangTags::FindDefinition::Args args_;
 };
 
 
 class GrepCommand : public Request::CommandParser {
 public:
-  GrepCommand (const std::string & name, Application & application)
+  GrepCommand (const std::string & name, Storage & storage)
     : Request::CommandParser (name, "Find all references to a definition"),
-      application_ (application)
+      grep_ (storage)
   {
     prompt_ = "grep> ";
     defaults();
@@ -159,20 +128,21 @@ public:
   }
 
   void run (std::ostream & cout) {
-    application_.grep (args_, cout);
+    grep_ (args_, cout);
   }
 
 private:
-  Application & application_;
-  Application::GrepArgs args_;
+  ClangTags::Grep grep_;
+  ClangTags::Grep::Args args_;
 };
 
 
 class CompleteCommand : public Request::CommandParser {
 public:
-  CompleteCommand (const std::string & name, Application & application)
+  CompleteCommand (const std::string & name,
+                   ClangTags::Cache & cache)
     : Request::CommandParser (name, "Complete the code at point"),
-      application_ (application)
+      complete_ (cache)
   {
     prompt_ = "complete> ";
     defaults();
@@ -196,12 +166,12 @@ public:
   }
 
   void run (std::ostream & cout) {
-    application_.complete (args_, cout);
+    complete_ (args_, cout);
   }
 
 private:
-  Application & application_;
-  Application::CompleteArgs args_;
+  ClangTags::Complete complete_;
+  ClangTags::Complete::Args args_;
 };
 
 struct ExitCommand : public Request::CommandParser {
@@ -216,7 +186,47 @@ struct ExitCommand : public Request::CommandParser {
     throw std::runtime_error ("shutdown requested");
   }
 };
+}
 
+class Serve {
+public:
+  Serve (Request::Parser & parser)
+    : parser_     (parser),
+      pidPath_    (".ct.pid"),
+      socketPath_ (".ct.sock")
+  {
+    std::ofstream pidFile (pidPath_);
+    pidFile << getpid() << std::endl;
+    pidFile.close();
+  }
+
+  ~Serve () {
+    std::cerr << "Server exiting..." << std::endl;
+    unlink (socketPath_.c_str());
+    unlink (pidPath_.c_str());
+  }
+
+  void operator() () {
+    std::cerr << "Server starting with pid: " << getpid() << std::endl;
+
+    boost::asio::io_service io_service;
+    boost::asio::local::stream_protocol::endpoint endpoint (socketPath_);
+    boost::asio::local::stream_protocol::acceptor acceptor (io_service, endpoint);
+    for (;;) {
+      boost::asio::local::stream_protocol::iostream socket;
+      boost::system::error_code err;
+      acceptor.accept(*socket.rdbuf(), err);
+      if (!err) {
+        parser_.parseJson (socket, socket, /*verbose=*/true);
+      }
+    }
+  }
+
+private:
+  Request::Parser & parser_;
+  std::string pidPath_;
+  std::string socketPath_;
+};
 
 int main (int argc, char **argv) {
   if (sqlite3_config (SQLITE_CONFIG_SERIALIZED) != SQLITE_OK) {
@@ -241,58 +251,33 @@ int main (int argc, char **argv) {
     return 0;
   }
 
+  try {
+    ClangTags::Storage storage;
+    ClangTags::Cache cache (storage);
+    ClangTags::Watch watch (storage, cache);
 
-  Storage storage;
-  Application app (storage);
-  Watch watch (app);
-
-  Request::Parser p ("Clang-tags server\n");
-  p .add (new CompilationDatabaseCommand ("load", app, watch))
-    .add (new IndexCommand ("index", app))
-    .add (new UpdateCommand ("update", app))
-    .add (new FindCommand ("find", app))
-    .add (new GrepCommand ("grep", app))
-    .add (new CompleteCommand ("complete", app))
-    .add (new ExitCommand ("exit"))
-    .prompt ("clang-dde> ");
+    Request::Parser p ("Clang-tags server\n");
+    p .add (new ClangTags::LoadCommand  ("load",  storage, watch))
+      .add (new ClangTags::IndexCommand ("index", storage, cache))
+      .add (new ClangTags::FindCommand  ("find",  storage, cache))
+      .add (new ClangTags::GrepCommand  ("grep",  storage))
+      .add (new ClangTags::CompleteCommand ("complete", cache))
+      .add (new ClangTags::ExitCommand ("exit"))
+      .prompt ("clang-dde> ");
 
 
-  if (options.getCount ("stdin") > 0) {
-    p.parseJson (std::cin, std::cout);
+    if (options.getCount ("stdin") > 0) {
+      p.parseJson (std::cin, std::cout);
+    }
+    else {
+      boost::thread watchThread (boost::ref(watch));
+      Serve serve (p);
+      serve ();
+    }
   }
-  else {
-    const std::string pidPath (".ct.pid");
-    std::ofstream pidFile (pidPath);
-    pidFile << getpid() << std::endl;
-    pidFile.close();
-
-    std::cerr << "Server starting with pid: " << getpid() << std::endl;
-
-    boost::thread watchThread (boost::ref(watch));
-
-    const std::string socketPath (".ct.sock");
-    try
-      {
-        boost::asio::io_service io_service;
-        boost::asio::local::stream_protocol::endpoint endpoint (socketPath);
-        boost::asio::local::stream_protocol::acceptor acceptor (io_service, endpoint);
-        for (;;)
-          {
-            boost::asio::local::stream_protocol::iostream socket;
-            boost::system::error_code err;
-            acceptor.accept(*socket.rdbuf(), err);
-            if (!err) {
-              p.parseJson (socket, socket, /*verbose=*/true);
-            }
-          }
-      }
-    catch (std::exception& e)
-      {
-        std::cerr << std::endl << "Caught exception: " << e.what() << std::endl;
-      }
-    std::cerr << "Server exiting..." << std::endl;
-    unlink (socketPath.c_str());
-    unlink (pidPath.c_str());
+  catch (std::exception& e) {
+    std::cerr << std::endl << "Caught exception: " << e.what() << std::endl;
+    return EXIT_FAILURE;
   }
 
   return EXIT_SUCCESS;

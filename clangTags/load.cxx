@@ -1,9 +1,28 @@
-#include "application.hxx"
+#include "load.hxx"
 #include "json/json.h"
-#include <fstream>
 
-void Application::compilationDatabase (CompilationDatabaseArgs & args,
-                                       std::ostream & cout) {
+#include <fstream>
+#include <sstream>
+#include <unistd.h>
+#include <stdexcept>
+
+namespace ClangTags {
+
+Load::Load (Storage & storage,
+            Watch   & watch)
+  : storage_ (storage),
+    watch_ (watch)
+{
+  const size_t size = 4096;
+  cwd_ = new char[size];
+  if (getcwd (cwd_, size) == NULL) {
+    // FIXME: correctly handle this case
+    throw std::runtime_error ("Not enough space to store current directory name.");
+  }
+}
+
+void Load::operator() (Args & args,
+                       std::ostream & cout) {
   // Change back to the original WD (in case `index` or `update` would have
   // changed it)
   chdir (cwd_);
@@ -34,4 +53,7 @@ void Application::compilationDatabase (CompilationDatabaseArgs & args,
     cout << "  " << fileName << std::endl;
     storage_.setCompileCommand (fileName, directory, clArgs);
   }
+
+  watch_.update();
+}
 }
