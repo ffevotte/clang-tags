@@ -229,10 +229,6 @@ private:
 };
 
 int main (int argc, char **argv) {
-  if (sqlite3_config (SQLITE_CONFIG_SERIALIZED) != SQLITE_OK) {
-    std::cerr << "Could not set SQlite3 to serialized mode" << std::endl;
-  }
-
   Getopt options (argc, argv);
   options.add ("help", 'h', 0,
                "print this help message and exit");

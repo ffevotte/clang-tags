@@ -13,6 +13,6 @@ public:
   void operator() (const Args & args, std::ostream & cout);
 
 private:
-  Storage storage_;
+  Storage & storage_;
 };
 }
