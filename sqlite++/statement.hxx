@@ -39,7 +39,8 @@ namespace Sqlite {
       stmt_.reset (new Statement_ (stmt));
 
       if (ret != SQLITE_OK) {
-        throw Error (db.errMsg());
+        throw Error (std::string(sql) + "\n"
+                     + std::string(db.errMsg()));
       }
     }
 
