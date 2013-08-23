@@ -124,7 +124,7 @@ def fakeCompiler (args):
 
 def trace (args):
     """Generate a compilation database by tracing a build command."""
-    command  = ["strace", "-f", "-s256", "-etrace=execve,chdir", "-q"]
+    command  = ["strace", "-f", "-s512", "-etrace=execve,chdir", "-q"]
     command += args.command
 
     p = subprocess.Popen (command,

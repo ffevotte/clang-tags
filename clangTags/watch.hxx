@@ -22,7 +22,6 @@ private:
   Storage & storage_;
   Index index_;
   int fd_inotify_;
-  int fd_update_[2];
   std::map<std::string, int> wd_;
   std::map<int, std::string> file_;
   boost::mutex mtx_;
