@@ -1,7 +1,7 @@
 #pragma once
 
 #include <json/json.h>
-#include <boost/thread/mutex.hpp>
+#include <boost/thread.hpp>
 
 namespace ClangTags {
 class Storage {
