@@ -40,13 +40,8 @@ public:
                  "  name   TEXT, "
                  "  value  TEXT "
                  ")");
-    db_
-      .prepare ("INSERT INTO options (name, value) VALUES"
-                " (?,?),"
-                " (?,?);")
-      .bind ("index.exclude")     .bind ("[\"/usr\"]")
-      .bind ("index.diagnostics") .bind ("true")
-      .step();
+    setOptionDefault ("index.exclude",     "[\"/usr\"]");
+    setOptionDefault ("index.diagnostics", "true");
   }
 
   int setCompileCommand (const std::string & fileName,
@@ -168,9 +163,9 @@ public:
     if (modified > indexed) {
       db_.prepare ("DELETE FROM tags WHERE fileId=?").bind (fileId).step();
       db_.prepare ("DELETE FROM includes WHERE sourceId=?").bind (fileId).step();
-      db_.prepare ("UPDATE files "
-                   "SET indexed=? "
-                   "WHERE id=?")
+      db_.prepare ("UPDATE files"
+                   " SET indexed=?"
+                   " WHERE id=?")
         .bind (modified)
         .bind (fileId)
         .step();
@@ -319,16 +314,23 @@ public:
     return ret;
   }
 
-  void setOption (const std::string & name, const std::string & value) {
-    db_.prepare ("DELETE FROM options "
-                 "WHERE name = ?")
+  void setOptionDefault (const std::string & name, const std::string & value) {
+    int res = db_.prepare ("SELECT name FROM options WHERE name = ?")
       .bind (name)
       .step();
 
-    db_.prepare ("INSERT INTO options "
-                 "VALUES (?, ?)")
-      .bind (name)
+    if (res == SQLITE_DONE) {
+      db_.prepare ("INSERT INTO options VALUES (?, ?)")
+        .bind (name)
+        .bind (value)
+        .step();
+    }
+  }
+
+  void setOption (const std::string & name, const std::string & value) {
+    db_.prepare ("UPDATE options SET value = ? WHERE name = ?")
       .bind (value)
+      .bind (name)
       .step();
   }
 
