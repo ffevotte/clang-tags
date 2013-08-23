@@ -10,18 +10,21 @@ public:
     : db_ (".ct.sqlite")
   {
     db_.execute ("CREATE TABLE IF NOT EXISTS files ("
-                 "  id      INTEGER PRIMARY KEY,"
+                 "  id      INTEGER,"
                  "  name    TEXT,"
-                 "  indexed INTEGER"
+                 "  indexed INTEGER,"
+                 "  PRIMARY KEY (id)"
                  ")");
     db_.execute ("CREATE TABLE IF NOT EXISTS commands ("
                  "  fileId     INTEGER REFERENCES files(id),"
                  "  directory  TEXT,"
-                 "  args       TEXT"
+                 "  args       TEXT,"
+                 "  PRIMARY KEY (fileId)"
                  ")");
     db_.execute ("CREATE TABLE IF NOT EXISTS includes ("
                  "  sourceId   INTEGER REFERENCES files(id),"
-                 "  includedId INTEGER REFERENCES files(id)"
+                 "  includedId INTEGER REFERENCES files(id),"
+                 "  PRIMARY KEY (sourceId, includedId)"
                  ")");
     db_.execute ("CREATE TABLE IF NOT EXISTS tags ("
                  "  fileId   INTEGER REFERENCES files(id),"
@@ -34,14 +37,18 @@ public:
                  "  line2    INTEGER,"
                  "  col2     INTEGER,"
                  "  offset2  INTEGER,"
-                 "  isDecl   BOOLEAN"
+                 "  isDecl   BOOLEAN,"
+                 "  PRIMARY KEY (fileId, usr, offset1, offset2)"
                  ")");
     db_.execute ("CREATE TABLE IF NOT EXISTS options ( "
-                 "  name   TEXT, "
-                 "  value  TEXT "
+                 "  name   TEXT,"
+                 "  value  TEXT,"
+                 "  PRIMARY KEY (name)"
                  ")");
     setOptionDefault ("index.exclude",     "[\"/usr\"]");
     setOptionDefault ("index.diagnostics", "true");
+
+    db_.execute ("ANALYZE");
   }
 
   int setCompileCommand (const std::string & fileName,
@@ -239,21 +246,12 @@ public:
       return;
     }
 
-    Sqlite::Statement stmt =
-      db_.prepare ("SELECT * FROM tags "
-                   "WHERE fileId=? "
-                   "  AND usr=?"
-                   "  AND offset1=?"
-                   "  AND offset2=?")
-      .bind (fileId).bind (usr).bind (offset1).bind (offset2);
-    if (stmt.step() == SQLITE_DONE) { // no matching row
-      db_.prepare ("INSERT INTO tags VALUES (?,?,?,?,?,?,?,?,?,?,?)")
-        .bind(fileId) .bind(usr)  .bind(kind)    .bind(spelling)
-        .bind(line1)  .bind(col1) .bind(offset1)
-        .bind(line2)  .bind(col2) .bind(offset2)
-        .bind(isDeclaration)
-        .step();
-    }
+    db_.prepare ("INSERT INTO tags VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+      .bind(fileId) .bind(usr)  .bind(kind)    .bind(spelling)
+      .bind(line1)  .bind(col1) .bind(offset1)
+      .bind(line2)  .bind(col2) .bind(offset2)
+      .bind(isDeclaration)
+      .step();
   }
 
   typedef Storage::Reference  Reference;
