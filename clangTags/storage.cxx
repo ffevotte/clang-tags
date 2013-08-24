@@ -332,11 +332,6 @@ public:
       .step();
   }
 
-  void setOption (const std::string & name, const std::vector<std::string> & value) {
-    setOption (name, serialize_(value));
-  }
-
-
   template <typename T>
   void getOption (const std::string & name, T & destination) {
     std::string val;
@@ -514,7 +509,13 @@ void Storage::getOption (const std::string & name, std::vector<std::string> & de
   return impl_->getOption (name, destination);
 }
 
+void Storage::setOption (const std::string & name, const std::string & value) {
+  Guard guard (mutex_);
+  return impl_->setOption (name, value);
+}
+
 void Storage::instantiateTemplates_ () {
-  bool destination; getOption ("name", destination);
+  std::string stringDest; getOption ("name", stringDest);
+  bool boolDest;          getOption ("name", boolDest);
 }
 }

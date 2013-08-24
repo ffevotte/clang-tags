@@ -21,6 +21,27 @@ pidPath    = ".ct.pid"
 extensions = [".c", ".cxx", ".cc", ".C", ".cpp"]
 compilers  = ["gcc", "g++", "c++", "clang", "clang++"]
 
+class Option:
+    pass
+
+options = {}
+def addOption (name, **kwargs):
+    opt = Option ()
+    opt.name = name
+    opt.type = kwargs.get ("type", "scalar")
+    opt.metavar = kwargs.get ("metavar", name.upper())
+    opt.description = kwargs.get ("description", "")
+    options[opt.name] = opt
+
+addOption (
+    "index.diagnostics",
+    metavar = "true|false",
+    description = "if true, print compilation diagnostics during source code indexing")
+addOption (
+    "index.exclude",
+    type = "vector",
+    metavar = "LIST OF PATHS",
+    description = "list of paths to be excluded from indexing.")
 
 ### Helper functions
 def endsWithOne (string, suffixes):
@@ -241,13 +262,62 @@ def load (args):
     return ret
 
 
+def config (args):
+    """Configure the clang-tags server"""
+
+    if args.list is True:
+        print "Available options:"
+        for name in options:
+            opt = options[name]
+            print "\n  %s %s:" % (opt.name, opt.metavar)
+            print "\t%s" % (opt.description)
+        return 0
+
+    try:
+        opt = options[args.option]
+    except:
+        sys.stderr.write ("Unknown option `%s'" % args.option)
+        return 1
+
+    request = {"command": "config",
+               "option": args.option}
+
+    if args.get is True:
+        request["get"] = True
+        return sendRequest (request)
+
+    if opt.type == "scalar":
+        request["value"] = args.value[0]
+    else:
+        if args.append is True:
+            def processOutput (line):
+                try:
+                    processOutput.value = json.loads (line)
+                except:
+                    pass
+            processOutput.value = []
+
+            request["get"] = True
+            sendRequest (request, processOutput)
+            del request["get"]
+            value = processOutput.value
+        else:
+            value = []
+        value += [os.path.realpath(d) for d in args.value]
+
+        # Uniquify the list of values
+        value = dict([(k,1) for k in value]).keys()
+
+        request["value"] = value
+
+    ret = sendRequest (request)
+    return ret
+
+
 def index (args):
     """Index the source code base."""
 
-    exclude = [os.path.realpath(d) for d in args.exclude]
-
-    request = {"command": "index",
-               "exclude": exclude}
+    request = {"command": "index"}
     return sendRequest (request)
 
 
@@ -440,32 +510,42 @@ def main_argparse ():
 
     # Manage the source files index
     s = subparsers.add_parser (
+        "config",
+        help = "configure the server",
+        description = "Get/set server configuration options.")
+    s.add_argument (
+        "--list", "-l",
+        action='store_true', default = False,
+        help = "list available options")
+    s.add_argument (
+        "--print", "-p",
+        dest = "get",
+        action = "store_true", default = False,
+        help = "print option value")
+    s.add_argument (
+        "--append", "-a",
+        action = "store_true", default = False,
+        help = "for vector options, append to the list of values instead of replacing it")
+    s.add_argument (
+        "option",
+        metavar = "OPTION",
+        nargs = "?",
+        help = "option name")
+    s.add_argument (
+        "value",
+        metavar = "VALUE",
+        nargs = argparse.REMAINDER,
+        help = "option value")
+    s.set_defaults (fun = config)
+
+    s = subparsers.add_parser (
         "index",
         help = "index source code base",
         description = "Create an index of all tags in the source code base."
         " Source files and compilation commands are taken from a clang"
         " \"compilation database\" in JSON format, previously read using"
         " the \"load\" subcommand.")
-    s.add_argument (
-        "--exclude", "-e",
-        metavar = "DIR",
-        action = "append",
-        help = "do not index files under DIR")
-    s.add_argument (
-        "--exclude-clear", "-E",
-        dest = "exclude",
-        action = "store_const", const = [],
-        help = "reset exclude list")
-    s.set_defaults (exclude = ["/usr"])
     s.set_defaults (fun = index)
-
-
-    s = subparsers.add_parser (
-        "update",
-        help = "update index",
-        description = "Update the source code base index, using the same"
-        " arguments as previous call to `index'")
-    s.set_defaults (fun = update)
 
 
     # IDE-like features

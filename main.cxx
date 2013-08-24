@@ -4,6 +4,7 @@
 
 #include "clangTags/watch.hxx"
 #include "clangTags/load.hxx"
+#include "clangTags/config.hxx"
 #include "clangTags/findDefinition.hxx"
 #include "clangTags/complete.hxx"
 #include "clangTags/grep.hxx"
@@ -44,6 +45,40 @@ private:
   ClangTags::Load::Args args_;
 };
 
+class ConfigCommand : public Request::CommandParser {
+public:
+  ConfigCommand (const std::string & name,
+                 Storage & storage)
+    : Request::CommandParser (name, "Get/set clang-tags configuration"),
+      config_ (storage)
+  {
+    prompt_ = "config> ";
+    defaults();
+
+    using Request::key;
+    add (key ("get", args_.get)
+         ->metavar ("true|false")
+         ->description ("if true, get the option value. Otherwise, set it"));
+    add (key ("option", args_.name)
+         ->metavar ("NAME")
+         ->description ("option name"));
+    add (key ("value", args_.value)
+         ->metavar ("JSON_VAL")
+         ->description ("JSON-encoded option value"));
+  }
+
+  void defaults () {
+    args_.get = false;
+  }
+
+  void run (std::ostream & cout) {
+    config_ (args_, cout);
+  }
+
+private:
+  ClangTags::Config config_;
+  ClangTags::Config::Args args_;
+};
 
 class IndexCommand : public Request::CommandParser {
 public:
@@ -253,12 +288,13 @@ int main (int argc, char **argv) {
     ClangTags::Watch watch (storage, cache);
 
     Request::Parser p ("Clang-tags server\n");
-    p .add (new ClangTags::LoadCommand  ("load",  storage, watch))
-      .add (new ClangTags::IndexCommand ("index", storage, cache))
-      .add (new ClangTags::FindCommand  ("find",  storage, cache))
-      .add (new ClangTags::GrepCommand  ("grep",  storage))
+    p .add (new ClangTags::LoadCommand   ("load",  storage, watch))
+      .add (new ClangTags::ConfigCommand ("config", storage))
+      .add (new ClangTags::IndexCommand  ("index", storage, cache))
+      .add (new ClangTags::FindCommand   ("find",  storage, cache))
+      .add (new ClangTags::GrepCommand   ("grep",  storage))
       .add (new ClangTags::CompleteCommand ("complete", cache))
-      .add (new ClangTags::ExitCommand ("exit"))
+      .add (new ClangTags::ExitCommand   ("exit"))
       .prompt ("clang-dde> ");
 
 

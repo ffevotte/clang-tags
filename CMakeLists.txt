@@ -96,7 +96,8 @@ add_executable (clang-tags-server
   clangTags/findDefinition.cxx
   clangTags/complete.cxx
   clangTags/grep.cxx
-  clangTags/index.cxx)
+  clangTags/index.cxx
+  clangTags/config.cxx)
 target_link_libraries (clang-tags-server ${LIBS})
 
 

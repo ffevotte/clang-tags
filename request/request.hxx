@@ -246,8 +246,14 @@ namespace Request {
 
   template <typename T>
   void setValue (const Json::Value & json, T & destination) {
-    std::istringstream iss (json.asString());
-    iss >> std::boolalpha >> destination;
+    if (json.isArray()) {
+      Json::FastWriter writer;
+      std::stringstream iss (writer.write (json));
+      iss >> destination;
+    } else {
+      std::istringstream iss (json.asString());
+      iss >> std::boolalpha >> destination;
+    }
   }
 
   /** @brief Scalar key parser

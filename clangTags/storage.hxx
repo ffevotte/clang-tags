@@ -113,6 +113,8 @@ public:
 
   void getOption (const std::string & name, std::vector<std::string> & destination);
 
+  void setOption (const std::string & name, const std::string & value);
+
 private:
   void instantiateTemplates_ ();
 
