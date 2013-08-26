@@ -220,12 +220,13 @@ void printCompletionResult(LibClang::CompletionResult completionResult,
   stream << std::endl;
 }
 
-Complete::Complete (Cache & cache)
-  : cache_ (cache)
+Complete::Complete (Storage::Interface & storage, Cache & cache)
+  : storage_ (storage),
+    cache_ (cache)
 {}
 
 void Complete::operator() (Args & args, std::ostream & cout) {
-  LibClang::TranslationUnit & tu = cache_.translationUnit (args.fileName);
+  LibClang::TranslationUnit & tu = cache_.translationUnit (storage_, args.fileName);
 
   CXCodeCompleteResults * results
     = clang_codeCompleteAt(tu.raw(),

@@ -7,14 +7,11 @@ namespace ClangTags {
 
 class Cache {
 public:
-  Cache (Storage::Interface & storage)
-    : storage_ (storage)
-  {}
-
-  LibClang::TranslationUnit & translationUnit (std::string fileName) {
+  LibClang::TranslationUnit & translationUnit (Storage::Interface & storage,
+                                               std::string fileName) {
     std::string directory;
     std::vector<std::string> clArgs;
-    storage_.getCompileCommand (fileName, directory, clArgs);
+    storage.getCompileCommand (fileName, directory, clArgs);
 
     // chdir() to the correct directory
     // (whether we need to parse the TU for the first time or reparse it)
@@ -31,7 +28,6 @@ public:
   }
 
 private:
-  Storage::Interface & storage_;
   LibClang::Index index_;
   std::map<std::string, LibClang::TranslationUnit> tu_;
 };

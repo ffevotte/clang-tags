@@ -418,45 +418,37 @@ SqliteDB::~SqliteDB () {
 void SqliteDB::setCompileCommand (const std::string & fileName,
                                  const std::string & directory,
                                  const std::vector<std::string> & args) {
-  Guard guard (mutex_);
   return impl_->setCompileCommand (fileName, directory, args);
 }
 
 void SqliteDB::getCompileCommand (const std::string & fileName,
                                  std::string & directory,
                                  std::vector<std::string> & args) {
-  Guard guard (mutex_);
   return impl_->getCompileCommand (fileName, directory, args);
 }
 
 std::vector<std::string> SqliteDB::listFiles () {
-  Guard guard (mutex_);
   return impl_->listFiles();
 }
 
 std::string SqliteDB::nextFile () {
-  Guard guard (mutex_);
   return impl_->nextFile();
 }
 
 void SqliteDB::beginIndex () {
-  Guard guard (mutex_);
   return impl_->beginIndex();
 }
 
 void SqliteDB::endIndex () {
-  Guard guard (mutex_);
   return impl_->endIndex();
 }
 
 bool SqliteDB::beginFile (const std::string & fileName) {
-  Guard guard (mutex_);
   return impl_->beginFile (fileName);
 }
 
 void SqliteDB::addInclude (const std::string & includedFile,
                           const std::string & sourceFile) {
-  Guard guard (mutex_);
   return impl_->addInclude (includedFile, sourceFile);
 }
 
@@ -468,7 +460,6 @@ void SqliteDB::addTag (const std::string & usr,
                       const int line1, const int col1, const int offset1,
                       const int line2, const int col2, const int offset2,
                       bool isDeclaration) {
-  Guard guard (mutex_);
   return impl_->addTag (usr, kind, spelling, fileName,
                         line1, col1, offset1, line2, col2, offset2,
                         isDeclaration);
@@ -477,38 +468,31 @@ void SqliteDB::addTag (const std::string & usr,
 
 std::vector<ClangTags::Identifier> SqliteDB::findDefinition (const std::string fileName,
                                                       int offset) {
-  Guard guard (mutex_);
   return impl_->findDefinition (fileName,
                                 offset);
 }
 
 std::vector<ClangTags::Identifier::Reference> SqliteDB::grep (const std::string usr) {
-  Guard guard (mutex_);
   return impl_->grep (usr);
 }
 
 void SqliteDB::getOption (const std::string & name, std::string & destination) {
-  Guard guard (mutex_);
   return impl_->getOption (name, destination);
 }
 
 void SqliteDB::getOption (const std::string & name, bool & destination) {
-  Guard guard (mutex_);
   return impl_->getOption (name, destination);
 }
 
 void SqliteDB::getOption (const std::string & name, std::vector<std::string> & destination) {
-  Guard guard (mutex_);
   return impl_->getOption (name, destination);
 }
 
 void SqliteDB::setOption (const std::string & name, const std::string & value) {
-  Guard guard (mutex_);
   return impl_->setOption (name, value);
 }
 
 void SqliteDB::setOptionDefault (const std::string & name, const std::string & value) {
-  Guard guard (mutex_);
   return impl_->setOptionDefault (name, value);
 }
 }

@@ -7,7 +7,8 @@
 namespace ClangTags {
 class Complete {
 public:
-  Complete (Cache & cache);
+  Complete (Storage::Interface & storage,
+            Cache & cache);
 
   struct Args {
     std::string fileName;
@@ -17,6 +18,7 @@ public:
   void operator() (Args & args, std::ostream & cout);
 
 private:
+  Storage::Interface & storage_;
   Cache & cache_;
 };
 }

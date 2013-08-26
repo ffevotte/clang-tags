@@ -108,7 +108,7 @@ void Index::operator() (std::ostream & cout) {
          << "  parsing..." << std::flush;
     Timer timer;
 
-    LibClang::TranslationUnit tu = cache_.translationUnit (fileName);
+    LibClang::TranslationUnit tu = cache_.translationUnit (storage_, fileName);
 
     cout << "\t" << timer.get() << "s." << std::endl;
     timer.reset();

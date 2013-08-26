@@ -182,9 +182,10 @@ private:
 class CompleteCommand : public Request::CommandParser {
 public:
   CompleteCommand (const std::string & name,
+                   Storage::Interface & storage,
                    Cache & cache)
     : Request::CommandParser (name, "Complete the code at point"),
-      complete_ (cache)
+      complete_ (storage, cache)
   {
     prompt_ = "complete> ";
     defaults();
@@ -290,17 +291,20 @@ int main (int argc, char **argv) {
   }
 
   try {
-    ClangTags::Storage::SqliteDB storage;
-    ClangTags::Cache cache (storage);
-    ClangTags::Watch watch (storage, cache);
+    ClangTags::Cache cache;
+
+    ClangTags::Storage::SqliteDB storageServe;
+    ClangTags::Storage::SqliteDB storageWatch;
+
+    ClangTags::Watch watch (storageWatch, cache);
 
     Request::Parser p ("Clang-tags server\n");
-    p .add (new ClangTags::LoadCommand   ("load",  storage, watch))
-      .add (new ClangTags::ConfigCommand ("config", storage))
-      .add (new ClangTags::IndexCommand  ("index", storage, cache))
-      .add (new ClangTags::FindCommand   ("find",  storage, cache))
-      .add (new ClangTags::GrepCommand   ("grep",  storage))
-      .add (new ClangTags::CompleteCommand ("complete", cache))
+    p .add (new ClangTags::LoadCommand   ("load",   storageServe, watch))
+      .add (new ClangTags::ConfigCommand ("config", storageServe))
+      .add (new ClangTags::IndexCommand  ("index",  storageServe, cache))
+      .add (new ClangTags::FindCommand   ("find",   storageServe, cache))
+      .add (new ClangTags::GrepCommand   ("grep",   storageServe))
+      .add (new ClangTags::CompleteCommand ("complete", storageServe, cache))
       .add (new ClangTags::ExitCommand   ("exit"))
       .prompt ("clang-dde> ");
 
@@ -321,3 +325,5 @@ int main (int argc, char **argv) {
 
   return EXIT_SUCCESS;
 }
+toto
+toto

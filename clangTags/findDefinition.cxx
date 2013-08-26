@@ -138,7 +138,7 @@ void FindDefinition::fromIndex_ (Args & args, std::ostream & cout) {
 }
 
 void FindDefinition::fromSource_ (Args & args, std::ostream & cout) {
-  LibClang::TranslationUnit tu = cache_.translationUnit (args.fileName);
+  LibClang::TranslationUnit tu = cache_.translationUnit (storage_, args.fileName);
 
   // Print clang diagnostics if requested
   if (args.diagnostics) {
