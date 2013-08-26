@@ -1,10 +1,11 @@
-#include "storage.hxx"
+#include "sqliteDB.hxx"
 #include "sqlite++/sqlite.hxx"
 
 #include <sys/stat.h>
 
 namespace ClangTags {
-class Storage::Impl {
+namespace Storage {
+class SqliteDB::Impl : public Interface {
 public:
   Impl ()
     : db_ (".ct.sqlite")
@@ -51,11 +52,11 @@ public:
     db_.execute ("ANALYZE");
   }
 
-  int setCompileCommand (const std::string & fileName,
-                         const std::string & directory,
-                         const std::vector<std::string> & args) {
+  void setCompileCommand (const std::string & fileName,
+                          const std::string & directory,
+                          const std::vector<std::string> & args) {
     int fileId = addFile_ (fileName);
-    addInclude (fileId, fileId);
+    addInclude_ (fileId, fileId);
 
     db_.prepare ("DELETE FROM commands "
                  "WHERE fileId=?")
@@ -67,8 +68,6 @@ public:
       .bind (directory)
       .bind (serialize_ (args))
       .step();
-
-    return fileId;
   }
 
   void getCompileCommand (const std::string & fileName,
@@ -125,7 +124,7 @@ public:
       if (stat (includedName.c_str(), &fileStat) != 0) {
         std::cerr << "Warning: could not stat() file `" << includedName << "'" << std::endl
                   << "  removing it from the index" << std::endl;
-        removeFile (includedName);
+        removeFile_ (includedName);
         continue;
       }
       int modified = fileStat.st_mtime;
@@ -136,11 +135,6 @@ public:
     }
 
     return "";
-  }
-
-  void cleanIndex () {
-    db_.execute ("DELETE FROM tags");
-    db_.execute ("UPDATE files SET indexed = 0");
   }
 
   void beginIndex () {
@@ -182,21 +176,6 @@ public:
     }
   }
 
-  void addInclude (const int includedId,
-                   const int sourceId)
-  {
-    int res = db_.prepare ("SELECT * FROM includes "
-                           "WHERE sourceId=? "
-                           "  AND includedId=?")
-      .bind (sourceId) .bind (includedId)
-      .step ();
-    if (res == SQLITE_DONE) { // No matching row
-      db_.prepare ("INSERT INTO includes VALUES (?,?)")
-        .bind (sourceId) . bind (includedId)
-        .step();
-    }
-  }
-
   void addInclude (const std::string & includedFile,
                    const std::string & sourceFile) {
     int includedId = fileId_ (includedFile);
@@ -204,34 +183,7 @@ public:
     if (includedId == -1 || sourceId == -1)
       throw std::runtime_error ("Cannot add inclusion for unknown files `"
                                 + includedFile + "' and `" + sourceFile + "'");
-    addInclude (includedId, sourceId);
-  }
-
-  void removeFile (const std::string & fileName) {
-    int fileId = fileId_ (fileName);
-    db_
-      .prepare ("DELETE FROM commands WHERE fileId = ?")
-      .bind (fileId)
-      .step();
-
-    db_
-      .prepare ("DELETE FROM includes WHERE sourceId = ?")
-      .bind (fileId)
-      .step();
-
-    db_
-      .prepare ("DELETE FROM includes WHERE includedId = ?")
-      .bind (fileId)
-      .step();
-
-    db_
-      .prepare ("DELETE FROM tags WHERE fileId = ?")
-      .bind (fileId)
-      .step();
-
-    db_.prepare ("DELETE FROM files WHERE id = ?")
-      .bind (fileId)
-      .step();
+    addInclude_ (includedId, sourceId);
   }
 
   void addTag (const std::string & usr,
@@ -254,11 +206,8 @@ public:
       .step();
   }
 
-  typedef Storage::Reference  Reference;
-  typedef Storage::Definition Definition;
-  typedef Storage::RefDef     RefDef;
-  std::vector<RefDef> findDefinition (const std::string fileName,
-                                      int offset) {
+  std::vector<ClangTags::Identifier> findDefinition (const std::string fileName,
+                                                 int offset) {
     int fileId = fileId_ (fileName);
     Sqlite::Statement stmt =
       db_.prepare ("SELECT ref.offset1, ref.offset2, ref.kind, ref.spelling,"
@@ -277,23 +226,23 @@ public:
       .bind (offset)
       .bind (offset);
 
-    std::vector<RefDef> ret;
+    std::vector<ClangTags::Identifier> ret;
     while (stmt.step() == SQLITE_ROW) {
-      RefDef refDef;
-      Reference & ref = refDef.ref;
-      Definition & def = refDef.def;
+      ClangTags::Identifier identifier;
+      ClangTags::Identifier::Reference & ref = identifier.ref;
+      ClangTags::Identifier::Definition & def = identifier.def;
 
       stmt >> ref.offset1 >> ref.offset2 >> ref.kind >> ref.spelling
            >> def.usr >> def.file
            >> def.line1 >> def.line2 >> def.col1 >> def.col2
            >> def.kind >> def.spelling;
       ref.file = fileName;
-      ret.push_back(refDef);
+      ret.push_back(identifier);
     }
     return ret;
   }
 
-  std::vector<Reference> grep (const std::string usr) {
+  std::vector<ClangTags::Identifier::Reference> grep (const std::string usr) {
     Sqlite::Statement stmt =
       db_.prepare("SELECT ref.line1, ref.line2, ref.col1, ref.col2, "
                   "       ref.offset1, ref.offset2, refFile.name, ref.kind "
@@ -302,9 +251,9 @@ public:
                   "WHERE ref.usr = ?")
       .bind (usr);
 
-    std::vector<Reference> ret;
+    std::vector<ClangTags::Identifier::Reference> ret;
     while (stmt.step() == SQLITE_ROW) {
-      Reference ref;
+      ClangTags::Identifier::Reference ref;
       stmt >> ref.line1 >> ref.line2 >> ref.col1 >> ref.col2
            >> ref.offset1 >> ref.offset2 >> ref.file >> ref.kind;
       ret.push_back (ref);
@@ -332,12 +281,8 @@ public:
       .step();
   }
 
-  template <typename T>
-  void getOption (const std::string & name, T & destination) {
-    std::string val;
-    getOption (name, val);
-    std::istringstream iss (val);
-    iss >> std::boolalpha >> destination;
+  void getOption (const std::string & name, bool & destination) {
+    getOption_ (name, destination);
   }
 
   void getOption (const std::string & name, std::string & destination) {
@@ -385,6 +330,56 @@ private:
     return id;
   }
 
+  void removeFile_ (const std::string & fileName) {
+    int fileId = fileId_ (fileName);
+    db_
+      .prepare ("DELETE FROM commands WHERE fileId = ?")
+      .bind (fileId)
+      .step();
+
+    db_
+      .prepare ("DELETE FROM includes WHERE sourceId = ?")
+      .bind (fileId)
+      .step();
+
+    db_
+      .prepare ("DELETE FROM includes WHERE includedId = ?")
+      .bind (fileId)
+      .step();
+
+    db_
+      .prepare ("DELETE FROM tags WHERE fileId = ?")
+      .bind (fileId)
+      .step();
+
+    db_.prepare ("DELETE FROM files WHERE id = ?")
+      .bind (fileId)
+      .step();
+  }
+
+  void addInclude_ (const int includedId,
+                    const int sourceId)
+  {
+    int res = db_.prepare ("SELECT * FROM includes "
+                           "WHERE sourceId=? "
+                           "  AND includedId=?")
+      .bind (sourceId) .bind (includedId)
+      .step ();
+    if (res == SQLITE_DONE) { // No matching row
+      db_.prepare ("INSERT INTO includes VALUES (?,?)")
+        .bind (sourceId) . bind (includedId)
+        .step();
+    }
+  }
+
+  template <typename T>
+  void getOption_ (const std::string & name, T & destination) {
+    std::string val;
+    getOption (name, val);
+    std::istringstream iss (val);
+    iss >> std::boolalpha >> destination;
+  }
+
   std::string serialize_ (const std::vector<std::string> & v) {
     Json::Value json;
     auto it = v.begin();
@@ -412,66 +407,61 @@ private:
   Sqlite::Database db_;
 };
 
-Storage::Storage ()
-  : impl_ (new Storage::Impl)
+SqliteDB::SqliteDB ()
+  : impl_ (new SqliteDB::Impl)
 {}
 
-Storage::~Storage () {
+SqliteDB::~SqliteDB () {
   delete impl_;
 }
 
-int Storage::setCompileCommand (const std::string & fileName,
-                                const std::string & directory,
-                                const std::vector<std::string> & args) {
+void SqliteDB::setCompileCommand (const std::string & fileName,
+                                 const std::string & directory,
+                                 const std::vector<std::string> & args) {
   Guard guard (mutex_);
   return impl_->setCompileCommand (fileName, directory, args);
 }
 
-void Storage::getCompileCommand (const std::string & fileName,
+void SqliteDB::getCompileCommand (const std::string & fileName,
                                  std::string & directory,
                                  std::vector<std::string> & args) {
   Guard guard (mutex_);
   return impl_->getCompileCommand (fileName, directory, args);
 }
 
-std::vector<std::string> Storage::listFiles () {
+std::vector<std::string> SqliteDB::listFiles () {
   Guard guard (mutex_);
   return impl_->listFiles();
 }
 
-std::string Storage::nextFile () {
+std::string SqliteDB::nextFile () {
   Guard guard (mutex_);
   return impl_->nextFile();
 }
 
-void Storage::beginIndex () {
+void SqliteDB::beginIndex () {
   Guard guard (mutex_);
   return impl_->beginIndex();
 }
 
-void Storage::endIndex () {
+void SqliteDB::endIndex () {
   Guard guard (mutex_);
   return impl_->endIndex();
 }
 
-bool Storage::beginFile (const std::string & fileName) {
+bool SqliteDB::beginFile (const std::string & fileName) {
   Guard guard (mutex_);
   return impl_->beginFile (fileName);
 }
 
-void Storage::addInclude (const int includedId, const int sourceId) {
-  Guard guard (mutex_);
-  return impl_->addInclude (includedId, sourceId);
-}
-
-void Storage::addInclude (const std::string & includedFile,
+void SqliteDB::addInclude (const std::string & includedFile,
                           const std::string & sourceFile) {
   Guard guard (mutex_);
   return impl_->addInclude (includedFile, sourceFile);
 }
 
 // TODO use a structure instead of a large number of arguments
-void Storage::addTag (const std::string & usr,
+void SqliteDB::addTag (const std::string & usr,
                       const std::string & kind,
                       const std::string & spelling,
                       const std::string & fileName,
@@ -485,37 +475,41 @@ void Storage::addTag (const std::string & usr,
 }
 
 
-std::vector<Storage::RefDef> Storage::findDefinition (const std::string fileName,
+std::vector<ClangTags::Identifier> SqliteDB::findDefinition (const std::string fileName,
                                                       int offset) {
   Guard guard (mutex_);
   return impl_->findDefinition (fileName,
                                 offset);
 }
 
-std::vector<Storage::Reference> Storage::grep (const std::string usr) {
+std::vector<ClangTags::Identifier::Reference> SqliteDB::grep (const std::string usr) {
   Guard guard (mutex_);
   return impl_->grep (usr);
 }
 
-
-template <typename T>
-void Storage::getOption (const std::string & name, T & destination) {
+void SqliteDB::getOption (const std::string & name, std::string & destination) {
   Guard guard (mutex_);
   return impl_->getOption (name, destination);
 }
 
-void Storage::getOption (const std::string & name, std::vector<std::string> & destination) {
+void SqliteDB::getOption (const std::string & name, bool & destination) {
   Guard guard (mutex_);
   return impl_->getOption (name, destination);
 }
 
-void Storage::setOption (const std::string & name, const std::string & value) {
+void SqliteDB::getOption (const std::string & name, std::vector<std::string> & destination) {
+  Guard guard (mutex_);
+  return impl_->getOption (name, destination);
+}
+
+void SqliteDB::setOption (const std::string & name, const std::string & value) {
   Guard guard (mutex_);
   return impl_->setOption (name, value);
 }
 
-void Storage::instantiateTemplates_ () {
-  std::string stringDest; getOption ("name", stringDest);
-  bool boolDest;          getOption ("name", boolDest);
+void SqliteDB::setOptionDefault (const std::string & name, const std::string & value) {
+  Guard guard (mutex_);
+  return impl_->setOptionDefault (name, value);
+}
 }
 }

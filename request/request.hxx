@@ -392,6 +392,7 @@ namespace Request {
      *
      * @param cin   input stream, where the request will be read
      * @param cout  output stream
+     * @param echo  it @c true, echo input on the output stream
      *
      * @sa parseJson()
      */

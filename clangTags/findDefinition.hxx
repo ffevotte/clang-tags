@@ -9,8 +9,8 @@ namespace ClangTags {
 
 class FindDefinition {
 public:
-  FindDefinition (Storage & storage,
-                  Cache   & cache);
+  FindDefinition (Storage::Interface & storage,
+                  Cache & cache);
 
   struct Args {
     std::string fileName;
@@ -21,10 +21,10 @@ public:
   };
   void operator() (Args & args, std::ostream & cout);
 
-  static void displayRefDef (const Storage::RefDef & refDef,
+  static void displayRefDef (const ClangTags::Identifier & identifier,
                              std::ostream & cout);
 
-  static void outputRefDef (const Storage::RefDef & refDef,
+  static void outputRefDef (const ClangTags::Identifier & identifier,
                             std::ostream & cout);
 
   static void displayCursor (LibClang::Cursor cursor,
@@ -34,7 +34,7 @@ private:
   void fromIndex_  (Args & args, std::ostream & cout);
   void fromSource_ (Args & args, std::ostream & cout);
 
-  Storage & storage_;
-  Cache   & cache_;
+  Storage::Interface & storage_;
+  Cache & cache_;
 };
 }

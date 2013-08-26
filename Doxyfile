@@ -627,7 +627,7 @@ INPUT_ENCODING         = UTF-8
 # *.hxx *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.dox *.py 
 # *.f90 *.f *.for *.vhd *.vhdl
 
-FILE_PATTERNS          = 
+FILE_PATTERNS          = *.hxx *.dox
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories 
 # should be searched for input files as well. Possible values are YES and NO. 
@@ -667,7 +667,10 @@ EXCLUDE_SYMBOLS        =
 # directories that contain example code fragments that are included (see 
 # the \include command).
 
-EXAMPLE_PATH           = "request/tests" "sqlite++/tests" "util/tests"
+EXAMPLE_PATH           = \
+  "@PROJECT_SOURCE_DIR@/request/tests" \
+  "@PROJECT_SOURCE_DIR@/sqlite++/tests" \
+  "@PROJECT_SOURCE_DIR@/util/tests"
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the 
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 

@@ -11,7 +11,7 @@ namespace ClangTags {
 class Load
 {
 public:
-  Load (Storage & storage,
+  Load (Storage::Interface & storage,
         Watch & watch);
   ~Load ();
 
@@ -21,9 +21,9 @@ public:
   void operator() (Args & args, std::ostream & cout);
 
 private:
-  Storage & storage_;
-  Watch   & watch_;
-  char*     cwd_;
+  Storage::Interface & storage_;
+  Watch & watch_;
+  char* cwd_;
 };
 
 

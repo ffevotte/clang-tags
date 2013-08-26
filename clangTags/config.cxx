@@ -1,7 +1,7 @@
 #include "config.hxx"
 
 namespace ClangTags {
-Config::Config (Storage & storage)
+Config::Config (Storage::Interface & storage)
   : storage_ (storage)
 {}
 

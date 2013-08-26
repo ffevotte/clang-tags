@@ -3,7 +3,7 @@
 
 namespace ClangTags {
 
-Grep::Grep (Storage & storage)
+Grep::Grep (Storage::Interface & storage)
   : storage_ (storage)
 {}
 

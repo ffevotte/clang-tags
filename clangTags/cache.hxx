@@ -7,7 +7,7 @@ namespace ClangTags {
 
 class Cache {
 public:
-  Cache (Storage & storage)
+  Cache (Storage::Interface & storage)
     : storage_ (storage)
   {}
 
@@ -31,7 +31,7 @@ public:
   }
 
 private:
-  Storage & storage_;
+  Storage::Interface & storage_;
   LibClang::Index index_;
   std::map<std::string, LibClang::TranslationUnit> tu_;
 };

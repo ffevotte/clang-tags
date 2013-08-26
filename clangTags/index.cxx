@@ -15,7 +15,7 @@ class Indexer : public LibClang::Visitor<Indexer> {
 public:
   Indexer (const std::string & fileName,
            const std::vector<std::string> & exclude,
-           Storage & storage,
+           Storage::Interface & storage,
            std::ostream & cout)
     : sourceFile_ (fileName),
       exclude_    (exclude),
@@ -78,13 +78,13 @@ public:
 private:
   const std::string              & sourceFile_;
   const std::vector<std::string> & exclude_;
-  Storage                        & storage_;
+  Storage::Interface             & storage_;
   std::map<std::string, bool>      needsUpdate_;
   std::ostream                   & cout_;
 };
 
 
-Index::Index (Storage & storage, Cache & cache)
+Index::Index (Storage::Interface & storage, Cache & cache)
   : storage_ (storage),
     cache_   (cache)
 {}

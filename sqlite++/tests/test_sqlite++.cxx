@@ -1,7 +1,7 @@
 /**
 @example test_sqlite++.cxx
 
-This example illustrates the use of @ref libsqlite
+This example illustrates the use of @ref sqlite
 
 */
 

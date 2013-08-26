@@ -8,7 +8,7 @@
 
 namespace ClangTags {
 
-Load::Load (Storage & storage,
+Load::Load (Storage::Interface & storage,
             Watch   & watch)
   : storage_ (storage),
     watch_ (watch)

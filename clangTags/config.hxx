@@ -10,7 +10,7 @@ namespace ClangTags {
 class Config
 {
 public:
-  Config (Storage & storage);
+  Config (Storage::Interface & storage);
 
   struct Args {
     bool        get;
@@ -20,6 +20,6 @@ public:
   void operator() (const Args & args, std::ostream & cout);
 
 private:
-  Storage & storage_;
+  Storage::Interface & storage_;
 };
 }

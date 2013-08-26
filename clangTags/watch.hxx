@@ -7,7 +7,7 @@
 namespace ClangTags {
 class Watch {
 public:
-  Watch (Storage & storage, Cache & cache);
+  Watch (Storage::Interface & storage, Cache & cache);
   ~Watch ();
 
   void update ();
@@ -19,7 +19,7 @@ private:
   void addWatchDescriptor (const std::string & fileName, int wd);
   std::string fileName (int wd);
 
-  Storage & storage_;
+  Storage::Interface & storage_;
   Index index_;
   int fd_inotify_;
   std::map<std::string, int> wd_;

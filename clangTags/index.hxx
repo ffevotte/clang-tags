@@ -6,11 +6,11 @@
 namespace ClangTags {
 class Index {
 public:
-  Index (Storage & storage, Cache & cache);
+  Index (Storage::Interface & storage, Cache & cache);
   void operator() (std::ostream & cout);
 
 private:
-  Storage & storage_;
-  Cache   & cache_;
+  Storage::Interface & storage_;
+  Cache & cache_;
 };
 }

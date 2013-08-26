@@ -4,7 +4,7 @@
 #include <sys/poll.h>
 
 namespace ClangTags {
-Watch::Watch (Storage & storage, Cache & cache)
+Watch::Watch (Storage::Interface & storage, Cache & cache)
   : storage_ (storage),
     index_   (storage, cache)
 {

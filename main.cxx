@@ -2,6 +2,8 @@
 #include "request/request.hxx"
 #include "getopt++/getopt.hxx"
 
+#include "clangTags/storage/sqliteDB.hxx"
+
 #include "clangTags/watch.hxx"
 #include "clangTags/load.hxx"
 #include "clangTags/config.hxx"
@@ -18,7 +20,7 @@ namespace ClangTags {
 class LoadCommand : public Request::CommandParser {
 public:
   LoadCommand (const std::string & name,
-               Storage & storage,
+               Storage::Interface & storage,
                Watch & watch)
     : Request::CommandParser (name, "Read a compilation database"),
       loader_ (storage, watch)
@@ -41,14 +43,14 @@ public:
   }
 
 private:
-  ClangTags::Load loader_;
-  ClangTags::Load::Args args_;
+  Load loader_;
+  Load::Args args_;
 };
 
 class ConfigCommand : public Request::CommandParser {
 public:
   ConfigCommand (const std::string & name,
-                 Storage & storage)
+                 Storage::Interface & storage)
     : Request::CommandParser (name, "Get/set clang-tags configuration"),
       config_ (storage)
   {
@@ -76,13 +78,15 @@ public:
   }
 
 private:
-  ClangTags::Config config_;
-  ClangTags::Config::Args args_;
+  Config config_;
+  Config::Args args_;
 };
 
 class IndexCommand : public Request::CommandParser {
 public:
-  IndexCommand (const std::string & name, Storage & storage, ClangTags::Cache & cache)
+  IndexCommand (const std::string & name,
+                Storage::Interface & storage,
+                Cache & cache)
     : Request::CommandParser (name, "Update the source code index"),
       index_ (storage, cache)
   {
@@ -94,13 +98,15 @@ public:
   }
 
 protected:
-  ClangTags::Index index_;
+  Index index_;
 };
 
 
 class FindCommand : public Request::CommandParser {
 public:
-  FindCommand (const std::string & name, Storage & storage, ClangTags::Cache & cache)
+  FindCommand (const std::string & name,
+               Storage::Interface & storage,
+               Cache & cache)
     : Request::CommandParser (name, "Find the definition of a symbol"),
       findDefinition_ (storage, cache)
   {
@@ -138,14 +144,15 @@ public:
   }
 
 private:
-  ClangTags::FindDefinition findDefinition_;
-  ClangTags::FindDefinition::Args args_;
+  FindDefinition findDefinition_;
+  FindDefinition::Args args_;
 };
 
 
 class GrepCommand : public Request::CommandParser {
 public:
-  GrepCommand (const std::string & name, Storage & storage)
+  GrepCommand (const std::string & name,
+               Storage::Interface & storage)
     : Request::CommandParser (name, "Find all references to a definition"),
       grep_ (storage)
   {
@@ -167,15 +174,15 @@ public:
   }
 
 private:
-  ClangTags::Grep grep_;
-  ClangTags::Grep::Args args_;
+  Grep grep_;
+  Grep::Args args_;
 };
 
 
 class CompleteCommand : public Request::CommandParser {
 public:
   CompleteCommand (const std::string & name,
-                   ClangTags::Cache & cache)
+                   Cache & cache)
     : Request::CommandParser (name, "Complete the code at point"),
       complete_ (cache)
   {
@@ -205,8 +212,8 @@ public:
   }
 
 private:
-  ClangTags::Complete complete_;
-  ClangTags::Complete::Args args_;
+  Complete complete_;
+  Complete::Args args_;
 };
 
 struct ExitCommand : public Request::CommandParser {
@@ -283,7 +290,7 @@ int main (int argc, char **argv) {
   }
 
   try {
-    ClangTags::Storage storage;
+    ClangTags::Storage::SqliteDB storage;
     ClangTags::Cache cache (storage);
     ClangTags::Watch watch (storage, cache);
 

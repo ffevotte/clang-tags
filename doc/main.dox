@@ -11,3 +11,8 @@ looking at the <a href="modules.html">modules page</a>, which groups
 documentation by topic.
 
 */
+
+
+/** @namespace ClangTags
+    @brief Namespace for clang-tags specific code
+*/

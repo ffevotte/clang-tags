@@ -5,7 +5,7 @@
 namespace ClangTags {
 class Grep {
 public:
-  Grep (Storage & storage);
+  Grep (Storage::Interface & storage);
 
   struct Args {
     std::string usr;
@@ -13,6 +13,6 @@ public:
   void operator() (const Args & args, std::ostream & cout);
 
 private:
-  Storage & storage_;
+  Storage::Interface & storage_;
 };
 }

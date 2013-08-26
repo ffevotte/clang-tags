@@ -7,17 +7,17 @@
 
 namespace ClangTags {
 
-FindDefinition::FindDefinition (Storage & storage,
+FindDefinition::FindDefinition (Storage::Interface & storage,
                                 Cache & cache)
   : storage_ (storage),
     cache_   (cache)
 {}
 
-void FindDefinition::displayRefDef (const Storage::RefDef & refDef,
+void FindDefinition::displayRefDef (const ClangTags::Identifier & identifier,
                                     std::ostream & cout)
 {
-  const Storage::Reference  & ref = refDef.ref;
-  const Storage::Definition & def = refDef.def;
+  const ClangTags::Identifier::Reference  & ref = identifier.ref;
+  const ClangTags::Identifier::Definition & def = identifier.def;
 
   // Display reference
   {
@@ -40,13 +40,13 @@ void FindDefinition::displayRefDef (const Storage::RefDef & refDef,
   }
 }
 
-void FindDefinition::outputRefDef (const Storage::RefDef & refDef,
+void FindDefinition::outputRefDef (const ClangTags::Identifier & identifier,
                                    std::ostream & cout)
 {
   Json::FastWriter writer;
-  Json::Value json = refDef.json();
+  Json::Value json = identifier.json();
 
-  const Storage::Reference & ref = refDef.ref;
+  const ClangTags::Identifier::Reference & ref = identifier.ref;
   SourceFile sourceFile (ref.file);
   json["ref"]["substring"] = sourceFile.substring (ref.offset1, ref.offset2);
 
@@ -63,9 +63,9 @@ void FindDefinition::displayCursor (LibClang::Cursor cursor,
     return;
   }
 
-  Storage::RefDef refDef;
-  Storage::Reference & ref = refDef.ref;
-  Storage::Definition & def = refDef.def;
+  ClangTags::Identifier identifier;
+  ClangTags::Identifier::Reference & ref = identifier.ref;
+  ClangTags::Identifier::Definition & def = identifier.def;
 
   // Get cursor information
   {
@@ -92,7 +92,7 @@ void FindDefinition::displayCursor (LibClang::Cursor cursor,
     def.usr = cursorDef.USR();
   }
 
-  outputRefDef (refDef, cout);
+  outputRefDef (identifier, cout);
 }
 
 class Finder : public LibClang::Visitor<Finder>
