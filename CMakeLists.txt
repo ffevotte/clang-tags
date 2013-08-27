@@ -91,7 +91,7 @@ include ("util/CMakeLists.txt")
 add_executable (clang-tags-server
   main.cxx
   clangTags/storage/sqliteDB.cxx
-  clangTags/watch.cxx
+  clangTags/update.cxx
   clangTags/load.cxx
   clangTags/findDefinition.cxx
   clangTags/complete.cxx

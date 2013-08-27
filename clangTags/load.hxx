@@ -1,7 +1,7 @@
 #pragma once
 
 #include "storage.hxx"
-#include "watch.hxx"
+#include "update.hxx"
 
 #include <string>
 #include <iostream>
@@ -12,7 +12,7 @@ class Load
 {
 public:
   Load (Storage::Interface & storage,
-        Watch & watch);
+        Update & update);
   ~Load ();
 
   struct Args {
@@ -22,7 +22,7 @@ public:
 
 private:
   Storage::Interface & storage_;
-  Watch & watch_;
+  Update & update_;
   char* cwd_;
 };
 

@@ -4,7 +4,7 @@
 
 #include "clangTags/storage/sqliteDB.hxx"
 
-#include "clangTags/watch.hxx"
+#include "clangTags/update.hxx"
 #include "clangTags/load.hxx"
 #include "clangTags/config.hxx"
 #include "clangTags/findDefinition.hxx"
@@ -21,9 +21,9 @@ class LoadCommand : public Request::CommandParser {
 public:
   LoadCommand (const std::string & name,
                Storage::Interface & storage,
-               Watch & watch)
+               Update & update)
     : Request::CommandParser (name, "Read a compilation database"),
-      loader_ (storage, watch)
+      loader_ (storage, update)
   {
     prompt_ = "load> ";
     defaults();
@@ -292,19 +292,17 @@ int main (int argc, char **argv) {
 
   try {
     ClangTags::Cache cache;
+    ClangTags::Storage::SqliteDB storage;
 
-    ClangTags::Storage::SqliteDB storageServe;
-    ClangTags::Storage::SqliteDB storageWatch;
-
-    ClangTags::Watch watch (storageWatch, cache);
+    ClangTags::Update update (cache);
 
     Request::Parser p ("Clang-tags server\n");
-    p .add (new ClangTags::LoadCommand   ("load",   storageServe, watch))
-      .add (new ClangTags::ConfigCommand ("config", storageServe))
-      .add (new ClangTags::IndexCommand  ("index",  storageServe, cache))
-      .add (new ClangTags::FindCommand   ("find",   storageServe, cache))
-      .add (new ClangTags::GrepCommand   ("grep",   storageServe))
-      .add (new ClangTags::CompleteCommand ("complete", storageServe, cache))
+    p .add (new ClangTags::LoadCommand   ("load",   storage, update))
+      .add (new ClangTags::ConfigCommand ("config", storage))
+      .add (new ClangTags::IndexCommand  ("index",  storage, cache))
+      .add (new ClangTags::FindCommand   ("find",   storage, cache))
+      .add (new ClangTags::GrepCommand   ("grep",   storage))
+      .add (new ClangTags::CompleteCommand ("complete", storage, cache))
       .add (new ClangTags::ExitCommand   ("exit"))
       .prompt ("clang-dde> ");
 
@@ -313,9 +311,15 @@ int main (int argc, char **argv) {
       p.parseJson (std::cin, std::cout);
     }
     else {
-      boost::thread watchThread (boost::ref(watch));
-      Serve serve (p);
-      serve ();
+      boost::thread watchThread (boost::ref(update));
+      try {
+        Serve serve (p);
+        serve ();
+      } catch (...) {
+        watchThread.interrupt();
+        watchThread.join();
+        throw;
+      }
     }
   }
   catch (std::exception& e) {
@@ -325,5 +329,4 @@ int main (int argc, char **argv) {
 
   return EXIT_SUCCESS;
 }
-toto
-toto
+

@@ -9,9 +9,9 @@
 namespace ClangTags {
 
 Load::Load (Storage::Interface & storage,
-            Watch   & watch)
+            Update   & update)
   : storage_ (storage),
-    watch_ (watch)
+    update_ (update)
 {
   const size_t size = 4096;
   cwd_ = new char[size];
@@ -54,6 +54,6 @@ void Load::operator() (Args & args,
     storage_.setCompileCommand (fileName, directory, clArgs);
   }
 
-  watch_.update();
+  update_.index();
 }
 }
