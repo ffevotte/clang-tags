@@ -1,6 +1,8 @@
 #pragma once
 
 #include "database.hxx"
+#include <iostream>
+#include <sys/poll.h>
 
 namespace Sqlite {
   /** @addtogroup sqlite
@@ -113,9 +115,23 @@ namespace Sqlite {
      * @return @c SQLITE_OK, @c SQLITE_ROW or @c SQLITE_DONE
      * @throw Error
      */
-    int step () {
+    int step (bool retry = true) {
       colI_ = 0;
       int ret = sqlite3_step (raw());
+
+      // Retry statement if requested
+      if (retry && ret == SQLITE_BUSY) {
+        for ( ; ; ) {
+          // sleep for 0.1 s.
+          poll (NULL, 0, 1000);
+
+          std::cerr << "Database busy... retrying " << std::endl
+                    << sqlite3_sql (raw()) << std::endl;
+          ret = sqlite3_step (raw());
+          if (ret != SQLITE_BUSY) break;
+        }
+      }
+
       if (ret == SQLITE_ERROR) {
         throw Error (db_.errMsg());
       }

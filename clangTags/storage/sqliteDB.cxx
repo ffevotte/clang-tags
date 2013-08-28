@@ -138,11 +138,12 @@ public:
   }
 
   void beginIndex () {
-    db_.execute ("BEGIN TRANSACTION");
+    db_.execute ("BEGIN IMMEDIATE TRANSACTION");
   }
 
   void endIndex () {
     db_.execute ("END TRANSACTION");
+    db_.execute ("ANALYZE");
   }
 
   bool beginFile (const std::string & fileName) {

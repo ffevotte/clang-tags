@@ -101,7 +101,6 @@ void Index::operator() (std::ostream & cout) {
   bool diagnostics;
   storage_.getOption ("index.diagnostics", diagnostics);
 
-  storage_.beginIndex();
   std::string fileName;
   while ((fileName = storage_.nextFile()) != "") {
     cout << fileName << ":" << std::endl
@@ -122,12 +121,13 @@ void Index::operator() (std::ostream & cout) {
     }
 
     cout << "  indexing..." << std::endl;
+    storage_.beginIndex();
     LibClang::Cursor top (tu);
     Indexer indexer (fileName, exclude, storage_, cout);
     indexer.visitChildren (top);
     cout << "  indexing...\t" << timer.get() << "s." << std::endl;
+    storage_.endIndex();
   }
-  storage_.endIndex();
   cout << totalTimer.get() << "s." << std::endl;
 }
 }

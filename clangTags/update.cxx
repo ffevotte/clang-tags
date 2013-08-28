@@ -78,6 +78,10 @@ void Update::operator() () {
     {
       int event;
       if (queue_.pop (event)) {
+        // Empty event queue
+        while (queue_.pop(event)) {}
+
+        // Reindex and update list
         index_ (std::cerr);
         updateWatchList_();
       }
