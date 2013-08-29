@@ -19,7 +19,8 @@ bool Update::InotifyMap::contains (const std::string & fileName) {
 
 Update::Update (Cache & cache)
   : index_   (storage_, cache),
-    queue_   (128)
+    indexRequested_ (true),
+    indexUpdated_ (false)
 {
   // Initialize inotify
   fd_inotify_ = inotify_init ();
@@ -27,8 +28,6 @@ Update::Update (Cache & cache)
     perror ("inotify_init");
     throw std::runtime_error ("inotify");
   }
-
-  index();
 }
 
 Update::~Update () {
@@ -38,7 +37,11 @@ Update::~Update () {
 }
 
 void Update::index () {
-  queue_.push (0);
+  indexRequested_.set (true);
+}
+
+void Update::wait () {
+  indexUpdated_.get();
 }
 
 void Update::updateWatchList_ () {
@@ -74,17 +77,15 @@ void Update::operator() () {
     // Check for interruptions
     boost::this_thread::interruption_point();
 
-    // Look for an event in the queue
-    {
-      int event;
-      if (queue_.pop (event)) {
-        // Empty event queue
-        while (queue_.pop(event)) {}
+    // Check whether a re-indexing was requested
+    if (indexRequested_.get() == true) {
+      // Reindex and update list
+      index_ (std::cerr);
+      updateWatchList_();
 
-        // Reindex and update list
-        index_ (std::cerr);
-        updateWatchList_();
-      }
+      // Reset flag and notify waiting threads
+      indexRequested_.set (false);
+      indexUpdated_.set (true);
     }
 
     // Look for an inotify event

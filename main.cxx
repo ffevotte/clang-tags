@@ -85,20 +85,20 @@ private:
 class IndexCommand : public Request::CommandParser {
 public:
   IndexCommand (const std::string & name,
-                Storage::Interface & storage,
-                Cache & cache)
+                Update & update)
     : Request::CommandParser (name, "Update the source code index"),
-      index_ (storage, cache)
+      update_ (update)
   {
     prompt_ = "index> ";
   }
 
   void run (std::ostream & cout) {
-    index_ (cout);
+    update_.index();
+    update_.wait();
   }
 
 protected:
-  Index index_;
+  Update & update_;
 };
 
 
@@ -299,7 +299,7 @@ int main (int argc, char **argv) {
     Request::Parser p ("Clang-tags server\n");
     p .add (new ClangTags::LoadCommand   ("load",   storage, update))
       .add (new ClangTags::ConfigCommand ("config", storage))
-      .add (new ClangTags::IndexCommand  ("index",  storage, cache))
+      .add (new ClangTags::IndexCommand  ("index",  update))
       .add (new ClangTags::FindCommand   ("find",   storage, cache))
       .add (new ClangTags::GrepCommand   ("grep",   storage))
       .add (new ClangTags::CompleteCommand ("complete", storage, cache))

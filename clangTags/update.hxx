@@ -2,7 +2,8 @@
 
 #include "clangTags/storage/sqliteDB.hxx"
 #include "clangTags/index.hxx"
-#include <boost/lockfree/queue.hpp>
+#include "MT/aFlag.hxx"
+#include "MT/sFlag.hxx"
 
 namespace ClangTags {
 
@@ -39,6 +40,13 @@ public:
    */
   void index ();
 
+  /** @brief Wait until the index is updated
+   *
+   * Calling this method puts the current thread to sleep until the Update
+   * thread is done reindexing source files.
+   */
+  void wait ();
+
 private:
   void updateWatchList_ ();
 
@@ -57,6 +65,7 @@ private:
   Index index_;
   int fd_inotify_;
   InotifyMap inotifyMap_;
-  boost::lockfree::queue<int> queue_;
+  MT::AFlag<bool> indexRequested_;
+  MT::SFlag<bool> indexUpdated_;
 };
 }
