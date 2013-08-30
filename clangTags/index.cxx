@@ -91,6 +91,8 @@ Index::Index (Storage::Interface & storage, Cache & cache)
 
 void Index::operator() (std::ostream & cout) {
   Timer totalTimer;
+  double parseTime = 0;
+  double indexTime = 0;
 
   cout << std::endl
        << "-- Updating index" << std::endl;
@@ -109,8 +111,9 @@ void Index::operator() (std::ostream & cout) {
 
     LibClang::TranslationUnit tu = cache_.translationUnit (storage_, fileName);
 
-    cout << "\t" << timer.get() << "s." << std::endl;
-    timer.reset();
+    double elapsed = timer.get();
+    cout << "\t" << elapsed << "s." << std::endl;
+    parseTime += elapsed;
 
     // Print clang diagnostics if requested
     if (diagnostics) {
@@ -121,13 +124,20 @@ void Index::operator() (std::ostream & cout) {
     }
 
     cout << "  indexing..." << std::endl;
+    timer.reset();
     storage_.beginIndex();
     LibClang::Cursor top (tu);
     Indexer indexer (fileName, exclude, storage_, cout);
     indexer.visitChildren (top);
-    cout << "  indexing...\t" << timer.get() << "s." << std::endl;
     storage_.endIndex();
+
+    elapsed = timer.get();
+    cout << "  indexing...\t" << elapsed << "s." << std::endl;
+    indexTime += elapsed;
   }
-  cout << totalTimer.get() << "s." << std::endl;
+
+  cout << "Parsing time:  " << parseTime << "s." << std::endl
+       << "Indexing time: " << indexTime << "s." << std::endl
+       << "TOTAL:         " << totalTimer.get() << "s." << std::endl;
 }
 }
