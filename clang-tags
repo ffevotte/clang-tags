@@ -529,7 +529,7 @@ def main_argparse ():
     s.add_argument (
         "option",
         metavar = "OPTION",
-        nargs = "?",
+        nargs = "?", default = "",
         help = "option name")
     s.add_argument (
         "value",
