@@ -714,7 +714,6 @@ namespace Request {
 
       if (verbose)
         std::cerr << "Processing request... ";
-      cout << "Server response:" << std::endl << std::flush;
 
       std::string command = json["command"].asString();
       CommandMap::const_iterator it = commands_.find (command);

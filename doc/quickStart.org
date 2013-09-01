@@ -36,19 +36,13 @@
    should be loaded into the system:
    #+include: "@PROJECT_SOURCE_DIR@/tests/ct-load" src sh :lines "3-"
    #+include: "@PROJECT_BINARY_DIR@/tests/ct-load.out" src fundamental
-  
-** Index the source files
 
-   The first time =clang-tags= is used for a project, the full sources should
-   be indexed:
+   The server should now start indexing all source files in the background (you
+   can monitor this process by looking at the server log: `.ct.log`).
+
+   In case your source code base is relatively large, you should now wait for
+   the index to be fully built:
    #+include: "@PROJECT_SOURCE_DIR@/tests/ct-index" src sh :lines "3-"
-   #+include: "@PROJECT_BINARY_DIR@/tests/ct-index.out" src fundamental
-
-   After source files change, the source index can be updated, which saves some
-   time by only reparsing new content:
-   #+BEGIN_SRC sh
-     clang-tags update
-   #+END_SRC
    #+include: "@PROJECT_BINARY_DIR@/tests/ct-index.out" src fundamental
 
 

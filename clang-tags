@@ -321,14 +321,6 @@ def index (args):
     return sendRequest (request)
 
 
-def update (args):
-    """Update the source code base index."""
-
-    request = {"command": "update"}
-    return sendRequest (request)
-
-
-
 ### IDE-like features
 def findDefinition (args):
     """Find the definition of an identifier."""
@@ -468,7 +460,9 @@ def main_argparse ():
         "load",
         help = "load a compilation database",
         description = "Read the compilation commands needed to build the"
-        " project from a compilation database.")
+        " project from a compilation database. As compilation commands are"
+        " loaded, the server starts creating an index of all tags in the"
+        " source code base.")
     s.add_argument (
         "compilationDB",
         metavar = "FILEPATH",
@@ -541,10 +535,7 @@ def main_argparse ():
     s = subparsers.add_parser (
         "index",
         help = "index source code base",
-        description = "Create an index of all tags in the source code base."
-        " Source files and compilation commands are taken from a clang"
-        " \"compilation database\" in JSON format, previously read using"
-        " the \"load\" subcommand.")
+        description = "Wait for the server to finish updating the source code index.")
     s.set_defaults (fun = index)
 
 

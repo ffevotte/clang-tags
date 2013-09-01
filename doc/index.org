@@ -127,8 +127,6 @@ relies on the [[http://clang.llvm.org][clang]] compiler (via the libclang interf
 
 *** Tracing the standard build process
 
-    #+include: "@PROJECT_BINARY_DIR@/tests/trace-help.out" src fundamental
-
     For non =CMake=-managed projects, there is no "free" way to build the compilation database. One
     way to get the necessary information consists in inspecting the build process as a black box
     using [[http://linux.die.net/man/1/strace][=strace(1)=]] (also see [[https://github.com/rizsotto/Bear][=Bear=]] for a tool using =LD_PRELOAD= to implement the same kind of
@@ -140,6 +138,8 @@ relies on the [[http://clang.llvm.org][clang]] compiler (via the libclang interf
     compilation database can thus be incomplete. Such methods also depend on platform-specific
     features to inspect the build process.
 
+    #+include: "@PROJECT_BINARY_DIR@/tests/trace-help.out" src fundamental
+
     - Example usage ::
       #+include: "@PROJECT_SOURCE_DIR@/tests/ct-trace" src sh :lines "3-"
       #+include: "@PROJECT_BINARY_DIR@/tests/ct-trace.out" src fundamental
@@ -147,11 +147,11 @@ relies on the [[http://clang.llvm.org][clang]] compiler (via the libclang interf
 
 *** Scanning the sources directory
 
-    #+include: "@PROJECT_BINARY_DIR@/tests/scan-help.out" src fundamental
-
     For relatively simple projects, it can be sufficient to simply scan the top sources directory to
     find all =*.c= or =*.cxx= files, and additionally provide =clang-tags= with a set of command-line
     arguments necessary for =clang= to parse these files.
+
+    #+include: "@PROJECT_BINARY_DIR@/tests/scan-help.out" src fundamental
 
     - Example usage ::
       #+begin_src sh
@@ -165,12 +165,12 @@ relies on the [[http://clang.llvm.org][clang]] compiler (via the libclang interf
 
 *** From a compilation database
 
-    #+include: "@PROJECT_BINARY_DIR@/tests/load-help.out" src fundamental
-
     This command loads a previously created compilation database into the server.
 
     An optional argument =--emacs-conf= allows generating a suitable =.dir-local.el=
     emacs configuration file in the sources directory.
+
+    #+include: "@PROJECT_BINARY_DIR@/tests/load-help.out" src fundamental
 
     - Example usage ::
       #+include: "@PROJECT_SOURCE_DIR@/tests/ct-load" src sh :lines "3-"
@@ -179,11 +179,11 @@ relies on the [[http://clang.llvm.org][clang]] compiler (via the libclang interf
 
 *** Manually
 
-    #+include: "@PROJECT_BINARY_DIR@/tests/add-help.out" src fundamental
-    
     It is possible (although impractical) to manually load a compilation command
     into the server.
 
+    #+include: "@PROJECT_BINARY_DIR@/tests/add-help.out" src fundamental
+    
     - Example usage ::
       #+BEGIN_SRC sh
         clang-tags add -- g++ -c -o main.o main.cxx
@@ -192,10 +192,10 @@ relies on the [[http://clang.llvm.org][clang]] compiler (via the libclang interf
 
 *** Using a fake compiler
 
-    #+include: "@PROJECT_BINARY_DIR@/tests/fake-compiler-help.out" src fundamental
-
     Another common way of getting compilation commands consists in interposing
     fake compilers between the buid process and the real compiler.
+
+    #+include: "@PROJECT_BINARY_DIR@/tests/fake-compiler-help.out" src fundamental
 
     - Example usage ::
   
@@ -221,26 +221,18 @@ relies on the [[http://clang.llvm.org][clang]] compiler (via the libclang interf
 
 ** Indexing the source files
 
-*** Creating the index
+   The server monitors all known source files on the filesystem and updates the
+   index as necessary in the background. You should therefore never need to
+   bother about keeping the index up-to-date.
 
-    #+include: "@PROJECT_BINARY_DIR@/tests/index-help.out" src fundamental
+   You may however want to make sure the server is finished updating the index
+   before querying it.
 
-    This command uses the compilation database to index all source files.
-
-    - Example usage ::
-      #+include: "@PROJECT_SOURCE_DIR@/tests/ct-index" src sh :lines "3-"
-      #+include: "@PROJECT_BINARY_DIR@/tests/ct-index.out" src fundamental
-
-
-*** Updating the index
-
-    #+include: "@PROJECT_BINARY_DIR@/tests/update-help.out" src fundamental
-
-    This command updates the index.
-
-    # - Example usage ::
-    #   #+include: "@PROJECT_SOURCE_DIR@/tests/ct-update" src sh :lines "3-"
-    #   #+include: "@PROJECT_BINARY_DIR@/tests/ct-update.out" src fundamental
+   #+include: "@PROJECT_BINARY_DIR@/tests/index-help.out" src fundamental
+   
+   - Example usage ::
+     #+include: "@PROJECT_SOURCE_DIR@/tests/ct-index" src sh :lines "3-"
+     #+include: "@PROJECT_BINARY_DIR@/tests/ct-index.out" src fundamental
 
 
 ** Looking for symbols

@@ -95,7 +95,9 @@ public:
 
   void run (std::ostream & cout) {
     update_.index();
+    cout << "Waiting for the index to be rebuilt..." << std::endl;
     update_.wait();
+    cout << "Done." << std::endl;
   }
 
 protected:
