@@ -9,7 +9,7 @@
 namespace ClangTags {
 
 Load::Load (Storage::Interface & storage,
-            Update   & update)
+            Update::Thread     & update)
   : storage_ (storage),
     update_ (update)
 {

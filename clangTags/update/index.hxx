@@ -1,16 +1,18 @@
 #pragma once
 
-#include "storage.hxx"
-#include "cache.hxx"
+#include "clangTags/storage.hxx"
+#include "clangTags/cache.hxx"
 
 namespace ClangTags {
+namespace Update {
 class Index {
 public:
   Index (Storage::Interface & storage, Cache & cache);
-  void operator() (std::ostream & cout);
+  void operator() ();
 
 private:
   Storage::Interface & storage_;
   Cache & cache_;
 };
+}
 }

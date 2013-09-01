@@ -90,13 +90,14 @@ include ("util/CMakeLists.txt")
 
 add_executable (clang-tags-server
   main.cxx
+  MT/stream.cxx
   clangTags/storage/sqliteDB.cxx
-  clangTags/update.cxx
+  clangTags/update/thread.cxx
+  clangTags/update/index.cxx
   clangTags/load.cxx
   clangTags/findDefinition.cxx
   clangTags/complete.cxx
   clangTags/grep.cxx
-  clangTags/index.cxx
   clangTags/config.cxx)
 target_link_libraries (clang-tags-server ${LIBS})
 

@@ -1,15 +1,16 @@
 #pragma once
 
 #include "clangTags/storage/sqliteDB.hxx"
-#include "clangTags/index.hxx"
+#include "index.hxx"
 #include "MT/aFlag.hxx"
 #include "MT/sFlag.hxx"
 
 namespace ClangTags {
+namespace Update {
 
 /** @brief Background thread updating the index
  */
-class Update {
+class Thread {
 public:
 
   /** @brief Constructor
@@ -21,8 +22,8 @@ public:
    *
    * @param cache @ref LibClang::TranslationUnit "TranslationUnit" cache
    */
-  Update (Cache & cache);
-  ~Update ();
+  Thread (Cache & cache);
+  ~Thread ();
 
   /** @brief Main loop
    *
@@ -68,4 +69,5 @@ private:
   MT::AFlag<bool> indexRequested_;
   MT::SFlag<bool> indexUpdated_;
 };
+}
 }

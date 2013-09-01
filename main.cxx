@@ -1,16 +1,17 @@
 #include "util/util.hxx"
 #include "request/request.hxx"
 #include "getopt++/getopt.hxx"
+#include "MT/stream.hxx"
 
 #include "clangTags/storage/sqliteDB.hxx"
 
-#include "clangTags/update.hxx"
+#include "clangTags/update/thread.hxx"
+
 #include "clangTags/load.hxx"
 #include "clangTags/config.hxx"
 #include "clangTags/findDefinition.hxx"
 #include "clangTags/complete.hxx"
 #include "clangTags/grep.hxx"
-#include "clangTags/index.hxx"
 
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
@@ -21,7 +22,7 @@ class LoadCommand : public Request::CommandParser {
 public:
   LoadCommand (const std::string & name,
                Storage::Interface & storage,
-               Update & update)
+               Update::Thread & update)
     : Request::CommandParser (name, "Read a compilation database"),
       loader_ (storage, update)
   {
@@ -85,7 +86,7 @@ private:
 class IndexCommand : public Request::CommandParser {
 public:
   IndexCommand (const std::string & name,
-                Update & update)
+                Update::Thread & update)
     : Request::CommandParser (name, "Update the source code index"),
       update_ (update)
   {
@@ -98,7 +99,7 @@ public:
   }
 
 protected:
-  Update & update_;
+  Update::Thread & update_;
 };
 
 
@@ -244,13 +245,13 @@ public:
   }
 
   ~Serve () {
-    std::cerr << "Server exiting..." << std::endl;
+    MT::cerr() << "Server exiting..." << std::endl;
     unlink (socketPath_.c_str());
     unlink (pidPath_.c_str());
   }
 
   void operator() () {
-    std::cerr << "Server starting with pid: " << getpid() << std::endl;
+    MT::cerr() << "Server starting with pid: " << getpid() << std::endl;
 
     boost::asio::io_service io_service;
     boost::asio::local::stream_protocol::endpoint endpoint (socketPath_);
@@ -294,7 +295,7 @@ int main (int argc, char **argv) {
     ClangTags::Cache cache;
     ClangTags::Storage::SqliteDB storage;
 
-    ClangTags::Update update (cache);
+    ClangTags::Update::Thread update (cache);
 
     Request::Parser p ("Clang-tags server\n");
     p .add (new ClangTags::LoadCommand   ("load",   storage, update))
@@ -306,21 +307,18 @@ int main (int argc, char **argv) {
       .add (new ClangTags::ExitCommand   ("exit"))
       .prompt ("clang-dde> ");
 
-
+    boost::thread updateThread (boost::ref(update));
     if (options.getCount ("stdin") > 0) {
       p.parseJson (std::cin, std::cout);
     }
     else {
-      boost::thread watchThread (boost::ref(update));
       try {
         Serve serve (p);
         serve ();
-      } catch (...) {
-        watchThread.interrupt();
-        watchThread.join();
-        throw;
-      }
+      } catch (...) {}
     }
+    updateThread.interrupt();
+    updateThread.join();
   }
   catch (std::exception& e) {
     std::cerr << std::endl << "Caught exception: " << e.what() << std::endl;

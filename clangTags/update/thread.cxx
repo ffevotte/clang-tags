@@ -1,23 +1,26 @@
-#include "update.hxx"
+#include "thread.hxx"
+
+#include "MT/stream.hxx"
 
 #include <sys/inotify.h>
 #include <sys/poll.h>
 
 namespace ClangTags {
-void Update::InotifyMap::add (const std::string & fileName, int wd) {
+namespace Update {
+void Thread::InotifyMap::add (const std::string & fileName, int wd) {
   wd_[fileName] = wd;
   file_[wd] = fileName;
 }
 
-std::string Update::InotifyMap::fileName (int wd) {
+std::string Thread::InotifyMap::fileName (int wd) {
   return file_[wd];
 }
 
-bool Update::InotifyMap::contains (const std::string & fileName) {
+bool Thread::InotifyMap::contains (const std::string & fileName) {
   return wd_.count(fileName)>0;
 }
 
-Update::Update (Cache & cache)
+Thread::Thread (Cache & cache)
   : index_   (storage_, cache),
     indexRequested_ (true),
     indexUpdated_ (false)
@@ -30,22 +33,22 @@ Update::Update (Cache & cache)
   }
 }
 
-Update::~Update () {
+Thread::~Thread () {
   // Close inotify file
   // -> the kernel will clean up all associated watches
   ::close (fd_inotify_);
 }
 
-void Update::index () {
+void Thread::index () {
   indexRequested_.set (true);
 }
 
-void Update::wait () {
+void Thread::wait () {
   indexUpdated_.get();
 }
 
-void Update::updateWatchList_ () {
-  std::cerr << "Updating watchlist..." << std::endl;
+void Thread::updateWatchList_ () {
+  MT::cerr() << "Updating watchlist..." << std::endl;
   std::vector<std::string> list = storage_.listFiles();
   for (auto it=list.begin() ; it!=list.end() ; ++it) {
     std::string fileName = *it;
@@ -55,7 +58,7 @@ void Update::updateWatchList_ () {
       continue;
     }
 
-    std::cerr << "Watching " << fileName << std::endl;
+    MT::cerr() << "Watching " << fileName << std::endl;
     int wd = inotify_add_watch (fd_inotify_, fileName.c_str(), IN_MODIFY);
     if (wd == -1) {
       perror ("inotify_add_watch");
@@ -65,7 +68,7 @@ void Update::updateWatchList_ () {
   }
 }
 
-void Update::operator() () {
+void Thread::operator() () {
   const size_t BUF_LEN = 1024;
   char buf[BUF_LEN] __attribute__((aligned(4)));
 
@@ -80,7 +83,7 @@ void Update::operator() () {
     // Check whether a re-indexing was requested
     if (indexRequested_.get() == true) {
       // Reindex and update list
-      index_ (std::cerr);
+      index_ ();
       updateWatchList_();
 
       // Reset flag and notify waiting threads
@@ -108,7 +111,7 @@ void Update::operator() () {
           struct inotify_event *event = (struct inotify_event *) &(buf[i]);
           i += sizeof (struct inotify_event) + event->len;
 
-          std::cerr << "Detected modification of "
+          MT::cerr() << "Detected modification of "
                     << inotifyMap_.fileName(event->wd) << std::endl;
         }
 
@@ -117,5 +120,6 @@ void Update::operator() () {
       }
     }
   }
+}
 }
 }

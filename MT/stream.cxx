@@ -1,5 +1,5 @@
 #include "stream.hxx"
 
 namespace MT {
-  OStream::Mutex OStream::mtx_;
+OStream cerr (std::cerr);
 }

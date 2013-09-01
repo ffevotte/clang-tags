@@ -3,6 +3,7 @@
 
 #include "util/util.hxx"
 #include "index.hxx"
+#include "MT/stream.hxx"
 
 #include <cstdlib>
 #include <string>
@@ -10,17 +11,16 @@
 #include <fstream>
 
 namespace ClangTags {
+namespace Update {
 
 class Indexer : public LibClang::Visitor<Indexer> {
 public:
   Indexer (const std::string & fileName,
            const std::vector<std::string> & exclude,
-           Storage::Interface & storage,
-           std::ostream & cout)
+           Storage::Interface & storage)
     : sourceFile_ (fileName),
       exclude_    (exclude),
-      storage_    (storage),
-      cout_       (cout)
+      storage_    (storage)
   {
     needsUpdate_[fileName] = storage.beginFile (fileName);
     storage_.addInclude (fileName, fileName);
@@ -59,8 +59,11 @@ public:
     }
 
     if (needsUpdate_.count(fileName) == 0) {
-      cout_ << "    " << fileName << std::endl;
-      needsUpdate_[fileName] = storage_.beginFile (fileName);
+      const bool needsUpdate = storage_.beginFile (fileName);
+      needsUpdate_[fileName] = needsUpdate;
+      if (needsUpdate) {
+        MT::cerr() << "    " << fileName << std::endl;
+      }
       storage_.addInclude (fileName, sourceFile_);
     }
 
@@ -80,7 +83,6 @@ private:
   const std::vector<std::string> & exclude_;
   Storage::Interface             & storage_;
   std::map<std::string, bool>      needsUpdate_;
-  std::ostream                   & cout_;
 };
 
 
@@ -89,13 +91,13 @@ Index::Index (Storage::Interface & storage, Cache & cache)
     cache_   (cache)
 {}
 
-void Index::operator() (std::ostream & cout) {
+void Index::operator() () {
   Timer totalTimer;
   double parseTime = 0;
   double indexTime = 0;
 
-  cout << std::endl
-       << "-- Updating index" << std::endl;
+  MT::cerr() << std::endl
+             << "-- Updating index" << std::endl;
 
   std::vector<std::string> exclude;
   storage_.getOption ("index.exclude", exclude);
@@ -105,39 +107,40 @@ void Index::operator() (std::ostream & cout) {
 
   std::string fileName;
   while ((fileName = storage_.nextFile()) != "") {
-    cout << fileName << ":" << std::endl
-         << "  parsing..." << std::flush;
+    MT::cerr() << fileName << ":" << std::endl
+               << "  parsing..." << std::flush;
     Timer timer;
 
     LibClang::TranslationUnit tu = cache_.translationUnit (storage_, fileName);
 
     double elapsed = timer.get();
-    cout << "\t" << elapsed << "s." << std::endl;
+    MT::cerr() << "\t" << elapsed << "s." << std::endl;
     parseTime += elapsed;
 
     // Print clang diagnostics if requested
     if (diagnostics) {
       for (unsigned int N = tu.numDiagnostics(),
              i = 0 ; i < N ; ++i) {
-        cout << tu.diagnostic (i) << std::endl << std::endl;
+        MT::cerr() << tu.diagnostic (i) << std::endl << std::endl;
       }
     }
 
-    cout << "  indexing..." << std::endl;
+    MT::cerr() << "  indexing..." << std::endl;
     timer.reset();
     storage_.beginIndex();
     LibClang::Cursor top (tu);
-    Indexer indexer (fileName, exclude, storage_, cout);
+    Indexer indexer (fileName, exclude, storage_);
     indexer.visitChildren (top);
     storage_.endIndex();
 
     elapsed = timer.get();
-    cout << "  indexing...\t" << elapsed << "s." << std::endl;
+    MT::cerr() << "  indexing...\t" << elapsed << "s." << std::endl;
     indexTime += elapsed;
   }
 
-  cout << "Parsing time:  " << parseTime << "s." << std::endl
-       << "Indexing time: " << indexTime << "s." << std::endl
-       << "TOTAL:         " << totalTimer.get() << "s." << std::endl;
+  MT::cerr() << "Parsing time:  " << parseTime << "s." << std::endl
+             << "Indexing time: " << indexTime << "s." << std::endl
+             << "TOTAL:         " << totalTimer.get() << "s." << std::endl;
+}
 }
 }

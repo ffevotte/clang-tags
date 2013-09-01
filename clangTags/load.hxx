@@ -1,7 +1,7 @@
 #pragma once
 
 #include "storage.hxx"
-#include "update.hxx"
+#include "clangTags/update/thread.hxx"
 
 #include <string>
 #include <iostream>
@@ -12,7 +12,7 @@ class Load
 {
 public:
   Load (Storage::Interface & storage,
-        Update & update);
+        Update::Thread & update);
   ~Load ();
 
   struct Args {
@@ -22,7 +22,7 @@ public:
 
 private:
   Storage::Interface & storage_;
-  Update & update_;
+  Update::Thread & update_;
   char* cwd_;
 };
 
