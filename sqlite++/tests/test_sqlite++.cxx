@@ -23,12 +23,14 @@ int main () {
                     "  name  TEXT"
                     ")");
 
+  {
+    Transaction transaction(database);
 
-  // Prepare an SQL statement with a placeholder, ...
-  database.prepare ("INSERT INTO foo VALUES (NULL, ?)")
-    .bind ("bar")  // bind it to a value, ...
-    .step ();      // execute it
-
+    // Prepare an SQL statement with a placeholder, ...
+    database.prepare ("INSERT INTO foo VALUES (NULL, ?)")
+      .bind ("bar")  // bind it to a value, ...
+      .step ();      // execute it
+  }
 
   // Prepare an SQL statement
   Statement statement = database.prepare ("SELECT id, name FROM foo");
