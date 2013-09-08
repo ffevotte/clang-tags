@@ -18,6 +18,8 @@ void Application::compilationDatabase (CompilationDatabaseArgs & args,
           << reader.getFormattedErrorMessages();
   }
 
+  auto transaction(storage_.beginTransaction());
+
   for (unsigned int i=0 ; i<root.size() ; ++i) {
     std::string fileName = root[i]["file"].asString();
     std::string directory = root[i]["directory"].asString();
