@@ -103,32 +103,34 @@ void Application::update (IndexArgs & args, std::ostream & cout) {
 void Application::updateIndex_ (IndexArgs & args, std::ostream & cout) {
   Timer totalTimer;
 
-  storage_.beginIndex();
-  std::string fileName;
-  while ((fileName = storage_.nextFile()) != "") {
-    cout << fileName << ":" << std::endl
-         << "  parsing..." << std::flush;
-    Timer timer;
+  {
+    auto transaction(storage_.beginTransaction());
+    std::string fileName;
+    while ((fileName = storage_.nextFile()) != "") {
+      cout << fileName << ":" << std::endl
+           << "  parsing..." << std::flush;
+      Timer timer;
 
-    LibClang::TranslationUnit tu = translationUnit_(fileName);
+      LibClang::TranslationUnit tu = translationUnit_(fileName);
 
-    cout << "\t" << timer.get() << "s." << std::endl;
-    timer.reset();
+      cout << "\t" << timer.get() << "s." << std::endl;
+      timer.reset();
 
-    // Print clang diagnostics if requested
-    if (args.diagnostics) {
-      for (unsigned int N = tu.numDiagnostics(),
-             i = 0 ; i < N ; ++i) {
-        cout << tu.diagnostic (i) << std::endl << std::endl;
+      // Print clang diagnostics if requested
+      if (args.diagnostics) {
+        for (unsigned int N = tu.numDiagnostics(),
+               i = 0 ; i < N ; ++i) {
+          cout << tu.diagnostic (i) << std::endl << std::endl;
+        }
       }
-    }
 
-    cout << "  indexing..." << std::endl;
-    LibClang::Cursor top (tu);
-    Indexer indexer (fileName, args.exclude, storage_, cout);
-    indexer.visitChildren (top);
-    cout << "  indexing...\t" << timer.get() << "s." << std::endl;
+      cout << "  indexing..." << std::endl;
+      LibClang::Cursor top (tu);
+      Indexer indexer (fileName, args.exclude, storage_, cout);
+      indexer.visitChildren (top);
+      cout << "  indexing...\t" << timer.get() << "s." << std::endl;
+    }
   }
-  storage_.endIndex();
+
   cout << totalTimer.get() << "s." << std::endl;
 }

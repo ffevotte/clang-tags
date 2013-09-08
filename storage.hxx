@@ -127,12 +127,8 @@ public:
     db_.execute ("UPDATE files SET indexed = 0");
   }
 
-  void beginIndex () {
-    db_.execute ("BEGIN TRANSACTION");
-  }
-
-  void endIndex () {
-    db_.execute ("END TRANSACTION");
+  Sqlite::Transaction beginTransaction () {
+    return Sqlite::Transaction(db_);
   }
 
   bool beginFile (const std::string & fileName) {
