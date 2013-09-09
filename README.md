@@ -76,6 +76,11 @@ A doxygen-generated documentation targeted at developers is available
 consult it, should you need help implementing in `clang-tags` the killer feature
 you need.
 
+### Contributors
+
+- [Cameron White](https://github.com/cameronwhite) largely improved SQLite
+  performances
+
 
 ## License
 

@@ -74,7 +74,7 @@ def stop (args):
     "Stop the clang-tags server."
 
     request = {"command": "exit"}
-    sendRequest (request)
+    return sendRequest (request)
 
 
 def clean (args):
@@ -248,14 +248,14 @@ def index (args):
 
     request = {"command": "index",
                "exclude": exclude}
-    sendRequest (request)
+    return sendRequest (request)
 
 
 def update (args):
     """Update the source code base index."""
 
     request = {"command": "update"}
-    sendRequest (request)
+    return sendRequest (request)
 
 
 
@@ -285,7 +285,7 @@ def findDefinition (args):
         except:
             sys.stdout.write (line)
 
-    sendRequest (request, processOutput)
+    return sendRequest (request, processOutput)
 
 
 def grep (args):
@@ -303,7 +303,7 @@ def grep (args):
         except:
             sys.stdout.write (line)
 
-    sendRequest (request, processOutput)
+    return sendRequest (request, processOutput)
 
 
 def complete (args):
@@ -313,7 +313,7 @@ def complete (args):
                "file": os.path.realpath (args.fileName),
                "line": args.line,
                "column": args.column}
-    sendRequest (request)
+    return sendRequest (request)
 
 
 
@@ -529,7 +529,7 @@ def main_argparse ():
 
 
     args = parser.parse_args ()
-    args.fun (args)
+    return args.fun (args)
 
 
 
@@ -538,4 +538,4 @@ if __name__ == "__main__":
         import argparse
     except ImportError:
         import arg2opt as argparse
-    main_argparse ()
+    sys.exit (main_argparse())

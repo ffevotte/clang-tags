@@ -247,7 +247,7 @@ namespace Request {
   template <typename T>
   void setValue (const Json::Value & json, T & destination) {
     std::istringstream iss (json.asString());
-    iss >> destination;
+    iss >> std::boolalpha >> destination;
   }
 
   /** @brief Scalar key parser
