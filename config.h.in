@@ -1,1 +1,2 @@
 #cmakedefine HAVE_CLANG_GETEXPANSIONLOCATION
+#cmakedefine HAVE_INOTIFY

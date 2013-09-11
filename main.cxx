@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "util/util.hxx"
 #include "request/request.hxx"
 #include "getopt++/getopt.hxx"
@@ -6,6 +8,7 @@
 #include "clangTags/storage/sqliteDB.hxx"
 
 #include "clangTags/update/thread.hxx"
+#include "clangTags/watch/inotify.hxx"
 
 #include "clangTags/load.hxx"
 #include "clangTags/config.hxx"
@@ -297,7 +300,16 @@ int main (int argc, char **argv) {
     ClangTags::Cache cache;
     ClangTags::Storage::SqliteDB storage;
 
+    std::list<boost::thread> threads;
+
     ClangTags::Update::Thread update (cache);
+    threads.push_back (boost::thread (boost::ref(update)));
+
+#if defined(HAVE_INOTIFY)
+    ClangTags::Watch::Inotify watch (update);
+    update.setWatchThread (&watch);
+    threads.push_back (boost::thread (boost::ref(watch)));
+#endif
 
     Request::Parser p ("Clang-tags server\n");
     p .add (new ClangTags::LoadCommand   ("load",   storage, update))
@@ -309,7 +321,6 @@ int main (int argc, char **argv) {
       .add (new ClangTags::ExitCommand   ("exit"))
       .prompt ("clang-dde> ");
 
-    boost::thread updateThread (boost::ref(update));
     if (options.getCount ("stdin") > 0) {
       p.parseJson (std::cin, std::cout);
     }
@@ -319,8 +330,11 @@ int main (int argc, char **argv) {
         serve ();
       } catch (...) {}
     }
-    updateThread.interrupt();
-    updateThread.join();
+
+    for (auto it = threads.begin() ; it != threads.end() ; ++it)
+      it->interrupt();
+    for (auto it = threads.begin() ; it != threads.end() ; ++it)
+      it->join();
   }
   catch (std::exception& e) {
     std::cerr << std::endl << "Caught exception: " << e.what() << std::endl;

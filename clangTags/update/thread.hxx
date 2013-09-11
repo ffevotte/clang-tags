@@ -2,10 +2,10 @@
 
 #include "clangTags/storage/sqliteDB.hxx"
 #include "index.hxx"
-#include "MT/aFlag.hxx"
 #include "MT/sFlag.hxx"
 
 namespace ClangTags {
+namespace Watch { class Thread; }
 namespace Update {
 
 /** @brief Background thread updating the index
@@ -23,7 +23,6 @@ public:
    * @param cache @ref LibClang::TranslationUnit "TranslationUnit" cache
    */
   Thread (Cache & cache);
-  ~Thread ();
 
   /** @brief Main loop
    *
@@ -48,26 +47,16 @@ public:
    */
   void wait ();
 
+  void setWatchThread (Watch::Thread * watchThread);
+
 private:
-  void updateWatchList_ ();
-
-  class InotifyMap {
-  public:
-    void add (const std::string & fileName, int wd);
-    std::string fileName (int wd);
-    bool contains (const std::string & fileName);
-
-  private:
-    std::map<std::string, int> wd_;
-    std::map<int, std::string> file_;
-  };
+  void updateIndex_();
 
   Storage::SqliteDB storage_;
   Index index_;
-  int fd_inotify_;
-  InotifyMap inotifyMap_;
-  MT::AFlag<bool> indexRequested_;
+  MT::SFlag<bool> indexRequested_;
   MT::SFlag<bool> indexUpdated_;
+  Watch::Thread * watchThread_;
 };
 }
 }

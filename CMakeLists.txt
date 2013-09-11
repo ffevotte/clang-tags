@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 project(clang-tags)
 
 include (CheckFunctionExists)
+include (CheckIncludeFile)
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 add_definitions (-Wall -std=c++11)
@@ -12,6 +13,7 @@ else ("${CMAKE_BUILD_TYPE}" STREQUAL Release)
 endif ("${CMAKE_BUILD_TYPE}" STREQUAL Release)
 
 include_directories (${CMAKE_SOURCE_DIR})
+
 
 # Check for Boost (system + asio)
 find_package (Boost
@@ -60,6 +62,15 @@ find_package (Strace REQUIRED)
 find_package (PythonInterp REQUIRED)
 
 
+# Check for inotify
+check_include_file (sys/inotify.h HAVE_INOTIFY)
+if (HAVE_INOTIFY)
+  list (APPEND CLANG_TAGS_SERVER_SOURCES
+    clangTags/watch/inotify.cxx
+    clangTags/watch/inotifyMap.cxx)
+endif (HAVE_INOTIFY)
+
+
 # Manage a stack of source directories
 macro (ct_push_dir DIR)
   list (INSERT CT_DIR_STACK 0 ${DIR})
@@ -87,8 +98,7 @@ include ("getopt++/CMakeLists.txt")
 include ("request/CMakeLists.txt")
 include ("util/CMakeLists.txt")
 
-
-add_executable (clang-tags-server
+list (APPEND CLANG_TAGS_SERVER_SOURCES
   main.cxx
   MT/stream.cxx
   clangTags/storage/sqliteDB.cxx
@@ -99,6 +109,7 @@ add_executable (clang-tags-server
   clangTags/complete.cxx
   clangTags/grep.cxx
   clangTags/config.cxx)
+add_executable (clang-tags-server ${CLANG_TAGS_SERVER_SOURCES})
 target_link_libraries (clang-tags-server ${LIBS})
 
 
