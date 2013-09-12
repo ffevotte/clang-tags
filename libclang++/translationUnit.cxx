@@ -45,6 +45,20 @@ namespace LibClang {
     return res;
   }
 
+  unsigned long TranslationUnit::memoryUsage () const {
+    CXTUResourceUsage usage = clang_getCXTUResourceUsage (raw());
+    unsigned long total = 0;
+
+    for (unsigned int i = 0; i < usage.numEntries; ++i)
+    {
+      const CXTUResourceUsageEntry & entry = usage.entries[i];
+      total += entry.amount;
+    }
+
+    clang_disposeCXTUResourceUsage(usage);
+    return total;
+  }
+
   const CXTranslationUnit & TranslationUnit::raw () const {
     return translationUnit_->translationUnit_;
   }
