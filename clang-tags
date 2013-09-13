@@ -66,7 +66,8 @@ def start (args):
         sys.exit (1)
 
     print "Starting server..."
-    command = ["sh", "-c", "clang-tags-server >%s 2>&1 &" % logPath]
+    command = ["sh", "-c", "clang-tags-server --cachesize %d >%s 2>&1 &" %
+        (args.cachesize, logPath)]
     sys.exit (subprocess.call (command))
 
 
@@ -337,6 +338,12 @@ def main_argparse ():
         "start",
         help = "start the clang-tags server",
         description = "Start the clang-tags server.")
+    s.add_argument (
+        "--cachesize",
+        metavar = "CACHESIZE",
+        type = int,
+        help = "Specify the maximum size of the translation unit cache (in MB)")
+    s.set_defaults (cachesize = 1000000)
     s.set_defaults (fun = start)
 
     s = subparsers.add_parser (

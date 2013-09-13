@@ -2,13 +2,14 @@
 
 #include "storage.hxx"
 #include "libclang++/libclang++.hxx"
-#include <map>
+#include "libclang++/translationUnitCache.hxx"
 #include <iostream>
 
 class Application {
 public:
-  Application (Storage & storage)
-    : storage_ (storage)
+  Application (Storage & storage, unsigned int cacheLimit)
+    : storage_ (storage),
+      tu_ (cacheLimit)
   {
     const size_t size = 4096;
     cwd_ = new char[size];
@@ -75,18 +76,19 @@ private:
     // (whether we need to parse the TU for the first time or reparse it)
     chdir (directory.c_str());
 
-    auto it = tu_.find (fileName);
-    if (it == tu_.end()) {
+    if (!tu_.contains (fileName)) {
       LibClang::TranslationUnit tu = index_.parse (clArgs);
-      return tu_.insert (std::make_pair (fileName, tu)).first->second;
+      tu_.insert (fileName, tu);
+      return tu_.get (fileName);
     } else {
-      it->second.reparse();
-      return it->second;
+      LibClang::TranslationUnit & tu = tu_.get (fileName);
+      tu.reparse();
+      return tu;
     }
   }
 
   Storage & storage_;
   LibClang::Index index_;
-  std::map<std::string, LibClang::TranslationUnit> tu_;
+  LibClang::TranslationUnitCache tu_;
   char* cwd_;
 };
