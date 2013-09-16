@@ -1,8 +1,8 @@
+#include "update.hxx"
+
 #include "libclang++/libclang++.hxx"
-#include "getopt++/getopt.hxx"
 
 #include "util/util.hxx"
-#include "index.hxx"
 #include "MT/stream.hxx"
 
 #include <cstdlib>
@@ -11,13 +11,13 @@
 #include <fstream>
 
 namespace ClangTags {
-namespace Update {
+namespace Indexer {
 
-class Indexer : public LibClang::Visitor<Indexer> {
+class Visitor : public LibClang::Visitor<Visitor> {
 public:
-  Indexer (const std::string & fileName,
+  Visitor (const std::string & fileName,
            const std::vector<std::string> & exclude,
-           Storage::Interface & storage)
+           Storage & storage)
     : sourceFile_ (fileName),
       exclude_    (exclude),
       storage_    (storage)
@@ -81,17 +81,17 @@ public:
 private:
   const std::string              & sourceFile_;
   const std::vector<std::string> & exclude_;
-  Storage::Interface             & storage_;
+  Storage             & storage_;
   std::map<std::string, bool>      needsUpdate_;
 };
 
 
-Index::Index (Storage::Interface & storage, Cache & cache)
+Update::Update (Storage & storage, Cache & cache)
   : storage_ (storage),
     cache_   (cache)
 {}
 
-void Index::operator() () {
+void Update::operator() () {
   Timer totalTimer;
   double parseTime = 0;
   double indexTime = 0;
@@ -129,7 +129,7 @@ void Index::operator() () {
     timer.reset();
     storage_.beginIndex();
     LibClang::Cursor top (tu);
-    Indexer indexer (fileName, exclude, storage_);
+    Visitor indexer (fileName, exclude, storage_);
     indexer.visitChildren (top);
     storage_.endIndex();
 

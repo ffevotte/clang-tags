@@ -2,12 +2,13 @@
 
 #include "libclang++/libclang++.hxx"
 #include "storage.hxx"
+#include <unistd.h>
 
 namespace ClangTags {
 
 class Cache {
 public:
-  LibClang::TranslationUnit & translationUnit (Storage::Interface & storage,
+  LibClang::TranslationUnit & translationUnit (Storage & storage,
                                                std::string fileName) {
     std::string directory;
     std::vector<std::string> clArgs;

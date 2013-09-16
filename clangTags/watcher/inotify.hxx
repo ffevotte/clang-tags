@@ -1,19 +1,21 @@
 #pragma once
 
-#include "thread.hxx"
-#include "inotifyMap.hxx"
+#include "config.h"
+#if defined HAVE_INOTIFY
+
+#include "watcher.hxx"
 
 #include "MT/aFlag.hxx"
 
-#include "clangTags/storage/sqliteDB.hxx"
-#include "clangTags/update/thread.hxx"
+#include "clangTags/storage.hxx"
+#include "clangTags/indexer/indexer.hxx"
 
 namespace ClangTags {
-namespace Watch {
+namespace Watcher {
 
 /** @brief Background thread watching source files
  */
-class Inotify : public Thread {
+class Inotify : public Watcher {
 public:
 
   /** @brief Constructor
@@ -25,7 +27,7 @@ public:
    *
    * @param cache @ref LibClang::TranslationUnit "TranslationUnit" cache
    */
-  Inotify (Update::Thread & updateThread);
+  Inotify (Indexer::Indexer & updateThread);
   ~Inotify ();
 
   /** @brief Main loop
@@ -47,11 +49,42 @@ public:
 private:
   void update_();
 
-  Storage::SqliteDB storage_;
+  class Map {
+  public:
+    void add (const std::string & fileName, int wd);
+    std::string fileName (int wd);
+    bool contains (const std::string & fileName);
+
+  private:
+    std::map<std::string, int> wd_;
+    std::map<int, std::string> file_;
+  };
+
+  Storage storage_;
   int fd_inotify_;
-  InotifyMap inotifyMap_;
+  Map inotifyMap_;
   MT::AFlag<bool> updateRequested_;
-  Update::Thread & updateThread_;
+  Indexer::Indexer & indexer_;
 };
+
+
+// Definition of Inotify::Map
+inline
+void Inotify::Map::add (const std::string & fileName, int wd) {
+  wd_[fileName] = wd;
+  file_[wd] = fileName;
+}
+
+inline
+std::string Inotify::Map::fileName (int wd) {
+  return file_[wd];
+}
+
+inline
+bool Inotify::Map::contains (const std::string & fileName) {
+  return wd_.count(fileName)>0;
 }
 }
+}
+
+#endif //defined HAVE_INOTIFY

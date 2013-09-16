@@ -1,16 +1,16 @@
 #pragma once
 
-#include "clangTags/storage/sqliteDB.hxx"
-#include "index.hxx"
+#include "clangTags/storage.hxx"
+#include "clangTags/watcher/watcher.hxx"
+#include "update.hxx"
 #include "MT/sFlag.hxx"
 
 namespace ClangTags {
-namespace Watch { class Thread; }
-namespace Update {
+namespace Indexer {
 
 /** @brief Background thread updating the index
  */
-class Thread {
+class Indexer {
 public:
 
   /** @brief Constructor
@@ -22,7 +22,7 @@ public:
    *
    * @param cache @ref LibClang::TranslationUnit "TranslationUnit" cache
    */
-  Thread (Cache & cache);
+  Indexer (Cache & cache);
 
   /** @brief Main loop
    *
@@ -47,16 +47,16 @@ public:
    */
   void wait ();
 
-  void setWatchThread (Watch::Thread * watchThread);
+  void setWatcher (Watcher::Watcher * watcher);
 
 private:
   void updateIndex_();
 
-  Storage::SqliteDB storage_;
-  Index index_;
+  Storage storage_;
+  Update update_;
   MT::SFlag<bool> indexRequested_;
   MT::SFlag<bool> indexUpdated_;
-  Watch::Thread * watchThread_;
+  Watcher::Watcher * watcher_;
 };
 }
 }

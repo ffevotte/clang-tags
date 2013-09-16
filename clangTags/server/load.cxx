@@ -7,12 +7,22 @@
 #include <stdexcept>
 
 namespace ClangTags {
+namespace Server {
 
-Load::Load (Storage::Interface & storage,
-            Update::Thread     & update)
-  : storage_ (storage),
-    update_ (update)
+Load::Load (Storage & storage,
+            Indexer::Indexer    & indexer)
+  : Request::CommandParser ("load", "Read a compilation database"),
+    storage_ (storage),
+    indexer_ (indexer)
 {
+  prompt_ = "load> ";
+  defaults();
+
+  using Request::key;
+  add (key ("database", args_.fileName)
+       ->metavar ("FILEPATH")
+       ->description ("Load compilation commands from a JSON compilation database"));
+
   const size_t size = 4096;
   cwd_ = new char[size];
   if (getcwd (cwd_, size) == NULL) {
@@ -21,8 +31,15 @@ Load::Load (Storage::Interface & storage,
   }
 }
 
-void Load::operator() (Args & args,
-                       std::ostream & cout) {
+Load::~Load () {
+  delete[] cwd_;
+}
+
+void Load::defaults () {
+  args_.fileName = "compile_commands.json";
+}
+
+void Load::run (std::ostream & cout) {
   // Change back to the original WD (in case `index` or `update` would have
   // changed it)
   chdir (cwd_);
@@ -30,10 +47,10 @@ void Load::operator() (Args & args,
   Json::Value root;
   Json::Reader reader;
 
-  std::ifstream json (args.fileName);
+  std::ifstream json (args_.fileName);
   bool ret = reader.parse (json, root);
   if ( !ret ) {
-    cout  << "Failed to parse compilation database `" << args.fileName << "'\n"
+    cout  << "Failed to parse compilation database `" << args_.fileName << "'\n"
           << reader.getFormattedErrorMessages();
   }
 
@@ -54,6 +71,7 @@ void Load::operator() (Args & args,
     storage_.setCompileCommand (fileName, directory, clArgs);
   }
 
-  update_.index();
+  indexer_.index();
+}
 }
 }

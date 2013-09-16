@@ -6,11 +6,11 @@
 #include <sys/poll.h>
 
 namespace ClangTags {
-namespace Watch {
+namespace Watcher {
 
-Inotify::Inotify (Update::Thread & updateThread)
+Inotify::Inotify (Indexer::Indexer & indexer)
   : updateRequested_ (true),
-    updateThread_ (updateThread)
+    indexer_ (indexer)
 {
   // Initialize inotify
   fd_inotify_ = inotify_init ();
@@ -97,7 +97,7 @@ void Inotify::operator() () {
         }
 
         // Schedule an index update
-        updateThread_.index();
+        indexer_.index();
       }
     }
   }

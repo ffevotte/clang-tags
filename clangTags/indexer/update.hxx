@@ -4,14 +4,14 @@
 #include "clangTags/cache.hxx"
 
 namespace ClangTags {
-namespace Update {
-class Index {
+namespace Indexer {
+class Update {
 public:
-  Index (Storage::Interface & storage, Cache & cache);
+  Update (Storage & storage, Cache & cache);
   void operator() ();
 
 private:
-  Storage::Interface & storage_;
+  Storage & storage_;
   Cache & cache_;
 };
 }

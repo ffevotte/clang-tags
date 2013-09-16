@@ -66,8 +66,7 @@ find_package (PythonInterp REQUIRED)
 check_include_file (sys/inotify.h HAVE_INOTIFY)
 if (HAVE_INOTIFY)
   list (APPEND CLANG_TAGS_SERVER_SOURCES
-    clangTags/watch/inotify.cxx
-    clangTags/watch/inotifyMap.cxx)
+    clangTags/watcher/inotify.cxx)
 endif (HAVE_INOTIFY)
 
 
@@ -99,16 +98,19 @@ include ("request/CMakeLists.txt")
 include ("util/CMakeLists.txt")
 
 list (APPEND CLANG_TAGS_SERVER_SOURCES
-  main.cxx
   MT/stream.cxx
-  clangTags/storage/sqliteDB.cxx
-  clangTags/update/thread.cxx
-  clangTags/update/index.cxx
-  clangTags/load.cxx
-  clangTags/findDefinition.cxx
-  clangTags/complete.cxx
-  clangTags/grep.cxx
-  clangTags/config.cxx)
+  clangTags/server/complete.cxx
+  clangTags/server/config.cxx
+  clangTags/server/findDefinition.cxx
+  clangTags/server/grep.cxx
+  clangTags/server/index.cxx
+  clangTags/server/load.cxx
+  clangTags/server/exit.cxx
+  clangTags/indexer/indexer.cxx
+  clangTags/indexer/update.cxx
+  clangTags/storage.cxx
+  main.cxx
+  )
 add_executable (clang-tags-server ${CLANG_TAGS_SERVER_SOURCES})
 target_link_libraries (clang-tags-server ${LIBS})
 

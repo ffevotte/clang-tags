@@ -2,10 +2,8 @@
 
 #include "identifier.hxx"
 #include <json/json.h>
-#include <boost/thread.hpp>
 
 namespace ClangTags {
-namespace Storage {
 
 /** @brief Interface for persistant storage
  *
@@ -13,9 +11,10 @@ namespace Storage {
  * data needed for clang-tags:
  * - compilation database
  */
-class Interface {
+class Storage {
 public:
-  virtual ~Interface () {}
+  Storage ();
+  ~Storage ();
 
   
   /** @name Options management
@@ -27,29 +26,29 @@ public:
    * @param[in]  name         option name
    * @param[out] destination  destination where the value will be stored
    */
-  virtual void getOption (const std::string & name, std::string & destination) = 0;
+  void getOption (const std::string & name, std::string & destination);
 
   /** @brief Retrieve the value for an option
    *
    * @param[in]  name         option name
    * @param[out] destination  destination where the value will be stored
    */
-  virtual void getOption (const std::string & name, bool & destination) = 0;
+  void getOption (const std::string & name, bool & destination);
 
   /** @brief Retrieve the value for an option
    *
    * @param[in]  name         option name
    * @param[out] destination  destination where the value will be stored
    */
-  virtual void getOption (const std::string & name,
-                          std::vector<std::string> & destination) = 0;
+  void getOption (const std::string & name,
+                  std::vector<std::string> & destination);
 
   /** @brief Store an option value
    *
    * @param name  option name
    * @param value option value
    */
-  virtual void setOption (const std::string & name, const std::string & value) = 0;
+  void setOption (const std::string & name, const std::string & value);
 
   /** @brief Store a default value for an option
    *
@@ -59,7 +58,7 @@ public:
    * @param name  option name
    * @param value option value
    */
-  virtual void setOptionDefault (const std::string & name, const std::string & value) = 0;
+  void setOptionDefault (const std::string & name, const std::string & value);
 
   /** @} */
 
@@ -76,7 +75,7 @@ public:
    *
    * @return a vector of file paths
    */
-  virtual std::vector<std::string> listFiles () = 0;
+  std::vector<std::string> listFiles ();
 
   /** @brief Retrieve the compilation command associated to a source file
    *
@@ -90,9 +89,9 @@ public:
    * @param[out] directory  compilation directory
    * @param[out] args       compilation command
    */
-  virtual void getCompileCommand (const std::string & fileName,
-                                  std::string & directory,
-                                  std::vector<std::string> & args) = 0;
+  void getCompileCommand (const std::string & fileName,
+                          std::string & directory,
+                          std::vector<std::string> & args);
 
   /** @brief Store the compilation command associated to a source file
    *
@@ -100,9 +99,9 @@ public:
    * @param directory  compilation directory
    * @param args       compilation command
    */
-  virtual void setCompileCommand (const std::string & fileName,
-                                 const std::string & directory,
-                                 const std::vector<std::string> & args) = 0;
+  void setCompileCommand (const std::string & fileName,
+                          const std::string & directory,
+                          const std::vector<std::string> & args);
 
   /** @brief Retrieve the next file needing to be indexed
    *
@@ -111,15 +110,15 @@ public:
    *
    * @return absolute path to the source file.
    */
-  virtual std::string nextFile () = 0;
+  std::string nextFile ();
 
   /** @brief Declare the inclusion of a header from a source file
    *
    * @param includedFile absolute path to the header file
    * @param sourceFile   absolute path to the source file
    */
-  virtual void addInclude (const std::string & includedFile,
-                           const std::string & sourceFile) = 0;
+  void addInclude (const std::string & includedFile,
+                   const std::string & sourceFile);
 
   /** @} */
 
@@ -133,13 +132,13 @@ public:
    *
    * This method should be called before beginning indexing source files.
    */
-  virtual void beginIndex () = 0;
+  void beginIndex ();
 
   /** @brief End indexing source files
    *
    * This method should be called after having indexed source files.
    */
-  virtual void endIndex () = 0;
+  void endIndex ();
 
   /** @brief Begin indexing a source file
    *
@@ -150,7 +149,7 @@ public:
    * @return @c true if the file needs indexing (i.e. changed on the filesystem
    *         since its last indexing)
    */
-  virtual bool beginFile (const std::string & fileName) = 0;
+  bool beginFile (const std::string & fileName);
 
   /** @brief Add a tag in the index
    *
@@ -167,13 +166,13 @@ public:
    * @param isDeclaration @c true if the current tag is a declaration/definition
    */
   // TODO use a structure instead of a large number of arguments
-  virtual void addTag (const std::string & usr,
-                       const std::string & kind,
-                       const std::string & spelling,
-                       const std::string & fileName,
-                       const int line1, const int col1, const int offset1,
-                       const int line2, const int col2, const int offset2,
-                       bool isDeclaration) = 0;
+  void addTag (const std::string & usr,
+               const std::string & kind,
+               const std::string & spelling,
+               const std::string & fileName,
+               const int line1, const int col1, const int offset1,
+               const int line2, const int col2, const int offset2,
+               bool isDeclaration);
 
   /** @} */
 
@@ -190,8 +189,8 @@ public:
    *
    * @return vector of @ref Identifier "identifiers"
    */
-  virtual std::vector<ClangTags::Identifier> findDefinition (const std::string fileName,
-                                                         int offset) = 0;
+  std::vector<ClangTags::Identifier> findDefinition (const std::string fileName,
+                                                     int offset);
 
   /** @brief Retrieve all source location referring to a given symbol
    *
@@ -199,10 +198,12 @@ public:
    *
    * @return vector of @ref Identifier::Reference "symbol references"
    */
-  virtual std::vector<ClangTags::Identifier::Reference> grep (const std::string usr) = 0;
+  std::vector<ClangTags::Identifier::Reference> grep (const std::string usr);
 
   /** @} */
 
+private:
+  class Impl;
+  Impl *impl_;
 };
-}
 }

@@ -1,45 +1,45 @@
-#include "thread.hxx"
+#include "indexer.hxx"
 #include "MT/stream.hxx"
 
-#include "clangTags/watch/thread.hxx"
+#include "clangTags/watcher/watcher.hxx"
 
 namespace ClangTags {
-namespace Update {
+namespace Indexer {
 
-Thread::Thread (Cache & cache)
-  : index_   (storage_, cache),
+Indexer::Indexer (Cache & cache)
+  : update_         (storage_, cache),
     indexRequested_ (true),
-    indexUpdated_ (false),
-    watchThread_ (NULL)
+    indexUpdated_   (false),
+    watcher_        (NULL)
 {}
 
-void Thread::setWatchThread (Watch::Thread * watchThread)
+void Indexer::setWatcher (Watcher::Watcher * watcher)
 {
-  watchThread_ = watchThread;
+  watcher_ = watcher;
 }
 
-void Thread::index () {
+void Indexer::index () {
   indexRequested_.set (true);
 }
 
-void Thread::wait () {
+void Indexer::wait () {
   indexUpdated_.get();
 }
 
-void Thread::updateIndex_ () {
+void Indexer::updateIndex_ () {
   // Reindex source files
-  index_();
+  update_();
 
   // Notify the watching thread
-  if (watchThread_)
-    watchThread_->update();
+  if (watcher_)
+    watcher_->update();
 
   // Reset flag and notify waiting threads
   indexRequested_.set (false);
   indexUpdated_.set (true);
 }
 
-void Thread::operator() () {
+void Indexer::operator() () {
   updateIndex_();
 
   for ( ; ; ) {

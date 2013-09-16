@@ -1,13 +1,13 @@
 #pragma once
 
 namespace ClangTags {
-namespace Watch {
+namespace Watcher {
 
 /** @brief Background thread watching source files
  */
-class Thread {
+class Watcher {
 public:
-  virtual ~Thread () {};
+  virtual ~Watcher () {};
 
   /** @brief Schedule an update of the watched source files
    *

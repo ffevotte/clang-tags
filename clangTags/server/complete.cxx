@@ -155,6 +155,8 @@ Chunk Completion::chunk (unsigned int i) {
 }
 
 namespace ClangTags {
+namespace Server {
+
 void printCompletionString(LibClang::Completion completion,
                            std::ostream & stream) {
   int n = completion.size();
@@ -220,17 +222,38 @@ void printCompletionResult(LibClang::CompletionResult completionResult,
   stream << std::endl;
 }
 
-Complete::Complete (Storage::Interface & storage, Cache & cache)
-  : storage_ (storage),
+Complete::Complete (Storage & storage, Cache & cache)
+  : Request::CommandParser ("complete", "Complete the code at point"),
+    storage_ (storage),
     cache_ (cache)
-{}
+{
+  prompt_ = "complete> ";
+  defaults();
 
-void Complete::operator() (Args & args, std::ostream & cout) {
-  LibClang::TranslationUnit & tu = cache_.translationUnit (storage_, args.fileName);
+  using Request::key;
+  add (key ("file", args_.fileName)
+       ->metavar ("FILENAME")
+       ->description ("Source file name"));
+  add (key ("line", args_.line)
+       ->metavar ("LINE_NO")
+       ->description ("Line number (counting from 0)"));
+  add (key ("column", args_.column)
+       ->metavar ("COLUMN_NO")
+       ->description ("Column number (counting from 0)"));
+}
+
+void Complete::defaults () {
+  args_.fileName = "";
+  args_.line = 0;
+  args_.column = 0;
+}
+
+void Complete::run (std::ostream & cout) {
+  LibClang::TranslationUnit & tu = cache_.translationUnit (storage_, args_.fileName);
 
   CXCodeCompleteResults * results
     = clang_codeCompleteAt(tu.raw(),
-                           args.fileName.c_str(), args.line, args.column,
+                           args_.fileName.c_str(), args_.line, args_.column,
                            0, 0,
                            clang_defaultCodeCompleteOptions());
   LibClang::CodeCompletions completions (results);
@@ -241,5 +264,6 @@ void Complete::operator() (Args & args, std::ostream & cout) {
   int n = completions.size();
   for (int i = 0 ; i != n ; ++i)
     printCompletionResult (completions[i], cout);
+}
 }
 }

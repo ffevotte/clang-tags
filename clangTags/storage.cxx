@@ -1,11 +1,11 @@
-#include "sqliteDB.hxx"
+#include "storage.hxx"
 #include "sqlite++/sqlite.hxx"
 
 #include <sys/stat.h>
+#include <sstream>
 
 namespace ClangTags {
-namespace Storage {
-class SqliteDB::Impl : public Interface {
+class Storage::Impl {
 public:
   Impl ()
     : db_ (".ct.sqlite")
@@ -400,7 +400,7 @@ private:
       throw std::runtime_error (reader.getFormattedErrorMessages());
     }
 
-    for (int i=0 ; i<json.size() ; ++i) {
+    for (unsigned int i=0 ; i<json.size() ; ++i) {
       v.push_back (json[i].asString());
     }
   }
@@ -408,53 +408,53 @@ private:
   Sqlite::Database db_;
 };
 
-SqliteDB::SqliteDB ()
-  : impl_ (new SqliteDB::Impl)
+Storage::Storage ()
+  : impl_ (new Impl)
 {}
 
-SqliteDB::~SqliteDB () {
+Storage::~Storage () {
   delete impl_;
 }
 
-void SqliteDB::setCompileCommand (const std::string & fileName,
+void Storage::setCompileCommand (const std::string & fileName,
                                  const std::string & directory,
                                  const std::vector<std::string> & args) {
   return impl_->setCompileCommand (fileName, directory, args);
 }
 
-void SqliteDB::getCompileCommand (const std::string & fileName,
+void Storage::getCompileCommand (const std::string & fileName,
                                  std::string & directory,
                                  std::vector<std::string> & args) {
   return impl_->getCompileCommand (fileName, directory, args);
 }
 
-std::vector<std::string> SqliteDB::listFiles () {
+std::vector<std::string> Storage::listFiles () {
   return impl_->listFiles();
 }
 
-std::string SqliteDB::nextFile () {
+std::string Storage::nextFile () {
   return impl_->nextFile();
 }
 
-void SqliteDB::beginIndex () {
+void Storage::beginIndex () {
   return impl_->beginIndex();
 }
 
-void SqliteDB::endIndex () {
+void Storage::endIndex () {
   return impl_->endIndex();
 }
 
-bool SqliteDB::beginFile (const std::string & fileName) {
+bool Storage::beginFile (const std::string & fileName) {
   return impl_->beginFile (fileName);
 }
 
-void SqliteDB::addInclude (const std::string & includedFile,
+void Storage::addInclude (const std::string & includedFile,
                           const std::string & sourceFile) {
   return impl_->addInclude (includedFile, sourceFile);
 }
 
 // TODO use a structure instead of a large number of arguments
-void SqliteDB::addTag (const std::string & usr,
+void Storage::addTag (const std::string & usr,
                       const std::string & kind,
                       const std::string & spelling,
                       const std::string & fileName,
@@ -467,34 +467,33 @@ void SqliteDB::addTag (const std::string & usr,
 }
 
 
-std::vector<ClangTags::Identifier> SqliteDB::findDefinition (const std::string fileName,
+std::vector<ClangTags::Identifier> Storage::findDefinition (const std::string fileName,
                                                       int offset) {
   return impl_->findDefinition (fileName,
                                 offset);
 }
 
-std::vector<ClangTags::Identifier::Reference> SqliteDB::grep (const std::string usr) {
+std::vector<ClangTags::Identifier::Reference> Storage::grep (const std::string usr) {
   return impl_->grep (usr);
 }
 
-void SqliteDB::getOption (const std::string & name, std::string & destination) {
+void Storage::getOption (const std::string & name, std::string & destination) {
   return impl_->getOption (name, destination);
 }
 
-void SqliteDB::getOption (const std::string & name, bool & destination) {
+void Storage::getOption (const std::string & name, bool & destination) {
   return impl_->getOption (name, destination);
 }
 
-void SqliteDB::getOption (const std::string & name, std::vector<std::string> & destination) {
+void Storage::getOption (const std::string & name, std::vector<std::string> & destination) {
   return impl_->getOption (name, destination);
 }
 
-void SqliteDB::setOption (const std::string & name, const std::string & value) {
+void Storage::setOption (const std::string & name, const std::string & value) {
   return impl_->setOption (name, value);
 }
 
-void SqliteDB::setOptionDefault (const std::string & name, const std::string & value) {
+void Storage::setOptionDefault (const std::string & name, const std::string & value) {
   return impl_->setOptionDefault (name, value);
-}
 }
 }

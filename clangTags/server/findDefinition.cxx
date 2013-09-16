@@ -6,15 +6,45 @@
 #include <cstdlib>
 
 namespace ClangTags {
+namespace Server {
 
-FindDefinition::FindDefinition (Storage::Interface & storage,
+FindDefinition::FindDefinition (Storage & storage,
                                 Cache & cache)
-  : storage_ (storage),
+  : Request::CommandParser ("find", "Find the definition of a symbol"),
+    storage_ (storage),
     cache_   (cache)
-{}
+{
+  prompt_ = "find> ";
+  defaults ();
 
-void FindDefinition::displayRefDef (const ClangTags::Identifier & identifier,
-                                    std::ostream & cout)
+  using Request::key;
+  add (key ("file", args_.fileName)
+       ->metavar ("FILENAME")
+       ->description ("Source file name"));
+  add (key ("offset", args_.offset)
+       ->metavar ("OFFSET")
+       ->description ("Offset in bytes"));
+  add (key ("mostSpecific", args_.mostSpecific)
+       ->metavar ("true|false")
+       ->description ("Display only the most specific identifier at this location"));
+  add (key ("diagnostics", args_.diagnostics)
+       ->metavar ("true|false")
+       ->description ("Print compilation diagnostics"));
+  add (key ("fromIndex", args_.fromIndex)
+       ->metavar ("true|false")
+       ->description ("Search in the index (faster but potentially out-of-date)"));
+}
+
+void FindDefinition::defaults () {
+  args_.fileName = "";
+  args_.offset = 0;
+  args_.mostSpecific = false;
+  args_.diagnostics = true;
+  args_.fromIndex = true;
+}
+
+void FindDefinition::prettyPrint (const ClangTags::Identifier & identifier,
+                                  std::ostream & cout)
 {
   const ClangTags::Identifier::Reference  & ref = identifier.ref;
   const ClangTags::Identifier::Definition & def = identifier.def;
@@ -40,8 +70,8 @@ void FindDefinition::displayRefDef (const ClangTags::Identifier & identifier,
   }
 }
 
-void FindDefinition::outputRefDef (const ClangTags::Identifier & identifier,
-                                   std::ostream & cout)
+void FindDefinition::output (const ClangTags::Identifier & identifier,
+                             std::ostream & cout)
 {
   Json::FastWriter writer;
   Json::Value json = identifier.json();
@@ -53,8 +83,8 @@ void FindDefinition::outputRefDef (const ClangTags::Identifier & identifier,
   cout << writer.write (json);
 }
 
-void FindDefinition::displayCursor (LibClang::Cursor cursor,
-                                    std::ostream & cout)
+void FindDefinition::output (LibClang::Cursor cursor,
+                             std::ostream & cout)
 {
   const LibClang::SourceLocation location (cursor.location());
   const LibClang::Cursor cursorDef = cursor.referenced();
@@ -92,7 +122,7 @@ void FindDefinition::displayCursor (LibClang::Cursor cursor,
     def.usr = cursorDef.USR();
   }
 
-  outputRefDef (identifier, cout);
+  output (identifier, cout);
 }
 
 class Finder : public LibClang::Visitor<Finder>
@@ -115,7 +145,7 @@ public:
     }
 
     if (location == targetLocation_) {
-      FindDefinition::displayCursor (cursor, cout_);
+      FindDefinition::output (cursor, cout_);
     }
 
     return CXChildVisit_Recurse;
@@ -126,22 +156,22 @@ private:
   std::ostream & cout_;
 };
 
-void FindDefinition::fromIndex_ (Args & args, std::ostream & cout) {
-  const auto refDefs = storage_.findDefinition (args.fileName, args.offset);
+void FindDefinition::fromIndex_ (std::ostream & cout) {
+  const auto refDefs = storage_.findDefinition (args_.fileName, args_.offset);
   auto refDef = refDefs.begin();
-  const auto end = args.mostSpecific
+  const auto end = args_.mostSpecific
     ? refDef + 1
     : refDefs.end();
   for ( ; refDef != end ; ++refDef ) {
-    outputRefDef (*refDef, cout);
+    output (*refDef, cout);
   }
 }
 
-void FindDefinition::fromSource_ (Args & args, std::ostream & cout) {
-  LibClang::TranslationUnit tu = cache_.translationUnit (storage_, args.fileName);
+void FindDefinition::fromSource_ (std::ostream & cout) {
+  LibClang::TranslationUnit tu = cache_.translationUnit (storage_, args_.fileName);
 
   // Print clang diagnostics if requested
-  if (args.diagnostics) {
+  if (args_.diagnostics) {
     for (unsigned int N = tu.numDiagnostics(),
            i = 0 ; i < N ; ++i) {
       cout << tu.diagnostic (i) << std::endl << std::endl;
@@ -149,9 +179,9 @@ void FindDefinition::fromSource_ (Args & args, std::ostream & cout) {
   }
 
   // Print cursor definition
-  LibClang::Cursor cursor (tu, args.fileName.c_str(), args.offset);
-  if (args.mostSpecific) {
-    displayCursor (cursor, cout);
+  LibClang::Cursor cursor (tu, args_.fileName.c_str(), args_.offset);
+  if (args_.mostSpecific) {
+    output (cursor, cout);
   }
   else {
     LibClang::SourceLocation target = cursor.location();
@@ -160,14 +190,15 @@ void FindDefinition::fromSource_ (Args & args, std::ostream & cout) {
   }
 }
 
-void FindDefinition::operator() (Args & args, std::ostream & cout) {
-  if (args.fromIndex) {
+void FindDefinition::run (std::ostream & cout) {
+  if (args_.fromIndex) {
     // Request references from the index database
-    fromIndex_ (args, cout);
+    fromIndex_ (cout);
   }
   else {
     // Parse the source file and analyse it
-    fromSource_ (args, cout);
+    fromSource_ (cout);
   }
+}
 }
 }
