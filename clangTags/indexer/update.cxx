@@ -127,11 +127,13 @@ void Update::operator() () {
 
     MT::cerr() << "  indexing..." << std::endl;
     timer.reset();
-    storage_.beginIndex();
+
     LibClang::Cursor top (tu);
     Visitor indexer (fileName, exclude, storage_);
-    indexer.visitChildren (top);
-    storage_.endIndex();
+    {
+      auto transaction (storage_.beginTransaction());
+      indexer.visitChildren (top);
+    }
 
     elapsed = timer.get();
     MT::cerr() << "  indexing...\t" << elapsed << "s." << std::endl;

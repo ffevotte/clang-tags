@@ -1,6 +1,7 @@
 #pragma once
 #include "database.hxx"
 #include "statement.hxx"
+#include "transaction.hxx"
 
 /** @addtogroup sqlite Sqlite++
 

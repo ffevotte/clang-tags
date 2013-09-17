@@ -1,6 +1,7 @@
 #pragma once
 
 #include "identifier.hxx"
+#include "sqlite++/transaction.hxx"
 #include <json/json.h>
 
 namespace ClangTags {
@@ -128,18 +129,6 @@ public:
    *  @{
    */
 
-  /** @brief Begin indexing source files
-   *
-   * This method should be called before beginning indexing source files.
-   */
-  void beginIndex ();
-
-  /** @brief End indexing source files
-   *
-   * This method should be called after having indexed source files.
-   */
-  void endIndex ();
-
   /** @brief Begin indexing a source file
    *
    * This method should be called before beginning indexing a source file.
@@ -201,6 +190,14 @@ public:
   std::vector<ClangTags::Identifier::Reference> grep (const std::string usr);
 
   /** @} */
+
+  
+  /** @brief Begin an SQL transaction
+   *
+   * This method returns an Sqlite::Transaction object, whose lifetime
+   * determines the SQL transaction.
+   */
+  Sqlite::Transaction beginTransaction ();
 
 private:
   class Impl;

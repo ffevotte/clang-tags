@@ -137,15 +137,6 @@ public:
     return "";
   }
 
-  void beginIndex () {
-    db_.execute ("BEGIN IMMEDIATE TRANSACTION");
-  }
-
-  void endIndex () {
-    db_.execute ("END TRANSACTION");
-    db_.execute ("ANALYZE");
-  }
-
   bool beginFile (const std::string & fileName) {
     int fileId = addFile_ (fileName);
 
@@ -305,6 +296,10 @@ public:
     deserialize_ (val, destination);
   }
 
+  Sqlite::Transaction beginTransaction () {
+    return Sqlite::Transaction(db_);
+  }
+
 private:
   int fileId_ (const std::string & fileName) {
     Sqlite::Statement stmt
@@ -436,14 +431,6 @@ std::string Storage::nextFile () {
   return impl_->nextFile();
 }
 
-void Storage::beginIndex () {
-  return impl_->beginIndex();
-}
-
-void Storage::endIndex () {
-  return impl_->endIndex();
-}
-
 bool Storage::beginFile (const std::string & fileName) {
   return impl_->beginFile (fileName);
 }
@@ -495,5 +482,9 @@ void Storage::setOption (const std::string & name, const std::string & value) {
 
 void Storage::setOptionDefault (const std::string & name, const std::string & value) {
   return impl_->setOptionDefault (name, value);
+}
+
+Sqlite::Transaction Storage::beginTransaction () {
+  return impl_->beginTransaction();
 }
 }
