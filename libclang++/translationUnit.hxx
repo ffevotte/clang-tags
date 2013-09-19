@@ -85,6 +85,12 @@ namespace LibClang {
      */
     std::string diagnostic (unsigned int i);
 
+    /** @brief Get the memory usage of the translation unit.
+     *
+     * @return The memory usage (in bytes) of the translation unit.
+     */
+    unsigned long memoryUsage () const;
+
     // TODO Make this method private
     const CXTranslationUnit & raw () const;
 
