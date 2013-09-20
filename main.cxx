@@ -1,17 +1,12 @@
 #include "config.h"
 
-#include "util/util.hxx"
-#include "request/request.hxx"
 #include "getopt++/getopt.hxx"
 #include "MT/stream.hxx"
+#include "MT/threadsList.hxx"
 
-#include "clangTags/storage.hxx"
 #include "clangTags/indexer/indexer.hxx"
 #include "clangTags/watcher/inotify.hxx"
 #include "clangTags/server/server.hxx"
-
-#include <boost/thread/thread.hpp>
-
 
 int main (int argc, char **argv) {
   Getopt options (argc, argv);
@@ -50,27 +45,24 @@ int main (int argc, char **argv) {
   cacheLimit *= 1024 * 1024;
 
 
-  try {
-    ClangTags::Cache cache (cacheLimit);
+  ClangTags::Cache cache (cacheLimit);
 
-    std::list<boost::thread> threads;
-
-    ClangTags::Indexer::Indexer indexer (cache);
-    threads.push_back (boost::thread (boost::ref(indexer)));
+  ClangTags::Indexer::Indexer indexer (cache);
 
 #if defined(HAVE_INOTIFY)
-    ClangTags::Watcher::Inotify watcher (indexer);
-    indexer.setWatcher (&watcher);
-    threads.push_back (boost::thread (boost::ref(watcher)));
+  ClangTags::Watcher::Inotify watcher (indexer);
+  indexer.setWatcher (&watcher);
+#endif
+
+  try {
+    MT::ThreadsList threads;
+    threads.add (boost::ref(indexer));
+#if defined(HAVE_INOTIFY)
+    threads.add (boost::ref(watcher));
 #endif
 
     ClangTags::Server::Server server (cache, indexer);
     server.run (fromStdin);
-
-    for (auto it = threads.begin() ; it != threads.end() ; ++it)
-      it->interrupt();
-    for (auto it = threads.begin() ; it != threads.end() ; ++it)
-      it->join();
   }
   catch (std::exception& e) {
     std::cerr << std::endl << "Caught exception: " << e.what() << std::endl;
@@ -79,4 +71,3 @@ int main (int argc, char **argv) {
 
   return EXIT_SUCCESS;
 }
-
