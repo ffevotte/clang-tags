@@ -1,7 +1,6 @@
 #include "config.h"
 
 #include "getopt++/getopt.hxx"
-#include "MT/stream.hxx"
 #include "MT/threadsList.hxx"
 
 #include "clangTags/indexer/indexer.hxx"

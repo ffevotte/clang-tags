@@ -11,7 +11,6 @@ namespace LibClang {
   */
 
   // Forward declarations
-  class Index;
   class SourceLocation;
   class Cursor;
 

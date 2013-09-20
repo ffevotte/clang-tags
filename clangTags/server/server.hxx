@@ -8,6 +8,7 @@
 #include "clangTags/server/complete.hxx"
 #include "clangTags/server/exit.hxx"
 
+#include "MT/stream.hxx"
 #include <boost/asio.hpp>
 
 namespace ClangTags {

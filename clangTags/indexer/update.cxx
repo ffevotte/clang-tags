@@ -5,9 +5,7 @@
 #include "util/util.hxx"
 #include "MT/stream.hxx"
 
-#include <cstdlib>
 #include <string>
-#include <iostream>
 #include <fstream>
 
 namespace ClangTags {

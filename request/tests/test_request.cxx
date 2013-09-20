@@ -4,7 +4,6 @@
  * application handling requests.
  */
 #include "request/request.hxx"
-#include <sstream>
 
 //! [CommandParser]
 using Request::CommandParser;

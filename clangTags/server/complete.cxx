@@ -1,7 +1,6 @@
 #include "complete.hxx"
 
 #include <clang-c/Index.h>
-#include <cassert>
 #include <stdexcept>
 #include <memory>
 #include <iostream>

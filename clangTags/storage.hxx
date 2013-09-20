@@ -2,7 +2,6 @@
 
 #include "identifier.hxx"
 #include "sqlite++/transaction.hxx"
-#include <json/json.h>
 
 namespace ClangTags {
 

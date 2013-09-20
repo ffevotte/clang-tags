@@ -1,5 +1,4 @@
 #include "translationUnit.hxx"
-#include "index.hxx"
 #include "sourceLocation.hxx"
 #include "cursor.hxx"
 

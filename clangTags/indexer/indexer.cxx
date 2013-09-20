@@ -1,5 +1,4 @@
 #include "indexer.hxx"
-#include "MT/stream.hxx"
 
 #include "clangTags/watcher/watcher.hxx"
 
