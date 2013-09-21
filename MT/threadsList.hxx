@@ -4,6 +4,10 @@
 #include <boost/thread/thread.hpp>
 
 namespace MT {
+/** @addtogroup mt
+ *  @{
+ */
+
 /** @brief List of threads
  *
  * This object stores a collection of @c boost::thread objects. The ThreadsList
@@ -25,14 +29,25 @@ public:
   /** @brief Create a thread and start managing it
    *
    * This function takes the same kind of argument as the boost::thread
-   * constructor.
+   * constructor:
+   * - @c Callable must be copyable
+   * - @c function() must be a valid expression
+   *
+   * The provided functor is copied and invoked in a newly created thread, which
+   * is put into the list of managed threads.
+   *
+   * Use @c boost::ref to pass a reference to the functor object if it must not
+   * be copied.
+   *
+   * @param functor  functor invoked in the newly created thread.
    */
-  template <typename T>
-  void add (T & function) {
-    threads_.push_back (boost::thread (function));
+  template <typename Callable>
+  void add (Callable & functor) {
+    threads_.push_back (boost::thread (functor));
   }
 
 private:
   std::list<boost::thread> threads_;
 };
+/** @} */
 }

@@ -1,0 +1,8 @@
+/**
+@addtogroup mt MT
+@brief Tools for multi-threaded environments.
+
+
+@namespace MT
+@brief Tools for multi-threaded environments.
+*/
