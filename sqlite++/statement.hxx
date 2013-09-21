@@ -112,7 +112,16 @@ namespace Sqlite {
      *
      * Values can be extracted from the current result row using operator>>().
      *
+     * In multithreaded environments, return @c SQLITE_BUSY when the statement
+     * can not be executed due to the database being locked by another thread.
+     *
+     * In case of error, throws an exception of type @ref Error.
+     *
+     * @param retry  if @c true, automatically retry the statement in case of
+     *               @c SQLITE_BUSY return value.
+     *
      * @return @c SQLITE_OK, @c SQLITE_ROW or @c SQLITE_DONE
+     *
      * @throw Error
      */
     int step (bool retry = true) {
@@ -123,7 +132,7 @@ namespace Sqlite {
       if (retry && ret == SQLITE_BUSY) {
         for ( ; ; ) {
           // sleep for 0.1 s.
-          poll (NULL, 0, 1000);
+          poll (NULL, 0, 100);
 
           std::cerr << "Database busy... retrying " << std::endl
                     << sqlite3_sql (raw()) << std::endl;

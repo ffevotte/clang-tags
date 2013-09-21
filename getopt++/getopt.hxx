@@ -26,13 +26,13 @@
 class Getopt
 {
 public:
+  /** @brief List of values for a command-line option */
   typedef std::vector<std::string> OptionValues;
-  typedef std::map<std::string, OptionValues> OptionsMap;
 
   /** @brief Constructor
-   *    @param argc       number of command-line arguments
-   *    @param argv       command-line arguments
-   *    @param arguments  description of non-switch command-line arguments
+   *    @param argc           number of command-line arguments
+   *    @param argv           command-line arguments
+   *    @param documentation  description of non-switch command-line arguments
    */
   Getopt (int argc, char *const * argv, const char *documentation = "Usage: %c [options]");
 
@@ -62,16 +62,21 @@ public:
 
   /** @brief Get the value of a command-line option
    *  If the switch was given multiple times, only return the last value.
+   *
+   *  @param opt  option name
    *  @return "" if the switch is unset
    */
   inline std::string operator[] (std::string opt) const;
 
   /** @brief Get the number of times a command-line switch was given
+   *  @param opt  option name
    *  @return count
    */
   inline int getCount (std::string opt) const;
 
   /** @brief Get all provided values for a command-line option
+   *
+   *  @param opt option name
    *  @return a vector of values
    */
   inline const OptionValues & getAll (std::string opt) const;
@@ -102,6 +107,7 @@ private:
 
 
 private:
+  typedef std::map<std::string, OptionValues> OptionsMap;
   typedef struct option Option;
   int                 argc_;
   char *const *       argv_;

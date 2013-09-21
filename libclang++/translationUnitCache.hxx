@@ -25,8 +25,9 @@ namespace LibClang {
 
     /** @brief Determine whether a cache entry exists.
      *
+     * @param fileName full path to the source file
      * @return true if the cache contains a translation unit corresponding to
-     * the given filename.
+     *         the given filename.
      */
     bool contains (const std::string & fileName) const;
 
@@ -34,12 +35,18 @@ namespace LibClang {
      *
      * Inserts the translation unit into the cache, and possibly disposes older translation
      * units in order to satisfy the memory usage limit.
+     *
+     * @param fileName full path to the source file
+     * @param tu       translation unit associated to @c fileName
      */
     void insert (const std::string & fileName, const TranslationUnit & tu);
 
     /** @brief Retrieve a translation unit from the cache.
      *
-     * Use @m contains() to first determine whether the cache entry exists.
+     * Use @ref contains() to first determine whether the cache entry exists.
+     *
+     * @param fileName full path to the source file
+     * @return the translation unit corresponding to @c filename in the cache
      */
     TranslationUnit & get (const std::string & fileName);
 

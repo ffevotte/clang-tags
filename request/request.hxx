@@ -52,8 +52,9 @@ command displaying help messages :
   help COMMAND
   @endverbatim
 
-See @ref test_request.cxx for an example showing how to use this module. Here
-is a example interactive session for an application defining the @c "repeat" command as above:
+See @ref test_request.cxx for an example showing how to use this module. Here is
+an example interactive session for an application defining the @c "repeat"
+command as above:
 
 @verbatim
 Command> help
