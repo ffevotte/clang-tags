@@ -6,13 +6,34 @@
 #include <unistd.h>
 
 namespace ClangTags {
+/** @addtogroup clangTags
+ *  @{
+ */
 
+/** @brief Translation units cache
+ *
+ * @sa LibClang::TranslationUnitCache
+ */
 class Cache {
 public:
+  /** @brief Constructor
+   *
+   * @param cacheLimit maximum cache size (in bytes)
+   */
   Cache (unsigned int cacheLimit)
     : tu_ (cacheLimit)
   {}
 
+  /** @brief Get the translation unit associated to a source file
+   *
+   * If the translation unit is in cache, it is reparsed. Otherwise, the source
+   * file is parsed from scratch and the translation unit is added to the cache.
+   *
+   * @param storage  Storage from which compilation commands can be retrieved
+   * @param fileName full path to the source file
+   *
+   * @return an up-to-date LibClang::TranslationUnit associated to @c fileName
+   */
   LibClang::TranslationUnit & translationUnit (Storage & storage,
                                                std::string fileName) {
     std::string directory;
@@ -39,4 +60,5 @@ private:
   LibClang::TranslationUnitCache tu_;
 };
 
+/** @} */
 }

@@ -8,32 +8,38 @@
 #include "MT/aFlag.hxx"
 
 #include "clangTags/storage.hxx"
-#include "clangTags/indexer/indexer.hxx"
 
 namespace ClangTags {
 namespace Watcher {
+/** @addtogroup clangTags
+ *  @{
+ */
 
-/** @brief Background thread watching source files
+/** @brief Implementation of the Watcher interface using Linux' inotify service.
+ *
+ * An Inotify instance is destined to be invoked as functor in a separate thread
+ * of execution.
  */
 class Inotify : public Watcher {
 public:
 
   /** @brief Constructor
    *
-   * This object accesses the database using its own @ref Storage::SqliteDB handle.
+   * This object accesses the database using its own @ref Storage handle.
    *
-   * Objects are constructed with an initial index update already scheduled (see
-   * update()).
+   * Inotify instances are constructed with an initial index update already
+   * scheduled (see update()).
    *
-   * @param cache @ref LibClang::TranslationUnit "TranslationUnit" cache
+   * @param indexer  @ref Indexer::Indexer "Indexer" instance to notify
    */
-  Inotify (Indexer::Indexer & updateThread);
+  Inotify (Indexer::Indexer & indexer);
+
   ~Inotify ();
 
   /** @brief Main loop
    *
    * This is the main loop executed by the thread. It watches for:
-   * - source files list update requests coming from other threads (see index())
+   * - source files list update requests coming from other threads (see update())
    * - notifications that sources have changed on the file system (using Linux's
    *   @c inotify service)
    */
@@ -64,26 +70,8 @@ private:
   int fd_inotify_;
   Map inotifyMap_;
   MT::AFlag<bool> updateRequested_;
-  Indexer::Indexer & indexer_;
 };
-
-
-// Definition of Inotify::Map
-inline
-void Inotify::Map::add (const std::string & fileName, int wd) {
-  wd_[fileName] = wd;
-  file_[wd] = fileName;
-}
-
-inline
-std::string Inotify::Map::fileName (int wd) {
-  return file_[wd];
-}
-
-inline
-bool Inotify::Map::contains (const std::string & fileName) {
-  return wd_.count(fileName)>0;
-}
+/** @} */
 }
 }
 

@@ -3,8 +3,11 @@
 #include <json/json.h>
 
 namespace ClangTags {
+/** @addtogroup clangTags
+ *  @{
+ */
 
-/** @brief Identifier in the source code
+/** @brief Symbol in the source code
  */
 struct Identifier {
   /** @brief Location of an identifier in the source code
@@ -69,8 +72,8 @@ struct Identifier {
     }
   };
 
-  Reference  ref;               /**< @brief Location of the identifier in the source code */
-  Definition def;               /**< @brief Location of the symbol definition */
+  Reference  ref;  /**< @brief Location of the identifier in the source code */
+  Definition def;  /**< @brief Location of the symbol definition */
 
   /** @brief Serialize to a JSON object
    *
@@ -83,4 +86,5 @@ struct Identifier {
     return json;
   }
 };
+/** @} */
 }

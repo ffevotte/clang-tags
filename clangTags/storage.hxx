@@ -4,6 +4,9 @@
 #include "sqlite++/transaction.hxx"
 
 namespace ClangTags {
+/** @addtogroup clangTags
+ *  @{
+ */
 
 /** @brief Interface for persistant storage
  *
@@ -195,6 +198,8 @@ public:
    *
    * This method returns an Sqlite::Transaction object, whose lifetime
    * determines the SQL transaction.
+   *
+   * @return an Sqlite::Transaction object associated to the database
    */
   Sqlite::Transaction beginTransaction ();
 
@@ -202,4 +207,5 @@ private:
   class Impl;
   Impl *impl_;
 };
+/** @} */
 }

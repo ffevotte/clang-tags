@@ -1,23 +1,30 @@
 #pragma once
 
 #include "clangTags/storage.hxx"
-#include "clangTags/watcher/watcher.hxx"
 #include "update.hxx"
 #include "MT/sFlag.hxx"
 
+namespace ClangTags { namespace Watcher { class Watcher; }}
+
 namespace ClangTags {
 namespace Indexer {
+/** @addtogroup clangTags
+ *  @{
+ */
 
-/** @brief Background thread updating the index
+/** @brief Updates the source code index
+ *
+ * This class implements the @c callable concept, and is destined to be invoked
+ * in a separate thread of execution.
  */
 class Indexer {
 public:
 
   /** @brief Constructor
    *
-   * This object accesses the database using its own @ref Storage::SqliteDB handle.
+   * This object accesses the database using its own @ref Storage instance.
    *
-   * @ref Update objects are constructed with an initial index update already
+   * @ref Indexer objects are constructed with an initial index update already
    * scheduled (see index()).
    *
    * @param cache @ref LibClang::TranslationUnit "TranslationUnit" cache
@@ -26,27 +33,32 @@ public:
 
   /** @brief Main loop
    *
-   * This is the main loop executed by the thread. It watches for:
-   * - index update requests coming from other threads (see index())
-   * - notifications that sources have changed on the file system (using Linux's
-   *   @c inotify service)
+   * This is the main loop executed by the thread. It watches for requests
+   * coming from other threads (see index()), and updates the source files
+   * index (see Update)
    */
   void operator() ();
 
   /** @brief Schedule an index update
    *
-   * Calling this method asks the Update thread to reindex source files and
-   * update its watch list.
+   * Calling this method asks the Indexer to update the source files index.
    */
   void index ();
 
   /** @brief Wait until the index is updated
    *
-   * Calling this method puts the current thread to sleep until the Update
-   * thread is done reindexing source files.
+   * Upon calling this method, the calling thread is put to sleep until the
+   * source files index has been updated.
    */
   void wait ();
 
+  /** @brief Register a watcher instance
+   *
+   * After the index has been updated, if a @ref Watcher::Watcher "Watcher"
+   * instance has been registered, it is notified to update its watch list.
+   *
+   * @param watcher  pointer to a @ref Watcher::Watcher "Watcher" instance
+   */
   void setWatcher (Watcher::Watcher * watcher);
 
 private:
@@ -58,5 +70,6 @@ private:
   MT::SFlag<bool> indexUpdated_;
   Watcher::Watcher * watcher_;
 };
+/** @} */
 }
 }

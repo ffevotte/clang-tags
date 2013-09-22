@@ -1,0 +1,5 @@
+/**
+   @namespace ClangTags::Watcher
+   @brief Background thread watching source files
+   @ingroup clangTags
+ */

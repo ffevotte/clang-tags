@@ -8,9 +8,22 @@
 namespace ClangTags {
 namespace Watcher {
 
+void Inotify::Map::add (const std::string & fileName, int wd) {
+  wd_[fileName] = wd;
+  file_[wd] = fileName;
+}
+
+std::string Inotify::Map::fileName (int wd) {
+  return file_[wd];
+}
+
+bool Inotify::Map::contains (const std::string & fileName) {
+  return wd_.count(fileName)>0;
+}
+
 Inotify::Inotify (Indexer::Indexer & indexer)
-  : updateRequested_ (true),
-    indexer_ (indexer)
+  : Watcher (indexer),
+    updateRequested_ (true)
 {
   // Initialize inotify
   fd_inotify_ = inotify_init ();
@@ -97,7 +110,7 @@ void Inotify::operator() () {
         }
 
         // Schedule an index update
-        indexer_.index();
+        reindex();
       }
     }
   }

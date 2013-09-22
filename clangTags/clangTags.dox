@@ -1,0 +1,9 @@
+/**
+@addtogroup clangTags Clang-Tags
+@brief @c clang-tags server
+*/
+
+/**
+@namespace ClangTags
+@brief Specific code for the clang-tags server
+*/

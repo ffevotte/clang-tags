@@ -1,0 +1,5 @@
+/**
+@namespace ClangTags::Indexer
+@brief Background thread updating the index
+@ingroup clangTags
+*/
