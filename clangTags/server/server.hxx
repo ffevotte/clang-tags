@@ -13,8 +13,29 @@
 
 namespace ClangTags {
 namespace Server {
+/** @addtogroup clangTags
+ *  @{
+ */
+
+/** @brief Handles user requests
+ *
+ * This class implements a server handling user requests using the @ref request
+ * module. Requests can either be read from the command-line or from a UNIX
+ * socket (see @ref run).
+ */
 class Server {
 public:
+  /** @brief Constructor
+   *
+   * This constructor stores the server @c PID in a pidfile, in order to avoid
+   * starting multiple servers for the same project.
+   *
+   * @param cache    @ref Cache instance from where translation units can be
+   *                 retrieved
+   *
+   * @param indexer  @ref Indexer instance to be used for updating the source
+   *                 files index
+   */
   Server (ClangTags::Cache & cache,
           ClangTags::Indexer::Indexer & indexer)
     : cache_      (cache),
@@ -38,12 +59,27 @@ public:
       .prompt ("clang-tags> ");
   }
 
+  /** @brief Destructor
+   *
+   * Removes the pid and socket files.
+   */
   ~Server () {
     MT::cerr() << "Server exiting..." << std::endl;
     unlink (socketPath_.c_str());
     unlink (pidPath_.c_str());
   }
 
+  /** @brief Main server loop
+   *
+   * If the server listens on the standard input stream, it returns after having
+   * handled one request.
+
+   * Otherwise, a full server listening on a UNIX socket is run. It handles all
+   * requests, until receiving an exception.
+   *
+   * @param fromStdin  If @c true, read requests from the standard input stream.
+   *                   Otherwise, listen on a UNIX socket.
+   */
   void run (bool fromStdin) {
     if (fromStdin) {
       parser_.parseJson (std::cin, std::cout);
@@ -75,5 +111,6 @@ private:
   std::string pidPath_;
   std::string socketPath_;
 };
+/** @} */
 }
 }

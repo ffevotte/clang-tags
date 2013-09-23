@@ -1,0 +1,5 @@
+/**
+   @namespace ClangTags::Server
+   @brief Thread handling user requests
+   @ingroup clangTags
+*/

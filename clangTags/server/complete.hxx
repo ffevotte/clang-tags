@@ -7,8 +7,19 @@
 
 namespace ClangTags {
 namespace Server {
+/** @addtogroup clangTags
+ *  @{
+ */
+
+/** @brief Propose completions for the source code at point
+ */
 class Complete : public Request::CommandParser {
 public:
+  /** @brief Constructor
+   *
+   * @param storage  @ref Storage instance used for the compilation database
+   * @param cache    translation units @ref Cache
+   */
   Complete (Storage & storage,
             Cache & cache);
 
@@ -26,5 +37,6 @@ private:
   Storage & storage_;
   Cache & cache_;
 };
+/** @} */
 }
 }
