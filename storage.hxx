@@ -446,7 +446,7 @@ private:
       throw std::runtime_error (reader.getFormattedErrorMessages());
     }
 
-    for (int i=0 ; i<json.size() ; ++i) {
+    for (unsigned int i=0 ; i<json.size() ; ++i) {
       v.push_back (json[i].asString());
     }
   }
