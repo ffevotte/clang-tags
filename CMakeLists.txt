@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 2.6)
+
+include ( "${CMAKE_BINARY_DIR}/config.cmake" OPTIONAL RESULT_VARIABLE CONFIG_CMAKE )
+if ( CONFIG_CMAKE )
+  message ( STATUS "Loaded local config file" )
+endif ( CONFIG_CMAKE )
+
 project(clang-tags)
 
 include (CheckFunctionExists)
