@@ -40,14 +40,20 @@ To go a step further, all details are in the
 
 ### Similar tools
 
-- [Bear](https://github.com/rizsotto/Bear): a tool to generate compilation databases.
-- [clang-ctags](https://github.com/drothlis/clang-ctags): a similar project
-  using libclang to generate `ctags`/`etags` index files.
+- [Bear][]: a tool to generate compilation databases.
+- [clang-ctags][]: a similar project
+  using `libclang` to generate `ctags`/`etags` index files.
+- [rtags][]: another C/C++ code indexer based on `libclang`. `rtags` is
+  much more advanced and featureful than `clang-tags`, its only (minor) drawback
+  being its long list of dependencies.
 - clangd ([proposal][clangd_proposal] / [design document][clangd_design]):
   a Clang-based IDE-like service (still in design phase AFAIK).
 
+[Bear]: https://github.com/rizsotto/Bear
+[clang-ctags]: https://github.com/drothlis/clang-ctags
+[rtags]: https://github.com/Andersbakken/rtags
 [clangd_proposal]: http://lists.cs.uiuc.edu/pipermail/cfe-dev/2012-June/022028.html
-[clangd_design]:   https://github.com/chandlerc/llvm-designs/blob/master/ClangService.rst
+[clangd_design]: https://github.com/chandlerc/llvm-designs/blob/master/ClangService.rst
 
 ### Clang documentation
 
