@@ -192,6 +192,8 @@ def trace (args):
               indent=4)
     f.close()
 
+    return p.returncode
+
 
 def scan (args):
     """Generate a compilation database by scanning a sources directory."""
